@@ -1,10 +1,10 @@
-# WordPress core descargado (no versionar)
-wordpress-core/
+# Runtime data (bind mounts) — never commit these
+db/
+workspace/
 
-# Docker volumes
-.env.local
-
-# OS
-.DS_Store
-Thumbs.db
+# Local env
 .env
+
+# Logs and OS cruft
+*.log
+.DS_Store

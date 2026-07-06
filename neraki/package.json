@@ -1,0 +1,21 @@
+{
+  "name": "neraki",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Neraki — WordPress local + landing KIVO (agent sandbox)",
+  "scripts": {
+    "setup": "bash scripts/initial-setup.sh",
+    "start": "docker compose up -d --build",
+    "stop": "docker compose stop",
+    "down": "docker compose down",
+    "restart": "docker compose restart",
+    "logs": "docker compose logs -f",
+    "dev:logs": "docker compose logs -f dev",
+    "ps": "docker compose ps",
+    "bash": "bash scripts/in-workspace.sh bash",
+    "claude": "bash scripts/in-workspace.sh claude --dangerously-skip-permissions",
+    "cursor": "bash scripts/in-workspace.sh cursor-agent --force --approve-mcps",
+    "wp": "docker compose exec workspace wp",
+    "reset": "docker compose down && rm -rf db workspace && bash scripts/initial-setup.sh"
+  }
+}

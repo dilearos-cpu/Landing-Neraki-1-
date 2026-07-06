@@ -69,12 +69,16 @@ Objetivo: PageSpeed 90+ mobile, LCP < 2.5s.
 
 ## WordPress local (Neraki)
 
-Para montar el sitio en tu máquina:
+Mismo entorno que **agentes de confianza** — Docker + npm:
 
 ```bash
 cd neraki
-./scripts/setup-local.sh    # instala WordPress + plugin
-./scripts/start-server.sh   # http://localhost:8080
+cp .env.example .env
+npm run setup    # primera vez
+npm run start    # levantar
 ```
 
-Credenciales: `admin` / `admin123` — Ver [`neraki/README.md`](neraki/README.md).
+- **Sitio:** http://localhost:8080
+- **Admin:** http://localhost:8080/wp-admin (`admin` / `admin123`)
+
+Ver [`neraki/README.md`](neraki/README.md).
