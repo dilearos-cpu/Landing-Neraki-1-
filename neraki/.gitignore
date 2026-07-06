@@ -1,0 +1,10 @@
+# Runtime data (bind mounts) — never commit these
+db/
+workspace/
+
+# Local env
+.env
+
+# Logs and OS cruft
+*.log
+.DS_Store

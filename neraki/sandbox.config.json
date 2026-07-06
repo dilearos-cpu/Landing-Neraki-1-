@@ -1,0 +1,11 @@
+{
+  "plugins": [
+    "elementor"
+  ],
+  "defines": {
+    "WP_DEBUG": true,
+    "WP_DEBUG_LOG": true
+  },
+  "setupScript": "scripts/user-setup.sh",
+  "activate": ["elementor", "neraki-landing"]
+}
