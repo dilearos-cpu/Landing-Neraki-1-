@@ -1,0 +1,10 @@
+# WordPress core descargado (no versionar)
+wordpress-core/
+
+# Docker volumes
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+.env
