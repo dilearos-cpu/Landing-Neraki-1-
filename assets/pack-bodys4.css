@@ -87,12 +87,17 @@
   background: #e74c3c;
 }
 
+.pack-modal[hidden] {
+  display: none !important;
+}
+
 .pack-modal {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.75);
   z-index: 999999;
   padding: 24px 0;
+  display: block;
 }
 
 .modal-content {

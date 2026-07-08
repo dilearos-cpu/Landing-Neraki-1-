@@ -11,9 +11,29 @@
       return;
     }
 
-    var products = JSON.parse(productsNode.textContent).filter(function (product) {
-      return Boolean(product.available && product.default_variant_id);
-    });
+    var messageNode = section.querySelector("[data-pack-message]");
+
+    function showInitMessage(text) {
+      if (!messageNode) {
+        return;
+      }
+
+      messageNode.hidden = false;
+      messageNode.textContent = text;
+      messageNode.classList.add("pack-ui__message--error");
+    }
+
+    var products = [];
+
+    try {
+      products = JSON.parse(productsNode.textContent).filter(function (product) {
+        return Boolean(product.default_variant_id);
+      });
+    } catch (error) {
+      console.error("Pack Bodys 4: no se pudo leer el catalogo de productos.", error);
+      showInitMessage("No se pudieron cargar los productos del pack. Recarga la pagina o revisa la seccion.");
+      return;
+    }
     var slotCount = Number(section.dataset.slotCount || 4);
     var cartUrl = section.dataset.cartUrl || "/cart/add.js";
     var checkoutUrl = section.dataset.checkoutUrl || "/checkout";
@@ -25,7 +45,7 @@
     var productsGrid = section.querySelector("[data-products-grid]");
     var paginationNode = section.querySelector("[data-pagination]");
     var variantContent = section.querySelector("[data-variant-content]");
-    var messageNode = section.querySelector("[data-pack-message]");
+
     var currentState = {
       currentSlot: null,
       selected: {},
@@ -68,6 +88,12 @@
     }
 
     function renderProducts() {
+      if (!products.length) {
+        productsGrid.innerHTML = '<p class="pack-ui__empty">No hay productos disponibles en esta coleccion.</p>';
+        paginationNode.innerHTML = "";
+        return;
+      }
+
       var start = (currentState.currentPage - 1) * currentState.perPage;
       var items = products.slice(start, start + currentState.perPage);
 
@@ -120,6 +146,11 @@
     function chooseSimpleProduct(product) {
       if (!product.default_variant_id) {
         showMessage("Este producto no tiene una variante disponible.", true);
+        return;
+      }
+
+      if (!product.available) {
+        showMessage("Este producto no esta disponible.", true);
         return;
       }
       fillSlot(currentState.currentSlot, product.img, product.name);
@@ -211,7 +242,7 @@
       }
 
       if (!variant.available) {
-        showMessage("La variante seleccionada esta agotada.", true);
+        showMessage("La variante seleccionada no esta disponible.", true);
         return;
       }
 
