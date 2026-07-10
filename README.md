@@ -69,6 +69,22 @@ Seccion independiente con la visual del contador regresivo y barra de promos.
 3. Configura promos disponibles, total de promos y textos.
 4. El contador inicia en 24 horas cuando la persona entra por primera vez y se reinicia automaticamente al cumplirse ese tiempo (usa `localStorage` del navegador).
 
+## Banner responsive
+
+Seccion para mostrar una imagen en escritorio y otra distinta en movil.
+
+### Archivos
+
+- `sections/responsive-banner.liquid`
+- `assets/responsive-banner.css`
+
+### Como usarlo
+
+1. Copia los archivos al tema.
+2. Agrega la seccion **Banner responsive** en la pagina que quieras.
+3. Sube la imagen de escritorio y la de movil.
+4. Opcional: enlace, texto alternativo, padding, margin y borde redondeado.
+
 ## Tracking pixels (Meta, TikTok, Google)
 
 Hay dos piezas segun tu caso:
