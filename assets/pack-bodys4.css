@@ -11,6 +11,10 @@
   box-sizing: border-box;
 }
 
+.pack-ui--anchored {
+  scroll-margin-top: 100px;
+}
+
 .pack-ui__heading {
   margin-bottom: 1rem;
   text-align: center;

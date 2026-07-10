@@ -28,11 +28,17 @@
   if liquid_products_limit > 50
     assign liquid_products_limit = 50
   endif
+
+  if section.settings.anchor_id != blank
+    assign pack_anchor_id = section.settings.anchor_id | handleize
+  else
+    assign pack_anchor_id = 'pack-ui-' | append: section.id
+  endif
 %}
 {{ 'pack-bodys4.css' | asset_url | stylesheet_tag }}
 <section
-  class="pack-ui"
-  id="pack-ui-{{ section.id }}"
+  class="pack-ui pack-ui--anchored"
+  id="{{ pack_anchor_id }}"
   data-pack-mode="simple"
   data-section-id="{{ section.id }}"
   data-slot-count="{{ slot_count }}"
@@ -142,6 +148,12 @@
     {
       "type": "paragraph",
       "content": "Solo muestra productos simples (sin variantes). Usa una coleccion con productos de una sola variante."
+    },
+    {
+      "type": "text",
+      "id": "anchor_id",
+      "label": "ID del bloque para enlaces",
+      "info": "Opcional. Ejemplo: pack-basicas permite enlazar con #pack-basicas desde botones o imagenes."
     },
     {
       "type": "header",
