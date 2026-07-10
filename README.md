@@ -66,63 +66,81 @@ Seccion independiente con la visual del contador regresivo y barra de promos.
 
 ## Tracking pixels (Meta, TikTok, Google)
 
-Seccion para pegar IDs de tracking sin editar codigo cada vez.
+Hay dos piezas segun tu caso:
+
+1. **Landings distintas** → seccion `Pixels de landing` (una por pagina)
+2. **Checkout + gracias por tu compra** → pixel personalizado `checkout-dual-pixels.js` en el admin de Shopify
 
 ### Archivos
 
-- `sections/tracking-pixels.liquid`
+- `sections/landing-pixels.liquid` → una landing = un pixel
+- `sections/tracking-pixels.liquid` → pixel global (opcional)
 - `snippets/tracking-pixels.liquid`
+- `assets/checkout-dual-pixels.js` → ambos pixeles en checkout y thank you
 
-### Como usarlo
+---
 
-**Opcion A (recomendada en Horizon):**
+### A) Landing de basicas con su pixel
 
-1. Copia los 2 archivos al tema.
-2. Ve a **Personalizar tema**.
-3. En la parte superior, haz clic en el area del **encabezado / header**.
-4. Pulsa **Agregar seccion** y elige **Tracking pixels**.
-5. Activa Meta, TikTok o Google y pega cada ID.
-6. Guarda.
+1. Sube los archivos al tema.
+2. Abre la pagina/landing de **basicas** en el personalizador.
+3. Agrega la seccion **Pixels landing basicas** (o **Pixels de landing**).
+4. Activa Meta/TikTok/Google y pega solo los IDs de basicas.
+5. Guarda.
 
-**Opcion B (por codigo en el header group):**
+### B) Landing de bodys con otro pixel
 
-En `sections/header-group.json`, agrega un bloque como este dentro de `"sections"`:
+1. Abre la pagina/landing de **bodys**.
+2. Agrega otra seccion **Pixels landing bodys**.
+3. Pega solo los IDs de bodys.
+4. Guarda.
 
-```json
-"tracking_pixels": {
-  "type": "tracking-pixels",
-  "settings": {
-    "enable_meta": true,
-    "meta_pixel_id": "123456789012345",
-    "enable_tiktok": false,
-    "tiktok_pixel_id": "",
-    "enable_google": true,
-    "google_ads_id": "AW-XXXXXXXXX",
-    "custom_scripts": ""
+Importante: **no** pongas estas secciones en el header global. Van solo en cada landing.
+
+---
+
+### C) Checkout y pagina de gracias con AMBOS pixeles
+
+El checkout **no usa el tema**, asi que esto se configura en Shopify Admin:
+
+1. Ve a **Configuracion → Eventos de cliente**.
+2. Pulsa **Agregar pixel personalizado → Personalizado**.
+3. Nombre sugerido: `Checkout basicas + bodys`.
+4. Abre `assets/checkout-dual-pixels.js` del repo.
+5. Reemplaza estos valores con tus IDs reales:
+
+```js
+const PIXELS = {
+  basicas: {
+    meta: "123456789012345",
+    tiktok: "C4AAAAABASICAS",
+    google: "AW-BASICAS"
+  },
+  bodys: {
+    meta: "987654321098765",
+    tiktok: "C4AAAAABODYS",
+    google: "AW-BODYS"
   }
-}
+};
 ```
 
-Y anade `"tracking_pixels"` al array `"order"` del header.
+6. Pega todo el codigo en el pixel personalizado.
+7. Guarda y conectalo a la tienda online.
 
-**Opcion C (snippet manual en theme.liquid):**
+Ese script:
 
-Si prefieres fijarlo en codigo, antes de `</head>` en `layout/theme.liquid`:
+- en **checkout** carga los dos pixeles (basicas + bodys)
+- en **gracias por tu compra / thank you** tambien
+- en **checkout_completed** dispara evento de compra en ambos
 
-```liquid
-{% render 'tracking-pixels',
-  enable_meta: true,
-  meta_pixel_id: 'TU_META_PIXEL_ID',
-  enable_tiktok: true,
-  tiktok_pixel_id: 'TU_TIKTOK_PIXEL_ID',
-  enable_google: true,
-  google_ads_id: 'AW-XXXXXXXXX',
-  custom_scripts: ''
-%}
-```
+---
 
-### IDs que debes pegar
+### Resumen rapido
 
-- **Meta:** Pixel ID numerico (ej. `123456789012345`)
-- **TikTok:** Pixel ID (ej. `C4ABCDEF1234567890`)
-- **Google:** `AW-XXXXXXXXX` para Google Ads o `G-XXXXXXXXXX` para GA4
+| Pagina | Que pixel corre |
+|---|---|
+| Landing basicas | Solo pixel basicas |
+| Landing bodys | Solo pixel bodys |
+| Checkout | Basicas + bodys |
+| Gracias por tu compra | Basicas + bodys |
+| Resto de la tienda | Ninguno (salvo que agregues otra seccion) |

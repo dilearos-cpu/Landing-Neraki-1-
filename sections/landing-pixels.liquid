@@ -8,6 +8,13 @@
   assign custom_scripts = section.settings.custom_scripts
 %}
 
+{% if request.design_mode %}
+  <div class="landing-pixels-note">
+    Pixels de: <strong>{{ section.settings.landing_name | default: 'esta landing' }}</strong>.
+    Esta seccion solo debe estar en esta pagina, no en el header global.
+  </div>
+{% endif %}
+
 {% render 'tracking-pixels',
   enable_meta: enable_meta,
   meta_pixel_id: meta_pixel_id,
@@ -16,16 +23,39 @@
   enable_google: enable_google,
   google_ads_id: google_ads_id,
   custom_scripts: custom_scripts,
-  design_mode: request.design_mode
+  design_mode: false
 %}
+
+<style>
+  .landing-pixels-note {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: #f4f4f4;
+    border: 1px dashed #999;
+    font-size: 13px;
+    text-align: center;
+  }
+</style>
 
 {% schema %}
 {
-  "name": "Tracking pixels",
+  "name": "Pixels de landing",
+  "tag": "section",
+  "class": "landing-pixels-section",
+  "enabled_on": {
+    "templates": ["page", "index"]
+  },
   "settings": [
     {
       "type": "paragraph",
-      "content": "Para landings separadas usa la seccion Pixels de landing. Esta seccion es para un solo pixel global. En checkout y gracias por tu compra usa assets/checkout-dual-pixels.js en Eventos de cliente."
+      "content": "Usa una seccion de estas por landing. Ejemplo: en la landing de basicas pegas el pixel de basicas; en la de bodys, el de bodys. Para checkout y pagina de gracias usa el pixel personalizado del repositorio (checkout-dual-pixels.js) en Configuracion → Eventos de cliente."
+    },
+    {
+      "type": "text",
+      "id": "landing_name",
+      "label": "Nombre de la landing",
+      "default": "Basicas",
+      "info": "Solo para identificarla en el editor. Ej: Basicas o Bodys"
     },
     {
       "type": "header",
@@ -40,8 +70,7 @@
     {
       "type": "text",
       "id": "meta_pixel_id",
-      "label": "Meta Pixel ID",
-      "info": "Ejemplo: 123456789012345"
+      "label": "Meta Pixel ID"
     },
     {
       "type": "header",
@@ -56,8 +85,7 @@
     {
       "type": "text",
       "id": "tiktok_pixel_id",
-      "label": "TikTok Pixel ID",
-      "info": "Ejemplo: C4ABCDEF1234567890"
+      "label": "TikTok Pixel ID"
     },
     {
       "type": "header",
@@ -73,7 +101,7 @@
       "type": "text",
       "id": "google_ads_id",
       "label": "Google ID",
-      "info": "Usa AW-XXXXXXXXX para Google Ads o G-XXXXXXXXXX para GA4"
+      "info": "AW-XXXXXXXXX o G-XXXXXXXXXX"
     },
     {
       "type": "header",
@@ -82,13 +110,21 @@
     {
       "type": "textarea",
       "id": "custom_scripts",
-      "label": "Scripts adicionales",
-      "info": "Pega aqui codigo extra de tracking si lo necesitas. Solo usa scripts de fuentes confiables."
+      "label": "Scripts adicionales"
     }
   ],
   "presets": [
     {
-      "name": "Tracking pixels"
+      "name": "Pixels landing basicas",
+      "settings": {
+        "landing_name": "Basicas"
+      }
+    },
+    {
+      "name": "Pixels landing bodys",
+      "settings": {
+        "landing_name": "Bodys"
+      }
     }
   ]
 }
