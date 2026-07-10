@@ -45,7 +45,7 @@ Seccion independiente para mostrar imagenes en carrusel.
 1. Copia los archivos al tema.
 2. Agrega la seccion **Carrusel de fotos** en la pagina que quieras.
 3. Agrega bloques de tipo **Imagen** con las fotos que necesites.
-4. Configura velocidad, pausa al hover, flechas y cuantas imagenes se ven en escritorio (en movil siempre son 2).
+4. Configura velocidad, pausa al hover, flechas, imagenes visibles en escritorio y el panel de espaciado/fondo.
 
 ## Contador promo 24h
 

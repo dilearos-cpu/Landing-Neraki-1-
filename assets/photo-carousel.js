@@ -1,19 +1,48 @@
 (function () {
   var MOBILE_BREAKPOINT = 767;
   var MOBILE_SLIDES = 2;
+  var SLIDE_GAP = 10;
 
-  function getVisibleCount(section) {
+  function getVisibleCount(section, slideCount) {
     var desktopCount = Number(section.dataset.slidesPerView || 1);
-    if (window.innerWidth <= MOBILE_BREAKPOINT) {
-      return MOBILE_SLIDES;
+    var requested = window.innerWidth <= MOBILE_BREAKPOINT ? MOBILE_SLIDES : desktopCount;
+    return Math.max(1, Math.min(requested, 4, slideCount));
+  }
+
+  function getGap(track) {
+    var gapValue = window.getComputedStyle(track).columnGap || window.getComputedStyle(track).gap || SLIDE_GAP + "px";
+    var parsed = parseFloat(gapValue);
+    return Number.isFinite(parsed) ? parsed : SLIDE_GAP;
+  }
+
+  function destroyCarousel(section) {
+    if (section && typeof section._photoCarouselDestroy === "function") {
+      section._photoCarouselDestroy();
+      section._photoCarouselDestroy = null;
     }
-    return Math.max(1, Math.min(desktopCount, 4));
+  }
+
+  function whenViewportReady(viewport, callback) {
+    var attempts = 0;
+
+    function check() {
+      attempts += 1;
+      if (viewport.getBoundingClientRect().width > 0 || attempts > 30) {
+        callback();
+        return;
+      }
+      requestAnimationFrame(check);
+    }
+
+    check();
   }
 
   function initCarousel(section) {
-    if (!section || section.dataset.initialized === "true") {
+    if (!section) {
       return;
     }
+
+    destroyCarousel(section);
 
     var viewport = section.querySelector(".photo-carousel__viewport");
     var track = section.querySelector("[data-carousel-track]");
@@ -23,23 +52,18 @@
       return;
     }
 
-    section.dataset.initialized = "true";
-
-    var prevButton = section.querySelector("[data-carousel-prev]");
-    var nextButton = section.querySelector("[data-carousel-next]");
     var dotsContainer = section.querySelector("[data-carousel-dots]");
     var autoplaySpeed = Number(section.dataset.autoplaySpeed || 4000);
     var pauseOnHover = section.dataset.pauseOnHover === "true";
     var currentIndex = 0;
     var timer = null;
     var isHovered = false;
-    var resizeTimer = null;
+    var resizeObserver = null;
 
     function applyVisibleCount() {
-      var visibleCount = getVisibleCount(section);
-      var effectiveCount = Math.min(visibleCount, slides.length);
-      viewport.style.setProperty("--slides-per-view", String(effectiveCount));
-      return effectiveCount;
+      var visibleCount = getVisibleCount(section, slides.length);
+      viewport.style.setProperty("--slides-per-view", String(visibleCount));
+      return visibleCount;
     }
 
     function getMaxIndex(visibleCount) {
@@ -50,6 +74,14 @@
       return getMaxIndex(visibleCount) + 1;
     }
 
+    function getStepSize() {
+      var visibleCount = applyVisibleCount();
+      var viewportWidth = viewport.getBoundingClientRect().width;
+      var gap = getGap(track);
+      var slideWidth = (viewportWidth - gap * (visibleCount - 1)) / visibleCount;
+      return slideWidth + gap;
+    }
+
     function updateTransform() {
       var visibleCount = applyVisibleCount();
       var maxIndex = getMaxIndex(visibleCount);
@@ -58,9 +90,8 @@
         currentIndex = maxIndex;
       }
 
-      var slideWidth = slides[0].offsetWidth;
-      var gap = Number.parseFloat(getComputedStyle(track).gap || "0");
-      track.style.transform = "translateX(-" + currentIndex * (slideWidth + gap) + "px)";
+      var offset = currentIndex * getStepSize();
+      track.style.transform = "translate3d(-" + offset + "px, 0, 0)";
 
       if (dotsContainer) {
         Array.prototype.forEach.call(dotsContainer.children, function (dot, dotIndex) {
@@ -76,18 +107,20 @@
 
       var visibleCount = applyVisibleCount();
       var pageCount = getPageCount(visibleCount);
+      var html = "";
 
-      dotsContainer.innerHTML = Array.from({ length: pageCount }, function (_, index) {
-        return (
+      for (var index = 0; index < pageCount; index += 1) {
+        html +=
           '<button type="button" class="photo-carousel__dot' +
           (index === currentIndex ? " is-active" : "") +
           '" data-dot-index="' +
           index +
           '" aria-label="Ir a la pagina ' +
           (index + 1) +
-          '"></button>'
-        );
-      }).join("");
+          '"></button>';
+      }
+
+      dotsContainer.innerHTML = html;
     }
 
     function goTo(index) {
@@ -135,39 +168,40 @@
       }, autoplaySpeed);
     }
 
-    function handleResize() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(function () {
-        renderDots();
-        updateTransform();
-        startAutoplay();
-      }, 150);
+    function refreshCarousel() {
+      renderDots();
+      updateTransform();
+      startAutoplay();
     }
 
-    if (dotsContainer) {
-      dotsContainer.addEventListener("click", function (event) {
-        var dot = event.target.closest("[data-dot-index]");
-        if (!dot) {
-          return;
-        }
-        goTo(Number(dot.dataset.dotIndex));
-        startAutoplay();
-      });
-    }
-
-    if (prevButton) {
-      prevButton.addEventListener("click", function () {
+    function onSectionClick(event) {
+      if (event.target.closest("[data-carousel-prev]")) {
+        event.preventDefault();
         prevSlide();
         startAutoplay();
-      });
-    }
+        return;
+      }
 
-    if (nextButton) {
-      nextButton.addEventListener("click", function () {
+      if (event.target.closest("[data-carousel-next]")) {
+        event.preventDefault();
         nextSlide();
         startAutoplay();
-      });
+        return;
+      }
+
+      var dot = event.target.closest("[data-dot-index]");
+      if (dot) {
+        event.preventDefault();
+        goTo(Number(dot.dataset.dotIndex));
+        startAutoplay();
+      }
     }
+
+    function onResize() {
+      refreshCarousel();
+    }
+
+    section.addEventListener("click", onSectionClick);
 
     if (pauseOnHover) {
       section.addEventListener("mouseenter", function () {
@@ -178,24 +212,45 @@
       });
     }
 
-    window.addEventListener("resize", handleResize);
+    if (window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(onResize);
+      resizeObserver.observe(viewport);
+    } else {
+      window.addEventListener("resize", onResize);
+    }
 
-    renderDots();
-    goTo(0);
-    startAutoplay();
+    section._photoCarouselDestroy = function () {
+      stopAutoplay();
+      section.removeEventListener("click", onSectionClick);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      } else {
+        window.removeEventListener("resize", onResize);
+      }
+    };
+
+    whenViewportReady(viewport, refreshCarousel);
   }
 
-  function initAllCarousels() {
-    document.querySelectorAll(".photo-carousel").forEach(initCarousel);
+  function initAllCarousels(root) {
+    var scope = root || document;
+    scope.querySelectorAll(".photo-carousel").forEach(initCarousel);
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initAllCarousels);
+    document.addEventListener("DOMContentLoaded", function () {
+      initAllCarousels();
+    });
   } else {
     initAllCarousels();
   }
 
   document.addEventListener("shopify:section:load", function (event) {
-    initCarousel(event.target.querySelector(".photo-carousel"));
+    initAllCarousels(event.target);
+  });
+
+  document.addEventListener("shopify:section:unload", function (event) {
+    var carousel = event.target.querySelector(".photo-carousel");
+    destroyCarousel(carousel);
   });
 })();
