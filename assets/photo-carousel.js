@@ -1,13 +1,25 @@
 (function () {
+  var MOBILE_BREAKPOINT = 767;
+  var MOBILE_SLIDES = 2;
+
+  function getVisibleCount(section) {
+    var desktopCount = Number(section.dataset.slidesPerView || 1);
+    if (window.innerWidth <= MOBILE_BREAKPOINT) {
+      return MOBILE_SLIDES;
+    }
+    return Math.max(1, Math.min(desktopCount, 4));
+  }
+
   function initCarousel(section) {
     if (!section || section.dataset.initialized === "true") {
       return;
     }
 
+    var viewport = section.querySelector(".photo-carousel__viewport");
     var track = section.querySelector("[data-carousel-track]");
     var slides = Array.prototype.slice.call(section.querySelectorAll("[data-carousel-slide]"));
 
-    if (!track || !slides.length) {
+    if (!viewport || !track || !slides.length) {
       return;
     }
 
@@ -21,16 +33,76 @@
     var currentIndex = 0;
     var timer = null;
     var isHovered = false;
+    var resizeTimer = null;
 
-    function goTo(index) {
-      currentIndex = (index + slides.length) % slides.length;
-      track.style.transform = "translateX(-" + currentIndex * 100 + "%)";
+    function applyVisibleCount() {
+      var visibleCount = getVisibleCount(section);
+      var effectiveCount = Math.min(visibleCount, slides.length);
+      viewport.style.setProperty("--slides-per-view", String(effectiveCount));
+      return effectiveCount;
+    }
+
+    function getMaxIndex(visibleCount) {
+      return Math.max(0, slides.length - visibleCount);
+    }
+
+    function getPageCount(visibleCount) {
+      return getMaxIndex(visibleCount) + 1;
+    }
+
+    function updateTransform() {
+      var visibleCount = applyVisibleCount();
+      var maxIndex = getMaxIndex(visibleCount);
+
+      if (currentIndex > maxIndex) {
+        currentIndex = maxIndex;
+      }
+
+      var slideWidth = slides[0].offsetWidth;
+      var gap = Number.parseFloat(getComputedStyle(track).gap || "0");
+      track.style.transform = "translateX(-" + currentIndex * (slideWidth + gap) + "px)";
 
       if (dotsContainer) {
         Array.prototype.forEach.call(dotsContainer.children, function (dot, dotIndex) {
           dot.classList.toggle("is-active", dotIndex === currentIndex);
         });
       }
+    }
+
+    function renderDots() {
+      if (!dotsContainer) {
+        return;
+      }
+
+      var visibleCount = applyVisibleCount();
+      var pageCount = getPageCount(visibleCount);
+
+      dotsContainer.innerHTML = Array.from({ length: pageCount }, function (_, index) {
+        return (
+          '<button type="button" class="photo-carousel__dot' +
+          (index === currentIndex ? " is-active" : "") +
+          '" data-dot-index="' +
+          index +
+          '" aria-label="Ir a la pagina ' +
+          (index + 1) +
+          '"></button>'
+        );
+      }).join("");
+    }
+
+    function goTo(index) {
+      var visibleCount = applyVisibleCount();
+      var maxIndex = getMaxIndex(visibleCount);
+
+      if (index > maxIndex) {
+        currentIndex = 0;
+      } else if (index < 0) {
+        currentIndex = maxIndex;
+      } else {
+        currentIndex = index;
+      }
+
+      updateTransform();
     }
 
     function nextSlide() {
@@ -50,9 +122,12 @@
 
     function startAutoplay() {
       stopAutoplay();
-      if (slides.length < 2) {
+
+      var visibleCount = applyVisibleCount();
+      if (slides.length <= visibleCount) {
         return;
       }
+
       timer = setInterval(function () {
         if (!pauseOnHover || !isHovered) {
           nextSlide();
@@ -60,11 +135,16 @@
       }, autoplaySpeed);
     }
 
-    if (dotsContainer) {
-      dotsContainer.innerHTML = slides.map(function (_, index) {
-        return '<button type="button" class="photo-carousel__dot' + (index === 0 ? " is-active" : "") + '" data-dot-index="' + index + '" aria-label="Ir a la imagen ' + (index + 1) + '"></button>';
-      }).join("");
+    function handleResize() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        renderDots();
+        updateTransform();
+        startAutoplay();
+      }, 150);
+    }
 
+    if (dotsContainer) {
       dotsContainer.addEventListener("click", function (event) {
         var dot = event.target.closest("[data-dot-index]");
         if (!dot) {
@@ -98,6 +178,9 @@
       });
     }
 
+    window.addEventListener("resize", handleResize);
+
+    renderDots();
     goTo(0);
     startAutoplay();
   }
