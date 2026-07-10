@@ -10,6 +10,24 @@
   box-sizing: border-box;
 }
 
+.responsive-banner--full-width {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+.responsive-banner--contained .responsive-banner__inner {
+  width: 100%;
+  max-width: min(var(--page-width, 1200px), 100%);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.responsive-banner__inner {
+  width: 100%;
+}
+
 .responsive-banner__placeholder {
   padding: 2rem 1rem;
   text-align: center;

@@ -83,7 +83,7 @@ Seccion para mostrar una imagen en escritorio y otra distinta en movil.
 1. Copia los archivos al tema.
 2. Agrega la seccion **Banner responsive** en la pagina que quieras.
 3. Sube la imagen de escritorio y la de movil.
-4. Opcional: enlace, texto alternativo, padding, margin y borde redondeado.
+4. Opcional: enlace, texto alternativo, ancho completo o contenedor, padding, margin y borde redondeado.
 
 ## Tracking pixels (Meta, TikTok, Google)
 
