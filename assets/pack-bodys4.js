@@ -1,4 +1,76 @@
 (function () {
+  function transformShopifyProduct(product) {
+    var firstImage = product.images && product.images.length ? product.images[0].src : "";
+    var variants = (product.variants || []).map(function (variant) {
+      var options = [variant.option1, variant.option2, variant.option3].filter(function (value) {
+        return value !== null && value !== undefined && value !== "";
+      });
+
+      return {
+        id: variant.id,
+        title: variant.title,
+        available: variant.available,
+        image: variant.featured_image && variant.featured_image.src ? variant.featured_image.src : "",
+        options: options
+      };
+    });
+
+    return {
+      id: product.id,
+      handle: product.handle,
+      name: product.title,
+      img: firstImage,
+      available: product.available,
+      is_variable: variants.length > 1,
+      default_variant_id: variants[0] ? variants[0].id : null,
+      variants: variants,
+      options: (product.options || []).map(function (option) {
+        return {
+          name: option.name,
+          values: option.values
+        };
+      })
+    };
+  }
+
+  function fetchCollectionProducts(handle, limit) {
+    var collected = [];
+    var page = 1;
+
+    function fetchPage() {
+      var remaining = limit - collected.length;
+      var requestLimit = remaining > 250 ? 250 : remaining;
+
+      return fetch(
+        "/collections/" + encodeURIComponent(handle) + "/products.json?limit=" + requestLimit + "&page=" + page
+      )
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("No se pudieron cargar mas productos.");
+          }
+          return response.json();
+        })
+        .then(function (data) {
+          if (!data.products || !data.products.length) {
+            return collected;
+          }
+
+          data.products.forEach(function (product) {
+            collected.push(transformShopifyProduct(product));
+          });
+
+          if (collected.length >= limit || data.products.length < requestLimit) {
+            return collected.slice(0, limit);
+          }
+
+          page += 1;
+          return fetchPage();
+        });
+    }
+
+    return fetchPage();
+  }
+
   function initPackUI(section) {
     if (!section || section.dataset.initialized === "true" || section.dataset.empty === "true") {
       return;
@@ -24,6 +96,8 @@
     }
 
     var products = [];
+    var productsLimit = Number(section.dataset.productsLimit || 50);
+    var collectionHandle = section.dataset.collectionHandle || "";
 
     try {
       products = JSON.parse(productsNode.textContent).filter(function (product) {
@@ -34,6 +108,15 @@
       showInitMessage("No se pudieron cargar los productos del pack. Recarga la pagina o revisa la seccion.");
       return;
     }
+
+    function bootstrapPackUI() {
+      products = products.filter(function (product) {
+        return Boolean(product.default_variant_id);
+      });
+
+      if (!products.length && productsLimit > 0) {
+        showInitMessage("No hay productos disponibles en esta coleccion.");
+      }
     var slotCount = Number(section.dataset.slotCount || 4);
     var cartUrl = section.dataset.cartUrl || "/cart/add.js";
     var checkoutUrl = section.dataset.checkoutUrl || "/checkout";
@@ -377,6 +460,24 @@
 
     resetButton.addEventListener("click", resetSelections);
     buyButton.addEventListener("click", addPackToCart);
+    }
+
+    if (collectionHandle && productsLimit > products.length) {
+      fetchCollectionProducts(collectionHandle, productsLimit)
+        .then(function (fetchedProducts) {
+          if (fetchedProducts.length) {
+            products = fetchedProducts;
+          }
+          bootstrapPackUI();
+        })
+        .catch(function (error) {
+          console.error("Pack Bodys 4: error cargando productos extra.", error);
+          bootstrapPackUI();
+        });
+      return;
+    }
+
+    bootstrapPackUI();
   }
 
   function initAllPackSections() {

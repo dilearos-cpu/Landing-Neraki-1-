@@ -32,13 +32,13 @@
 
 .pack-slots {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--pack-cols, 4), minmax(0, 1fr));
   gap: 15px;
   width: 100%;
 }
 
 .slot {
-  min-height: 110px;
+  min-height: clamp(72px, 11vw, 110px);
   border: 2px dashed #ccc;
   display: flex;
   align-items: center;
@@ -204,7 +204,12 @@
 
 @media (max-width: 767px) {
   .pack-slots {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--pack-cols-mobile, 2), minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .slot {
+    min-height: clamp(64px, 22vw, 96px);
   }
 }
 

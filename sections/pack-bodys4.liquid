@@ -2,6 +2,29 @@
   assign pack_collection = collections[section.settings.collection]
   assign slot_count = section.settings.slot_count | default: 4
   assign products_limit = section.settings.products_limit | default: 24
+
+  if slot_count <= 4
+    assign pack_rows = 1
+  elsif slot_count <= 12
+    assign pack_rows = 2
+  else
+    assign pack_rows = 3
+  endif
+
+  assign pack_cols = slot_count | plus: pack_rows | minus: 1 | divided_by: pack_rows
+
+  if pack_cols <= 2
+    assign pack_cols_mobile = pack_cols
+  elsif pack_cols <= 4
+    assign pack_cols_mobile = 2
+  else
+    assign pack_cols_mobile = 3
+  endif
+
+  assign liquid_products_limit = products_limit
+  if liquid_products_limit > 50
+    assign liquid_products_limit = 50
+  endif
 %}
 {{ 'pack-bodys4.css' | asset_url | stylesheet_tag }}
 <section
@@ -9,6 +32,8 @@
   id="pack-ui-{{ section.id }}"
   data-section-id="{{ section.id }}"
   data-slot-count="{{ slot_count }}"
+  data-collection-handle="{{ pack_collection.handle }}"
+  data-products-limit="{{ products_limit }}"
   data-cart-url="{{ routes.cart_add_url }}"
   data-checkout-url="{{ routes.checkout_url }}"
   data-button-default-text="{{ section.settings.buy_button_label | escape }}"
@@ -21,6 +46,9 @@
     --pack-pl: {{ section.settings.padding_left }}px;
     --pack-mt: {{ section.settings.margin_top }}px;
     --pack-mb: {{ section.settings.margin_bottom }}px;
+    --pack-cols: {{ pack_cols }};
+    --pack-cols-mobile: {{ pack_cols_mobile }};
+    --pack-rows: {{ pack_rows }};
   "
   {% if pack_collection == blank %}
     data-empty="true"
@@ -76,7 +104,7 @@
 
     <script type="application/json" data-pack-products>
       [
-        {% for product in pack_collection.products limit: products_limit %}
+        {% for product in pack_collection.products limit: liquid_products_limit %}
           {% if product.featured_media %}
             {% assign featured = product.featured_media | image_url: width: 600 %}
           {% else %}
@@ -217,18 +245,20 @@
       "type": "range",
       "id": "slot_count",
       "min": 1,
-      "max": 8,
+      "max": 15,
       "step": 1,
       "label": "Cantidad de espacios",
+      "info": "4 = 1 fila, 6 a 12 = 2 filas, 13 a 15 = 3 filas",
       "default": 4
     },
     {
       "type": "range",
       "id": "products_limit",
       "min": 4,
-      "max": 50,
+      "max": 150,
       "step": 2,
       "label": "Productos a cargar",
+      "info": "Hasta 50 se cargan directo; de 52 a 150 se cargan por Ajax",
       "default": 24
     },
     {
