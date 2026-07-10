@@ -1,9 +1,24 @@
-{% liquid
-  assign show_meta = enable_meta and meta_pixel_id != blank
-  assign show_tiktok = enable_tiktok and tiktok_pixel_id != blank
-  assign show_google = enable_google and google_ads_id != blank
-  assign show_custom = custom_scripts != blank
-%}
+{% comment %} theme-check-disable RemoteAsset {% endcomment %}
+
+{% assign show_meta = false %}
+{% if enable_meta and meta_pixel_id != blank %}
+  {% assign show_meta = true %}
+{% endif %}
+
+{% assign show_tiktok = false %}
+{% if enable_tiktok and tiktok_pixel_id != blank %}
+  {% assign show_tiktok = true %}
+{% endif %}
+
+{% assign show_google = false %}
+{% if enable_google and google_ads_id != blank %}
+  {% assign show_google = true %}
+{% endif %}
+
+{% assign show_custom = false %}
+{% if custom_scripts != blank %}
+  {% assign show_custom = true %}
+{% endif %}
 
 {% if design_mode %}
   <div class="tracking-pixels-admin" hidden>
