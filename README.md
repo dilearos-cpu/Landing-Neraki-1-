@@ -21,7 +21,7 @@ Se agrego una implementacion para Shopify que replica la idea del shortcode/ajax
 1. Copia estos archivos a tu tema Shopify.
 2. En el editor del tema, agrega la seccion **Pack Bodys 4**.
 3. Selecciona la coleccion que quieres usar.
-4. Ajusta cantidad de slots, textos y limite de productos.
+4. Ajusta cantidad de slots, textos, limite de productos y el panel de espaciado/fondo.
 5. Guarda y publica.
 
 ### Diferencias con WooCommerce

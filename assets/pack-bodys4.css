@@ -1,6 +1,14 @@
 .pack-ui {
   width: 100%;
   max-width: 100%;
+  background: var(--pack-bg, transparent);
+  padding-top: var(--pack-pt, 0);
+  padding-right: var(--pack-pr, 0);
+  padding-bottom: var(--pack-pb, 0);
+  padding-left: var(--pack-pl, 0);
+  margin-top: var(--pack-mt, 0);
+  margin-bottom: var(--pack-mb, 0);
+  box-sizing: border-box;
 }
 
 .pack-ui__heading {

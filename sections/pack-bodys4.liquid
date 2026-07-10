@@ -13,6 +13,15 @@
   data-checkout-url="{{ routes.checkout_url }}"
   data-button-default-text="{{ section.settings.buy_button_label | escape }}"
   data-button-loading-text="{{ section.settings.loading_button_label | escape }}"
+  style="
+    --pack-bg: {{ section.settings.background_color }};
+    --pack-pt: {{ section.settings.padding_top }}px;
+    --pack-pr: {{ section.settings.padding_right }}px;
+    --pack-pb: {{ section.settings.padding_bottom }}px;
+    --pack-pl: {{ section.settings.padding_left }}px;
+    --pack-mt: {{ section.settings.margin_top }}px;
+    --pack-mb: {{ section.settings.margin_bottom }}px;
+  "
   {% if pack_collection == blank %}
     data-empty="true"
   {% endif %}
@@ -124,6 +133,80 @@
       "id": "heading",
       "label": "Titulo",
       "default": "Arma tu pack"
+    },
+    {
+      "type": "header",
+      "content": "Espaciado y fondo"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Color de fondo",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding superior",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding inferior",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_left",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding izquierdo",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_right",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding derecho",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Margin superior",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Margin inferior",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Pack builder"
     },
     {
       "type": "collection",
