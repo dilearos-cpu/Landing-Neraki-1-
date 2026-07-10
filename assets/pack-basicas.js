@@ -1,4 +1,12 @@
 (function () {
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
   function isSimpleShopifyProduct(product) {
     return !product.variants || product.variants.length <= 1;
   }
@@ -11,26 +19,32 @@
     var firstImage = product.images && product.images.length ? product.images[0].src : "";
     var variant = product.variants && product.variants[0] ? product.variants[0] : null;
 
+    if (!variant || !variant.id) {
+      return null;
+    }
+
     return {
       id: product.id,
       handle: product.handle,
       name: product.title,
       img: firstImage,
-      available: product.available,
-      default_variant_id: variant ? variant.id : null
+      available: Boolean(variant.available),
+      default_variant_id: variant.id
     };
   }
 
   function fetchSimpleCollectionProducts(handle, limit) {
     var collected = [];
     var page = 1;
+    var hasMorePages = true;
 
     function fetchPage() {
-      var remaining = limit - collected.length;
-      var requestLimit = remaining > 250 ? 250 : remaining;
+      if (!hasMorePages || collected.length >= limit) {
+        return Promise.resolve(collected.slice(0, limit));
+      }
 
       return fetch(
-        "/collections/" + encodeURIComponent(handle) + "/products.json?limit=" + requestLimit + "&page=" + page
+        "/collections/" + encodeURIComponent(handle) + "/products.json?limit=250&page=" + page
       )
         .then(function (response) {
           if (!response.ok) {
@@ -40,21 +54,27 @@
         })
         .then(function (data) {
           if (!data.products || !data.products.length) {
-            return collected;
+            hasMorePages = false;
+            return collected.slice(0, limit);
           }
 
           data.products.forEach(function (product) {
+            if (collected.length >= limit) {
+              return;
+            }
+
             var transformed = transformSimpleProduct(product);
-            if (transformed && transformed.default_variant_id) {
+            if (transformed) {
               collected.push(transformed);
             }
           });
 
-          if (collected.length >= limit || data.products.length < requestLimit) {
-            return collected.slice(0, limit);
+          if (data.products.length < 250) {
+            hasMorePages = false;
+          } else {
+            page += 1;
           }
 
-          page += 1;
           return fetchPage();
         });
     }
@@ -67,14 +87,18 @@
       return;
     }
 
-    section.dataset.initialized = "true";
-
     var productsNode = section.querySelector("[data-pack-products]");
     if (!productsNode) {
       return;
     }
 
+    section.dataset.initialized = "true";
+
     var messageNode = section.querySelector("[data-pack-message]");
+    var products = [];
+    var productsLimit = Number(section.dataset.productsLimit || 50);
+    var collectionHandle = section.dataset.collectionHandle || "";
+    var renderProductsRef = null;
 
     function showInitMessage(text) {
       if (!messageNode) {
@@ -86,10 +110,6 @@
       messageNode.classList.add("pack-ui__message--error");
     }
 
-    var products = [];
-    var productsLimit = Number(section.dataset.productsLimit || 50);
-    var collectionHandle = section.dataset.collectionHandle || "";
-
     try {
       products = JSON.parse(productsNode.textContent).filter(function (product) {
         return Boolean(product.default_variant_id);
@@ -98,6 +118,13 @@
       console.error("Pack Basicas: no se pudo leer el catalogo de productos.", error);
       showInitMessage("No se pudieron cargar los productos del pack. Recarga la pagina o revisa la seccion.");
       return;
+    }
+
+    function findProductById(productId) {
+      var targetId = String(productId);
+      return products.find(function (item) {
+        return String(item.id) === targetId;
+      });
     }
 
     function bootstrapPackUI() {
@@ -148,7 +175,7 @@
 
       function isSelectedProduct(product) {
         return Object.keys(currentState.selected).some(function (slot) {
-          return currentState.selected[slot] === product.default_variant_id;
+          return String(currentState.selected[slot]) === String(product.default_variant_id);
         });
       }
 
@@ -165,18 +192,19 @@
         productsGrid.innerHTML = items
           .map(function (product) {
             var selectedClass = isSelectedProduct(product) ? " prod--selected" : "";
+            var safeName = escapeHtml(product.name);
             var imageMarkup = product.img
-              ? '<img src="' + product.img + '" alt="' + product.name + '">'
+              ? '<img src="' + escapeHtml(product.img) + '" alt="' + safeName + '">'
               : '<div class="prod__placeholder">Sin imagen</div>';
             return (
               '<button type="button" class="prod' +
               selectedClass +
               '" data-product-id="' +
-              product.id +
+              String(product.id) +
               '">' +
               imageMarkup +
               "<p>" +
-              product.name +
+              safeName +
               "</p></button>"
             );
           })
@@ -197,9 +225,11 @@
           ">Siguiente</button>";
       }
 
+      renderProductsRef = renderProducts;
+
       function fillSlot(slotNode, image, alt) {
         slotNode.innerHTML = image
-          ? '<img src="' + image + '" alt="' + (alt || "Producto seleccionado") + '">'
+          ? '<img src="' + image + '" alt="' + escapeHtml(alt || "Producto seleccionado") + '">'
           : '<span class="slot__plus">+</span>';
         slotNode.classList.toggle("slot--filled", Boolean(image));
       }
@@ -213,7 +243,7 @@
       }
 
       function chooseProduct(product) {
-        if (!product.default_variant_id) {
+        if (!product || !product.default_variant_id) {
           showMessage("Este producto no tiene una variante disponible.", true);
           return;
         }
@@ -223,9 +253,15 @@
           return;
         }
 
+        if (!currentState.currentSlot) {
+          showMessage("Selecciona primero un espacio del pack.", true);
+          return;
+        }
+
         fillSlot(currentState.currentSlot, product.img, product.name);
         currentState.selected[currentState.currentSlot.dataset.slot] = product.default_variant_id;
         closeModal();
+        showMessage("", false);
       }
 
       function validateSelection() {
@@ -287,27 +323,26 @@
       slots.forEach(function (slot) {
         slot.addEventListener("click", function () {
           currentState.currentSlot = slot;
+          currentState.currentPage = 1;
           renderProducts();
           openModal();
         });
       });
 
       productsModal.addEventListener("click", function (event) {
-        if (event.target === productsModal || event.target.closest("[data-close-products]")) {
-          closeModal();
-        }
-
         var productButton = event.target.closest(".prod");
-        if (!productButton) {
+        if (productButton) {
+          event.preventDefault();
+          event.stopPropagation();
+          var product = findProductById(productButton.dataset.productId);
+          if (product) {
+            chooseProduct(product);
+          }
           return;
         }
 
-        var product = products.find(function (item) {
-          return String(item.id) === productButton.dataset.productId;
-        });
-
-        if (product) {
-          chooseProduct(product);
+        if (event.target === productsModal || event.target.closest("[data-close-products]")) {
+          closeModal();
         }
       });
 
@@ -331,22 +366,23 @@
       buyButton.addEventListener("click", addPackToCart);
     }
 
+    bootstrapPackUI();
+
     if (collectionHandle && productsLimit > products.length) {
       fetchSimpleCollectionProducts(collectionHandle, productsLimit)
         .then(function (fetchedProducts) {
           if (fetchedProducts.length) {
             products = fetchedProducts;
           }
-          bootstrapPackUI();
+
+          if (renderProductsRef) {
+            renderProductsRef();
+          }
         })
         .catch(function (error) {
           console.error("Pack Basicas: error cargando productos extra.", error);
-          bootstrapPackUI();
         });
-      return;
     }
-
-    bootstrapPackUI();
   }
 
   function initAllPackBasicas() {
