@@ -481,7 +481,7 @@
   }
 
   function initAllPackSections() {
-    document.querySelectorAll(".pack-ui").forEach(initPackUI);
+    document.querySelectorAll('.pack-ui[data-pack-mode="variable"]').forEach(initPackUI);
   }
 
   if (document.readyState === "loading") {
@@ -491,6 +491,6 @@
   }
 
   document.addEventListener("shopify:section:load", function (event) {
-    initPackUI(event.target.querySelector(".pack-ui"));
+    initPackUI(event.target.querySelector('.pack-ui[data-pack-mode="variable"]'));
   });
 })();

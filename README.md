@@ -12,17 +12,22 @@ Se agrego una implementacion para Shopify que replica la idea del shortcode/ajax
 
 ### Archivos
 
-- `sections/pack-bodys4.liquid`
+- `sections/pack-bodys4.liquid` → productos con variantes
+- `sections/pack-basicas.liquid` → solo productos simples
 - `assets/pack-bodys4.js`
-- `assets/pack-bodys4.css`
+- `assets/pack-basicas.js`
+- `assets/pack-bodys4.css` (compartido por ambos)
 
 ### Como usarlo
 
 1. Copia estos archivos a tu tema Shopify.
-2. En el editor del tema, agrega la seccion **Pack Bodys 4**.
+2. En el editor del tema, agrega la seccion **Pack Bodys 4** o **Pack Basicas** segun tu landing.
 3. Selecciona la coleccion que quieres usar.
 4. Ajusta cantidad de slots, textos, limite de productos y el panel de espaciado/fondo.
 5. Guarda y publica.
+
+**Pack Bodys 4:** productos variables (abre modal de talla/color).  
+**Pack Basicas:** solo productos simples (un clic y listo).
 
 ### Diferencias con WooCommerce
 
