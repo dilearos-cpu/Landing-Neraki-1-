@@ -63,3 +63,66 @@ Seccion independiente con la visual del contador regresivo y barra de promos.
 2. Agrega la seccion **Contador promo 24h** encima o debajo del pack builder.
 3. Configura promos disponibles, total de promos y textos.
 4. El contador inicia en 24 horas cuando la persona entra por primera vez y se reinicia automaticamente al cumplirse ese tiempo (usa `localStorage` del navegador).
+
+## Tracking pixels (Meta, TikTok, Google)
+
+Seccion para pegar IDs de tracking sin editar codigo cada vez.
+
+### Archivos
+
+- `sections/tracking-pixels.liquid`
+- `snippets/tracking-pixels.liquid`
+
+### Como usarlo
+
+**Opcion A (recomendada en Horizon):**
+
+1. Copia los 2 archivos al tema.
+2. Ve a **Personalizar tema**.
+3. En la parte superior, haz clic en el area del **encabezado / header**.
+4. Pulsa **Agregar seccion** y elige **Tracking pixels**.
+5. Activa Meta, TikTok o Google y pega cada ID.
+6. Guarda.
+
+**Opcion B (por codigo en el header group):**
+
+En `sections/header-group.json`, agrega un bloque como este dentro de `"sections"`:
+
+```json
+"tracking_pixels": {
+  "type": "tracking-pixels",
+  "settings": {
+    "enable_meta": true,
+    "meta_pixel_id": "123456789012345",
+    "enable_tiktok": false,
+    "tiktok_pixel_id": "",
+    "enable_google": true,
+    "google_ads_id": "AW-XXXXXXXXX",
+    "custom_scripts": ""
+  }
+}
+```
+
+Y anade `"tracking_pixels"` al array `"order"` del header.
+
+**Opcion C (snippet manual en theme.liquid):**
+
+Si prefieres fijarlo en codigo, antes de `</head>` en `layout/theme.liquid`:
+
+```liquid
+{% render 'tracking-pixels',
+  enable_meta: true,
+  meta_pixel_id: 'TU_META_PIXEL_ID',
+  enable_tiktok: true,
+  tiktok_pixel_id: 'TU_TIKTOK_PIXEL_ID',
+  enable_google: true,
+  google_ads_id: 'AW-XXXXXXXXX',
+  custom_scripts: ''
+%}
+```
+
+### IDs que debes pegar
+
+- **Meta:** Pixel ID numerico (ej. `123456789012345`)
+- **TikTok:** Pixel ID (ej. `C4ABCDEF1234567890`)
+- **Google:** `AW-XXXXXXXXX` para Google Ads o `G-XXXXXXXXXX` para GA4

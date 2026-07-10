@@ -1,0 +1,95 @@
+{% liquid
+  assign enable_meta = section.settings.enable_meta
+  assign meta_pixel_id = section.settings.meta_pixel_id | strip
+  assign enable_tiktok = section.settings.enable_tiktok
+  assign tiktok_pixel_id = section.settings.tiktok_pixel_id | strip
+  assign enable_google = section.settings.enable_google
+  assign google_ads_id = section.settings.google_ads_id | strip
+  assign custom_scripts = section.settings.custom_scripts
+%}
+
+{% render 'tracking-pixels',
+  enable_meta: enable_meta,
+  meta_pixel_id: meta_pixel_id,
+  enable_tiktok: enable_tiktok,
+  tiktok_pixel_id: tiktok_pixel_id,
+  enable_google: enable_google,
+  google_ads_id: google_ads_id,
+  custom_scripts: custom_scripts,
+  design_mode: request.design_mode
+%}
+
+{% schema %}
+{
+  "name": "Tracking pixels",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Agrega esta seccion al grupo de encabezado del tema o incluye el snippet tracking-pixels en theme.liquid para que funcione en todas las paginas."
+    },
+    {
+      "type": "header",
+      "content": "Meta (Facebook / Instagram)"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_meta",
+      "label": "Activar Meta Pixel",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "meta_pixel_id",
+      "label": "Meta Pixel ID",
+      "info": "Ejemplo: 123456789012345"
+    },
+    {
+      "type": "header",
+      "content": "TikTok"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_tiktok",
+      "label": "Activar TikTok Pixel",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "tiktok_pixel_id",
+      "label": "TikTok Pixel ID",
+      "info": "Ejemplo: C4ABCDEF1234567890"
+    },
+    {
+      "type": "header",
+      "content": "Google Ads / Analytics"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_google",
+      "label": "Activar Google tag",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "google_ads_id",
+      "label": "Google ID",
+      "info": "Usa AW-XXXXXXXXX para Google Ads o G-XXXXXXXXXX para GA4"
+    },
+    {
+      "type": "header",
+      "content": "Codigo personalizado"
+    },
+    {
+      "type": "textarea",
+      "id": "custom_scripts",
+      "label": "Scripts adicionales",
+      "info": "Pega aqui codigo extra de tracking si lo necesitas. Solo usa scripts de fuentes confiables."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Tracking pixels"
+    }
+  ]
+}
+{% endschema %}
