@@ -209,7 +209,16 @@
   }
 
   .slot {
-    min-height: clamp(64px, 22vw, 96px);
+    min-height: clamp(64px, 20vw, 96px);
+  }
+
+  .pack-slots[data-slot-count="10"] .slot,
+  .pack-slots[data-slot-count="11"] .slot,
+  .pack-slots[data-slot-count="12"] .slot,
+  .pack-slots[data-slot-count="13"] .slot,
+  .pack-slots[data-slot-count="14"] .slot,
+  .pack-slots[data-slot-count="15"] .slot {
+    min-height: clamp(56px, 16vw, 84px);
   }
 }
 

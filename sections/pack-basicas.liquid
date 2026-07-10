@@ -13,12 +13,15 @@
 
   assign pack_cols = slot_count | plus: pack_rows | minus: 1 | divided_by: pack_rows
 
-  if pack_cols <= 2
-    assign pack_cols_mobile = pack_cols
-  elsif pack_cols <= 4
+  if slot_count == 4
+    assign pack_rows_mobile = 2
     assign pack_cols_mobile = 2
+  elsif slot_count <= 10
+    assign pack_rows_mobile = 2
+    assign pack_cols_mobile = slot_count | plus: 1 | divided_by: 2
   else
-    assign pack_cols_mobile = 3
+    assign pack_rows_mobile = 3
+    assign pack_cols_mobile = slot_count | plus: 2 | divided_by: 3
   endif
 
   assign liquid_products_limit = products_limit
@@ -50,6 +53,7 @@
     --pack-cols: {{ pack_cols }};
     --pack-cols-mobile: {{ pack_cols_mobile }};
     --pack-rows: {{ pack_rows }};
+    --pack-rows-mobile: {{ pack_rows_mobile }};
   "
   {% if pack_collection == blank %}
     data-empty="true"
@@ -64,7 +68,7 @@
       Selecciona una coleccion en la configuracion de la seccion para mostrar productos.
     </p>
   {% else %}
-    <div class="pack-slots">
+    <div class="pack-slots" data-slot-count="{{ slot_count }}">
       {% for index in (1..slot_count) %}
         <button
           type="button"
