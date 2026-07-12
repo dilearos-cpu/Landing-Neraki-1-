@@ -1,4 +1,168 @@
 (function () {
+  var secondsCache = {};
+  var secondsInflight = {};
+
+  function softMatch(a, b) {
+    a = String(a == null ? "" : a);
+    b = String(b == null ? "" : b);
+    if (a === b) {
+      return true;
+    }
+    a = a.toLowerCase().replace(/\s+/g, " ").trim();
+    b = b.toLowerCase().replace(/\s+/g, " ").trim();
+    if (a === b) {
+      return true;
+    }
+    return a.replace(/\s+/g, "-") === b.replace(/\s+/g, "-");
+  }
+
+  function lookupSecond(map, value) {
+    if (!map || !value) {
+      return "";
+    }
+    if (map[value]) {
+      return map[value];
+    }
+    return Object.keys(map).find(function (key) {
+      return softMatch(key, value);
+    })
+      ? map[
+          Object.keys(map).find(function (key) {
+            return softMatch(key, value);
+          })
+        ]
+      : "";
+  }
+
+  function buildSecondByColor(product) {
+    var map = {};
+    var colorIndex = typeof product.color_option_index === "number" ? product.color_option_index : 0;
+
+    (product.variants || []).forEach(function (variant) {
+      if (!variant.second_image) {
+        return;
+      }
+      var colorValue = variant.options && variant.options[colorIndex];
+      if (colorValue) {
+        map[colorValue] = variant.second_image;
+      }
+    });
+
+    if (product.second_by_color) {
+      Object.keys(product.second_by_color).forEach(function (key) {
+        map[key] = product.second_by_color[key];
+      });
+    }
+
+    return map;
+  }
+
+  function mergeSecondsIntoProduct(product, payload) {
+    if (!product || !payload) {
+      return product;
+    }
+
+    product.color_option_index =
+      typeof payload.color_option_index === "number" ? payload.color_option_index : product.color_option_index || 0;
+    product.second_by_color = Object.assign({}, product.second_by_color || {}, payload.second_by_color || {});
+
+    if (payload.variants && product.variants) {
+      product.variants.forEach(function (variant) {
+        var match = payload.variants.find(function (item) {
+          return String(item.id) === String(variant.id);
+        });
+        if (match && match.second_image) {
+          variant.second_image = match.second_image;
+        }
+      });
+    }
+
+    return product;
+  }
+
+  function detectColorOptionIndex(options) {
+    if (!options || !options.length) {
+      return 0;
+    }
+
+    for (var index = 0; index < options.length; index += 1) {
+      var name = String(options[index].name || "").toLowerCase();
+      if (name.indexOf("talla") !== -1 || name.indexOf("size") !== -1) {
+        continue;
+      }
+      return index;
+    }
+
+    return 0;
+  }
+
+  function preloadSecondImages(map) {
+    if (!map) {
+      return;
+    }
+
+    Object.keys(map).forEach(function (key) {
+      var url = map[key];
+      if (!url) {
+        return;
+      }
+      var img = new Image();
+      img.decoding = "async";
+      img.src = url;
+    });
+  }
+
+  function fetchProductSeconds(product, section) {
+    if (!product || !product.handle) {
+      return Promise.resolve(product);
+    }
+
+    var cacheKey = String(product.id);
+    if (secondsCache[cacheKey]) {
+      return Promise.resolve(mergeSecondsIntoProduct(product, secondsCache[cacheKey]));
+    }
+
+    if (secondsInflight[cacheKey]) {
+      return secondsInflight[cacheKey].then(function (payload) {
+        return mergeSecondsIntoProduct(product, payload);
+      });
+    }
+
+    var namespace = (section && section.dataset.metafieldNamespace) || "custom";
+    var metafieldKey = (section && section.dataset.metafieldKey) || "second_image";
+    var secondsUrl =
+      "/products/" +
+      encodeURIComponent(product.handle) +
+      "?view=pack-seconds&ns=" +
+      encodeURIComponent(namespace) +
+      "&key=" +
+      encodeURIComponent(metafieldKey);
+
+    secondsInflight[cacheKey] = fetch(secondsUrl)
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("No se pudieron cargar las segundas imagenes.");
+        }
+        return response.json();
+      })
+      .then(function (payload) {
+        secondsCache[cacheKey] = payload;
+        delete secondsInflight[cacheKey];
+        if (payload && payload.second_by_color) {
+          preloadSecondImages(payload.second_by_color);
+        }
+        return payload;
+      })
+      .catch(function () {
+        delete secondsInflight[cacheKey];
+        return null;
+      });
+
+    return secondsInflight[cacheKey].then(function (payload) {
+      return payload ? mergeSecondsIntoProduct(product, payload) : product;
+    });
+  }
+
   function transformShopifyProduct(product) {
     var firstImage = product.images && product.images.length ? product.images[0].src : "";
     var variants = (product.variants || []).map(function (variant) {
@@ -11,6 +175,7 @@
         title: variant.title,
         available: variant.available,
         image: variant.featured_image && variant.featured_image.src ? variant.featured_image.src : "",
+        second_image: "",
         options: options
       };
     });
@@ -22,6 +187,8 @@
       img: firstImage,
       available: product.available,
       is_variable: variants.length > 1,
+      color_option_index: detectColorOptionIndex(product.options || []),
+      second_by_color: {},
       default_variant_id: variants[0] ? variants[0].id : null,
       variants: variants,
       options: (product.options || []).map(function (option) {
@@ -249,37 +416,89 @@
       });
     }
 
+    function getSecondImageUrl(product, variant, chosenValues) {
+      if (!product) {
+        return "";
+      }
+
+      var colorIndex = typeof product.color_option_index === "number" ? product.color_option_index : 0;
+      var colorValue = chosenValues[colorIndex] || chosenValues[0] || "";
+      var map = buildSecondByColor(product);
+      var url = lookupSecond(map, colorValue);
+
+      if (!url && variant && variant.second_image) {
+        url = variant.second_image;
+      }
+
+      return url || "";
+    }
+
+    function updateSecondPreview(product, variant, chosenValues) {
+      var secondWrap = variantContent.querySelector("[data-variant-second-wrap]");
+      var secondPreview = variantContent.querySelector("[data-variant-second-preview]");
+      if (!secondWrap || !secondPreview) {
+        return;
+      }
+
+      var url = getSecondImageUrl(product, variant, chosenValues);
+      if (!url) {
+        secondWrap.hidden = true;
+        secondWrap.classList.add("is-empty");
+        secondPreview.removeAttribute("src");
+        return;
+      }
+
+      secondPreview.src = url;
+      secondWrap.hidden = false;
+      secondWrap.classList.remove("is-empty");
+    }
+
     function renderVariantPicker(product) {
       currentState.currentProduct = product;
 
-      var optionMarkup = product.options.map(function (option, index) {
-        var options = option.values.map(function (value) {
-          return '<option value="' + value + '">' + value + "</option>";
+      fetchProductSeconds(product, section).then(function (readyProduct) {
+        currentState.currentProduct = readyProduct;
+
+        var optionMarkup = readyProduct.options.map(function (option, index) {
+          var options = option.values.map(function (value) {
+            return '<option value="' + value + '">' + value + "</option>";
+          }).join("");
+
+          return (
+            '<label class="variant-picker__label">' +
+            option.name +
+            '<select class="variant-picker__select" data-option-index="' +
+            index +
+            '">' +
+            options +
+            "</select></label>"
+          );
         }).join("");
 
-        return (
-          '<label class="variant-picker__label">' +
-          option.name +
-          '<select class="variant-picker__select" data-option-index="' +
-          index +
-          '">' +
-          options +
-          "</select></label>"
-        );
-      }).join("");
+        variantContent.innerHTML =
+          '<div class="variant-picker">' +
+          '<div class="variant-picker__media">' +
+          (readyProduct.img
+            ? '<img class="variant-picker__image" data-variant-preview src="' +
+              readyProduct.img +
+              '" alt="' +
+              readyProduct.name +
+              '">'
+            : "") +
+          '<div class="variant-picker__second is-empty" data-variant-second-wrap hidden>' +
+          '<img class="variant-picker__second-image" data-variant-second-preview alt="Segunda imagen">' +
+          "</div>" +
+          "</div>" +
+          "<h3>" +
+          readyProduct.name +
+          "</h3>" +
+          optionMarkup +
+          '<button type="button" class="pack-button pack-button--buy" data-select-variant>Seleccionar</button>' +
+          "</div>";
 
-      variantContent.innerHTML =
-        '<div class="variant-picker">' +
-        (product.img ? '<img class="variant-picker__image" data-variant-preview src="' + product.img + '" alt="' + product.name + '">' : "") +
-        "<h3>" +
-        product.name +
-        "</h3>" +
-        optionMarkup +
-        '<button type="button" class="pack-button pack-button--buy" data-select-variant>Seleccionar</button>' +
-        "</div>";
-
-      updateVariantPreview();
-      openModal(variantsModal);
+        updateVariantPreview();
+        openModal(variantsModal);
+      });
     }
 
     function updateVariantPreview() {
@@ -299,12 +518,15 @@
         if (button) {
           button.disabled = true;
         }
+        updateSecondPreview(currentState.currentProduct, null, chosenValues);
         return;
       }
 
       if (preview && variant.image) {
         preview.src = variant.image;
       }
+
+      updateSecondPreview(currentState.currentProduct, variant, chosenValues);
 
       if (button) {
         button.disabled = !variant.available;

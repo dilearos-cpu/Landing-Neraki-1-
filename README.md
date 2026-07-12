@@ -12,11 +12,13 @@ Se agrego una implementacion para Shopify que replica la idea del shortcode/ajax
 
 ### Archivos
 
-- `sections/pack-bodys4.liquid` → productos con variantes
+- `sections/pack-bodys4.liquid` → productos con variantes (+ segunda imagen por color)
 - `sections/pack-basicas.liquid` → solo productos simples
 - `assets/pack-bodys4.js`
 - `assets/pack-basicas.js`
 - `assets/pack-bodys4.css` (compartido por ambos)
+- `snippets/pack-product-seconds.liquid` → JSON de segundas imagenes (Pack Bodys 4)
+- `templates/product.pack-seconds.liquid` → endpoint Ajax para segundas imagenes
 
 ### Como usarlo
 
@@ -34,6 +36,42 @@ Se agrego una implementacion para Shopify que replica la idea del shortcode/ajax
 - En Shopify no existe `add_action` ni `shortcode`; el equivalente natural es una **seccion Liquid** con JavaScript del tema.
 - El agregado multiple se hace contra `POST /cart/add.js` usando `items`.
 - Para productos con variantes se envia el `variant_id`, que es lo que Shopify necesita para agregar al carrito.
+
+## Segunda imagen por variante (Pack Bodys 4)
+
+Adaptacion del plugin WooCommerce `wc-variacion-segunda-imagen`: en el modal de variantes del pack se muestran **dos imagenes lado a lado** (principal + segunda imagen del color seleccionado).
+
+### Archivos
+
+- `sections/pack-bodys4.liquid` — incluye metafields en el JSON inicial (hasta 50 productos)
+- `assets/pack-bodys4.js` — modal de variantes con preview dual
+- `assets/pack-bodys4.css` — estilos `.variant-picker__media` y `.variant-picker__second`
+- `snippets/pack-product-seconds.liquid` — genera JSON de segundas imagenes
+- `templates/product.pack-seconds.liquid` — endpoint Ajax para productos cargados despues (colecciones grandes)
+
+### Configuracion en Shopify Admin
+
+1. Ve a **Configuracion → Metafields y metaobjetos → Variantes**.
+2. Crea un metafield:
+   - **Namespace y key:** `custom.second_image`
+   - **Tipo:** Archivo → Imagen (o referencia de archivo)
+3. En cada variante del producto, sube la **segunda imagen** correspondiente al color.
+4. Repite por color/talla segun tu catalogo.
+
+En la seccion **Pack Bodys 4** puedes cambiar namespace/key si usas otro metafield (por defecto `custom` / `second_image`).
+
+### Como se ve
+
+1. El cliente abre un slot del pack y elige un producto variable.
+2. Se abre el modal de variantes con la imagen principal a la izquierda.
+3. Al elegir color (u opcion que no sea talla), aparece la **segunda imagen** a la derecha si existe en el metafield.
+4. Las imagenes se agrupan por color, igual que en WooCommerce.
+
+### Notas
+
+- Los primeros 50 productos de la coleccion cargan las segundas imagenes en el HTML.
+- Si cargas mas de 50 productos (Ajax), el JS consulta `/products/{handle}?view=pack-seconds` para obtener las segundas imagenes.
+- Copia tambien `snippets/pack-product-seconds.liquid` y `templates/product.pack-seconds.liquid` al tema.
 
 ## Carrusel de fotos
 

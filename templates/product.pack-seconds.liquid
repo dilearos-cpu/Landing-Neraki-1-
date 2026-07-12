@@ -1,0 +1,7 @@
+{% layout none %}
+{% comment %}
+  Endpoint Ajax: /products/{handle}?view=pack-seconds
+  Devuelve JSON con segundas imagenes por variante/color.
+  Usa el mismo metafield que la seccion Pack Bodys 4 (por defecto custom.second_image).
+{% endcomment %}
+{% render 'pack-product-seconds', product: product, namespace: 'custom', metafield_key: 'second_image' %}
