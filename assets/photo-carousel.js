@@ -46,58 +46,103 @@
 
     var viewport = section.querySelector(".photo-carousel__viewport");
     var track = section.querySelector("[data-carousel-track]");
-    var slides = Array.prototype.slice.call(section.querySelectorAll("[data-carousel-slide]"));
+    var originalSlides = Array.prototype.slice.call(section.querySelectorAll("[data-carousel-slide]:not([data-carousel-clone])"));
 
-    if (!viewport || !track || !slides.length) {
+    if (!viewport || !track || !originalSlides.length) {
       return;
     }
 
     var dotsContainer = section.querySelector("[data-carousel-dots]");
     var autoplaySpeed = Number(section.dataset.autoplaySpeed || 4000);
     var pauseOnHover = section.dataset.pauseOnHover === "true";
+    var totalSlides = originalSlides.length;
+    var visibleCount = 1;
+    var cloneCount = 0;
     var currentIndex = 0;
     var timer = null;
     var isHovered = false;
     var resizeObserver = null;
+    var isTransitioning = false;
 
     function applyVisibleCount() {
-      var visibleCount = getVisibleCount(section, slides.length);
+      visibleCount = getVisibleCount(section, totalSlides);
       viewport.style.setProperty("--slides-per-view", String(visibleCount));
       return visibleCount;
     }
 
-    function getMaxIndex(visibleCount) {
-      return Math.max(0, slides.length - visibleCount);
-    }
-
-    function getPageCount(visibleCount) {
-      return getMaxIndex(visibleCount) + 1;
-    }
-
     function getStepSize() {
-      var visibleCount = applyVisibleCount();
       var viewportWidth = viewport.getBoundingClientRect().width;
       var gap = getGap(track);
       var slideWidth = (viewportWidth - gap * (visibleCount - 1)) / visibleCount;
       return slideWidth + gap;
     }
 
-    function updateTransform() {
-      var visibleCount = applyVisibleCount();
-      var maxIndex = getMaxIndex(visibleCount);
+    function getLogicalIndex() {
+      if (!cloneCount) {
+        return currentIndex;
+      }
+      return ((currentIndex - cloneCount) % totalSlides + totalSlides) % totalSlides;
+    }
 
-      if (currentIndex > maxIndex) {
-        currentIndex = maxIndex;
+    function getAllSlides() {
+      return Array.prototype.slice.call(track.querySelectorAll("[data-carousel-slide]"));
+    }
+
+    function removeClones() {
+      Array.prototype.slice.call(track.querySelectorAll("[data-carousel-clone]")).forEach(function (clone) {
+        clone.remove();
+      });
+    }
+
+    function buildInfiniteTrack() {
+      removeClones();
+      applyVisibleCount();
+
+      if (totalSlides <= visibleCount) {
+        cloneCount = 0;
+        currentIndex = 0;
+        return;
       }
 
+      cloneCount = visibleCount;
+
+      var leadingFragment = document.createDocumentFragment();
+      var trailingFragment = document.createDocumentFragment();
+
+      for (var leadingIndex = totalSlides - cloneCount; leadingIndex < totalSlides; leadingIndex += 1) {
+        var leadingClone = originalSlides[leadingIndex].cloneNode(true);
+        leadingClone.setAttribute("data-carousel-clone", "leading");
+        leadingClone.removeAttribute("data-shopify-editor-block");
+        leadingFragment.appendChild(leadingClone);
+      }
+
+      for (var trailingIndex = 0; trailingIndex < cloneCount; trailingIndex += 1) {
+        var trailingClone = originalSlides[trailingIndex].cloneNode(true);
+        trailingClone.setAttribute("data-carousel-clone", "trailing");
+        trailingClone.removeAttribute("data-shopify-editor-block");
+        trailingFragment.appendChild(trailingClone);
+      }
+
+      track.insertBefore(leadingFragment, track.firstChild);
+      track.appendChild(trailingFragment);
+      currentIndex = cloneCount;
+    }
+
+    function setTransform(animate) {
       var offset = currentIndex * getStepSize();
+      track.style.transition = animate ? "transform 0.6s ease" : "none";
       track.style.transform = "translate3d(-" + offset + "px, 0, 0)";
+    }
 
-      if (dotsContainer) {
-        Array.prototype.forEach.call(dotsContainer.children, function (dot, dotIndex) {
-          dot.classList.toggle("is-active", dotIndex === currentIndex);
-        });
+    function updateDots() {
+      if (!dotsContainer) {
+        return;
       }
+
+      var logicalIndex = getLogicalIndex();
+      Array.prototype.forEach.call(dotsContainer.children, function (dot, dotIndex) {
+        dot.classList.toggle("is-active", dotIndex === logicalIndex);
+      });
     }
 
     function renderDots() {
@@ -105,17 +150,14 @@
         return;
       }
 
-      var visibleCount = applyVisibleCount();
-      var pageCount = getPageCount(visibleCount);
       var html = "";
-
-      for (var index = 0; index < pageCount; index += 1) {
+      for (var index = 0; index < totalSlides; index += 1) {
         html +=
           '<button type="button" class="photo-carousel__dot' +
-          (index === currentIndex ? " is-active" : "") +
+          (index === getLogicalIndex() ? " is-active" : "") +
           '" data-dot-index="' +
           index +
-          '" aria-label="Ir a la pagina ' +
+          '" aria-label="Ir a la imagen ' +
           (index + 1) +
           '"></button>';
       }
@@ -123,27 +165,74 @@
       dotsContainer.innerHTML = html;
     }
 
-    function goTo(index) {
-      var visibleCount = applyVisibleCount();
-      var maxIndex = getMaxIndex(visibleCount);
+    function normalizeIndex(animate) {
+      if (!cloneCount) {
+        setTransform(animate);
+        updateDots();
+        return;
+      }
 
-      if (index > maxIndex) {
+      if (currentIndex >= totalSlides + cloneCount) {
+        currentIndex -= totalSlides;
+        setTransform(false);
+        track.offsetHeight;
+        setTransform(animate);
+      } else if (currentIndex < cloneCount) {
+        currentIndex += totalSlides;
+        setTransform(false);
+        track.offsetHeight;
+        setTransform(animate);
+      } else {
+        setTransform(animate);
+      }
+
+      updateDots();
+    }
+
+    function goTo(index, animate) {
+      if (totalSlides <= visibleCount) {
         currentIndex = 0;
-      } else if (index < 0) {
-        currentIndex = maxIndex;
+        setTransform(false);
+        updateDots();
+        return;
+      }
+
+      if (cloneCount) {
+        currentIndex = cloneCount + ((index % totalSlides) + totalSlides) % totalSlides;
       } else {
         currentIndex = index;
       }
 
-      updateTransform();
+      normalizeIndex(animate !== false);
     }
 
     function nextSlide() {
-      goTo(currentIndex + 1);
+      if (totalSlides <= visibleCount || isTransitioning) {
+        return;
+      }
+
+      isTransitioning = true;
+      currentIndex += 1;
+      setTransform(true);
     }
 
     function prevSlide() {
-      goTo(currentIndex - 1);
+      if (totalSlides <= visibleCount || isTransitioning) {
+        return;
+      }
+
+      isTransitioning = true;
+      currentIndex -= 1;
+      setTransform(true);
+    }
+
+    function onTransitionEnd(event) {
+      if (event.target !== track) {
+        return;
+      }
+
+      isTransitioning = false;
+      normalizeIndex(false);
     }
 
     function stopAutoplay() {
@@ -156,8 +245,7 @@
     function startAutoplay() {
       stopAutoplay();
 
-      var visibleCount = applyVisibleCount();
-      if (slides.length <= visibleCount) {
+      if (totalSlides <= visibleCount) {
         return;
       }
 
@@ -169,8 +257,9 @@
     }
 
     function refreshCarousel() {
+      buildInfiniteTrack();
       renderDots();
-      updateTransform();
+      normalizeIndex(false);
       startAutoplay();
     }
 
@@ -192,7 +281,7 @@
       var dot = event.target.closest("[data-dot-index]");
       if (dot) {
         event.preventDefault();
-        goTo(Number(dot.dataset.dotIndex));
+        goTo(Number(dot.dataset.dotIndex), true);
         startAutoplay();
       }
     }
@@ -201,6 +290,7 @@
       refreshCarousel();
     }
 
+    track.addEventListener("transitionend", onTransitionEnd);
     section.addEventListener("click", onSectionClick);
 
     if (pauseOnHover) {
@@ -221,7 +311,9 @@
 
     section._photoCarouselDestroy = function () {
       stopAutoplay();
+      track.removeEventListener("transitionend", onTransitionEnd);
       section.removeEventListener("click", onSectionClick);
+      removeClones();
       if (resizeObserver) {
         resizeObserver.disconnect();
       } else {
