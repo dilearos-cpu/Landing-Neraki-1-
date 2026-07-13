@@ -71,6 +71,7 @@
     var minutesNode = section.querySelector("[data-minutes]");
     var secondsNode = section.querySelector("[data-seconds]");
     var progressWrapNode = section.querySelector("[data-progress-wrap]");
+    var barTrackNode = section.querySelector("[data-bar-track]");
     var barFillNode = section.querySelector("[data-bar-fill]");
     var progressPercentNode = section.querySelector("[data-progress-percent]");
     var progressCopyNode = section.querySelector("[data-progress-copy]");
@@ -88,9 +89,17 @@
       var isComplete = percent >= 100;
       var barColor = getProgressColor(percent, settings);
 
+      section.style.setProperty("--promo-fill-width", percent + "%");
+      section.style.setProperty("--promo-fill-color", barColor);
+
+      if (barTrackNode) {
+        barTrackNode.style.setProperty("--promo-fill-width", percent + "%");
+        barTrackNode.style.setProperty("--promo-fill-color", barColor);
+      }
+
       if (barFillNode) {
         barFillNode.style.width = percent + "%";
-        barFillNode.style.background = barColor;
+        barFillNode.style.backgroundColor = barColor;
       }
 
       if (progressPercentNode) {

@@ -53,30 +53,38 @@
 .promo-countdown__bar-track {
   width: 100%;
   height: clamp(56px, 10vw, 72px);
-  background: #ececec;
   border-radius: 8px;
   overflow: hidden;
   position: relative;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+  background: #ececec;
+  background: linear-gradient(
+    to right,
+    var(--promo-fill-color, #e53935) 0%,
+    var(--promo-fill-color, #e53935) var(--promo-fill-width, 0%),
+    #ececec var(--promo-fill-width, 0%),
+    #ececec 100%
+  );
 }
 
 .promo-countdown__bar-fill {
   position: absolute;
   left: 0;
   top: 0;
-  height: 100%;
-  width: 0;
-  background: var(--promo-color-low, #e53935);
-  transition: width 0.55s cubic-bezier(0.4, 0, 0.2, 1), background 0.35s ease;
+  bottom: 0;
+  width: var(--promo-fill-width, 0%);
+  z-index: 1;
+  background-color: var(--promo-fill-color, #e53935);
+  transition: width 0.55s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.35s ease;
   border-radius: 8px 0 0 8px;
+  pointer-events: none;
 }
 
 .promo-countdown__bar-text {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 2;
   margin: 0;
-  height: 100%;
-  min-height: clamp(56px, 10vw, 72px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,11 +94,12 @@
   font-weight: 600;
   line-height: 1.25;
   text-align: center;
+  pointer-events: none;
 }
 
 .promo-countdown--started .promo-countdown__bar-text {
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
 .promo-countdown__bar-text strong {
@@ -106,9 +115,13 @@
   line-height: 1.25;
 }
 
+.promo-countdown--complete .promo-countdown__bar-track {
+  background: var(--promo-fill-color, #2e7d32);
+}
+
 .promo-countdown--complete .promo-countdown__bar-fill {
-  width: 100% !important;
-  background: var(--promo-color-high, #2e7d32) !important;
+  width: 100%;
+  background-color: var(--promo-fill-color, #2e7d32);
   border-radius: 8px;
 }
 

@@ -33,9 +33,9 @@
     </div>
 
     <div class="promo-countdown__progress-wrap" data-progress-wrap aria-live="polite">
-      <div class="promo-countdown__bar-track">
-        <div class="promo-countdown__bar-fill" data-bar-fill style="width: 0%;"></div>
-        <p class="promo-countdown__bar-text" data-bar-label>
+      <div class="promo-countdown__bar-track" data-bar-track>
+        <div class="promo-countdown__bar-fill" data-bar-fill aria-hidden="true"></div>
+        <div class="promo-countdown__bar-text" data-bar-label>
           <span class="promo-countdown__progress-copy" data-progress-copy>
             <span data-progress-prefix>{{ section.settings.progress_prefix }}</span>
             <strong data-progress-percent>0%</strong>
@@ -44,7 +44,7 @@
           <span class="promo-countdown__complete-copy" data-complete-copy hidden>
             {{ section.settings.completion_message }}
           </span>
-        </p>
+        </div>
       </div>
     </div>
 
