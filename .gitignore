@@ -1,2 +1,6 @@
 node_modules/
 .shopify/
+checkout-app/node_modules/
+checkout-app/prisma/dev.sqlite
+checkout-app/.env
+checkout-app/build/
