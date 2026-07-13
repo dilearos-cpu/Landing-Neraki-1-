@@ -1,19 +1,6 @@
-# Caletzza — Shopify Theme + Checkout
+# Caletzza — Shopify Theme
 
-Proyecto para [caletzza.myshopify.com](https://caletzza.myshopify.com): tema editable en Cursor + app de personalización de checkout.
-
-## Checkout Customizer
-
-La app del checkout (código postal Colombia, banners, campos) está en `checkout-app/`.
-
-```bash
-cd checkout-app
-npm install && npm run setup
-npx shopify app config link    # vincular con Shopify Partners
-npm run dev                    # instalar en caletzza.myshopify.com
-```
-
-Guía completa: [checkout-app/DEPLOY-CALETZZA.md](checkout-app/DEPLOY-CALETZZA.md)
+Proyecto local para editar el tema de [caletzza.myshopify.com](https://caletzza.myshopify.com) desde Cursor.
 
 ## Requisitos
 
@@ -70,4 +57,5 @@ La tienda está configurada en `shopify.theme.toml`:
 ```toml
 [environments.default]
 store = "caletzza.myshopify.com"
+theme = "142036828310"
 ```
