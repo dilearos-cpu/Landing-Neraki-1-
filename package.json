@@ -8,7 +8,8 @@
     "theme:list": "shopify theme list -e default",
     "theme:pull": "shopify theme pull -e default",
     "theme:dev": "shopify theme dev -e default",
-    "theme:push": "shopify theme push -e default --unpublished",
+    "theme:push": "shopify theme push -e default --allow-live",
+    "theme:push:draft": "shopify theme push -e default --unpublished",
     "theme:check": "shopify theme check"
   },
   "repository": {

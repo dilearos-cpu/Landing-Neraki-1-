@@ -14,7 +14,7 @@
   data-section-id="{{ section.id }}"
   data-position-mode="{{ section.settings.position_mode }}"
   style="
-    --pack-cta-bg: {{ section.settings.section_background_color }};
+    --pack-cta-bg: {% if section.settings.section_background_transparent %}transparent{% else %}{{ section.settings.section_background_color }}{% endif %};
     --pack-cta-pt: {{ section.settings.padding_top }}px;
     --pack-cta-pr: {{ section.settings.padding_right }}px;
     --pack-cta-pb: {{ section.settings.padding_bottom }}px;
@@ -109,10 +109,16 @@
       "default": "#111111"
     },
     {
+      "type": "checkbox",
+      "id": "section_background_transparent",
+      "label": "Fondo de seccion transparente",
+      "default": true
+    },
+    {
       "type": "color",
       "id": "section_background_color",
       "label": "Color de fondo de la seccion",
-      "default": "#00000000"
+      "default": "#D2B49B"
     },
     {
       "type": "header",

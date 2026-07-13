@@ -248,7 +248,8 @@
         "button_label": "Quiero mi pack",
         "button_background_color": "#ffc800",
         "button_text_color": "#111111",
-        "section_background_color": "#00000000",
+        "section_background_transparent": true,
+        "section_background_color": "#faded7",
         "show_icon": true,
         "icon_preset": "bag",
         "button_action": "trigger_buy",
@@ -360,6 +361,7 @@
     "photo_carousel_77yLXE",
     "promo_countdown_tiyRGW",
     "pack_basicas_mPmnNt",
+    "pack_cta_button_main",
     "responsive_banner_8NXxGA",
     "responsive_banner_77ggrY",
     "social_proof_popup_fyNE69"
