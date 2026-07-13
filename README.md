@@ -73,3 +73,20 @@ Equivalente al plugin WooCommerce **Segunda Imagen**. Muestra una segunda foto a
 5. En cada variante (o una por color), sube la segunda imagen
 
 Una imagen por **color** aplica a todas las tallas de ese color (igual que en WooCommerce).
+
+## Checkout express COD (Pack Bodys)
+
+Formulario estilo **EasySell COD Form** integrado en el theme. Al pulsar **Comprar ahora** con el pack completo, se abre un modal de pago contra entrega sin salir de la landing.
+
+### Theme
+
+- Modal: `snippets/pack-cod-modal.liquid`
+- JS/CSS: `assets/pack-cod-checkout.js`, `assets/pack-cod-checkout.css`
+- Seccion Pack Bodys 4 → **Checkout express COD**
+
+### App (requerida para crear pedidos)
+
+La app vive en `cod-express-app/`. Sin ella el formulario se muestra pero no puede crear pedidos en Shopify.
+
+Ver instrucciones completas en [cod-express-app/README.md](cod-express-app/README.md).
+

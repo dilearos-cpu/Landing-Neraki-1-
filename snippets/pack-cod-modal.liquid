@@ -1,0 +1,114 @@
+{% comment %}
+  Modal de checkout express COD (estilo EasySell).
+  Se abre desde Pack Bodys al pulsar Comprar ahora.
+{% endcomment %}
+<div class="pack-cod" data-pack-cod hidden>
+  <div class="pack-cod__dialog" role="dialog" aria-modal="true" aria-label="{{ section.settings.cod_form_title | escape }}">
+    <button type="button" class="pack-cod__close" data-cod-close aria-label="Cerrar">&times;</button>
+
+    <div class="pack-cod__grid">
+      <div class="pack-cod__summary">
+        <h3 class="pack-cod__title">{{ section.settings.cod_form_title }}</h3>
+        <p class="pack-cod__subtitle">{{ section.settings.cod_form_subtitle }}</p>
+        <ul class="pack-cod__items" data-cod-items></ul>
+        <dl class="pack-cod__totals">
+          <div class="pack-cod__total-row">
+            <dt>Subtotal</dt>
+            <dd data-cod-subtotal>$0</dd>
+          </div>
+          <div class="pack-cod__total-row">
+            <dt>Envio</dt>
+            <dd data-cod-shipping>$0</dd>
+          </div>
+          <div class="pack-cod__total-row pack-cod__total-row--grand">
+            <dt>Total</dt>
+            <dd data-cod-total>$0</dd>
+          </div>
+        </dl>
+        <p class="pack-cod__payment-note">{{ section.settings.cod_payment_note }}</p>
+      </div>
+
+      <form class="pack-cod__form" data-cod-form novalidate>
+        <div class="pack-cod__field">
+          <label for="pack-cod-name-{{ section.id }}">Nombre completo *</label>
+          <input id="pack-cod-name-{{ section.id }}" name="full_name" type="text" autocomplete="name" required>
+        </div>
+        <div class="pack-cod__field">
+          <label for="pack-cod-phone-{{ section.id }}">WhatsApp / Telefono *</label>
+          <input id="pack-cod-phone-{{ section.id }}" name="phone" type="tel" autocomplete="tel" inputmode="tel" required>
+        </div>
+        <div class="pack-cod__field">
+          <label for="pack-cod-email-{{ section.id }}">Correo (opcional)</label>
+          <input id="pack-cod-email-{{ section.id }}" name="email" type="email" autocomplete="email">
+        </div>
+        <div class="pack-cod__field">
+          <label for="pack-cod-city-{{ section.id }}">Ciudad *</label>
+          <input id="pack-cod-city-{{ section.id }}" name="city" type="text" autocomplete="address-level2" required>
+        </div>
+        <div class="pack-cod__field">
+          <label for="pack-cod-province-{{ section.id }}">Departamento *</label>
+          <select id="pack-cod-province-{{ section.id }}" name="province" required>
+            <option value="">Selecciona...</option>
+            <option value="Amazonas">Amazonas</option>
+            <option value="Antioquia">Antioquia</option>
+            <option value="Arauca">Arauca</option>
+            <option value="Atlantico">Atlantico</option>
+            <option value="Bogota D.C.">Bogota D.C.</option>
+            <option value="Bolivar">Bolivar</option>
+            <option value="Boyaca">Boyaca</option>
+            <option value="Caldas">Caldas</option>
+            <option value="Caqueta">Caqueta</option>
+            <option value="Casanare">Casanare</option>
+            <option value="Cauca">Cauca</option>
+            <option value="Cesar">Cesar</option>
+            <option value="Choco">Choco</option>
+            <option value="Cordoba">Cordoba</option>
+            <option value="Cundinamarca">Cundinamarca</option>
+            <option value="Guainia">Guainia</option>
+            <option value="Guaviare">Guaviare</option>
+            <option value="Huila">Huila</option>
+            <option value="La Guajira">La Guajira</option>
+            <option value="Magdalena">Magdalena</option>
+            <option value="Meta">Meta</option>
+            <option value="Narino">Narino</option>
+            <option value="Norte de Santander">Norte de Santander</option>
+            <option value="Putumayo">Putumayo</option>
+            <option value="Quindio">Quindio</option>
+            <option value="Risaralda">Risaralda</option>
+            <option value="San Andres">San Andres</option>
+            <option value="Santander">Santander</option>
+            <option value="Sucre">Sucre</option>
+            <option value="Tolima">Tolima</option>
+            <option value="Valle del Cauca">Valle del Cauca</option>
+            <option value="Vaupes">Vaupes</option>
+            <option value="Vichada">Vichada</option>
+          </select>
+        </div>
+        <div class="pack-cod__field">
+          <label for="pack-cod-address-{{ section.id }}">Direccion *</label>
+          <input id="pack-cod-address-{{ section.id }}" name="address1" type="text" autocomplete="street-address" required>
+        </div>
+        <div class="pack-cod__field">
+          <label for="pack-cod-notes-{{ section.id }}">Barrio / Referencia</label>
+          <textarea id="pack-cod-notes-{{ section.id }}" name="note" rows="2"></textarea>
+        </div>
+        <p class="pack-cod__error" data-cod-error hidden></p>
+        <button type="submit" class="pack-button pack-button--buy pack-cod__submit" data-cod-submit>
+          {{ section.settings.cod_submit_label }}
+        </button>
+        {% if section.settings.cod_show_checkout_fallback %}
+          <button type="button" class="pack-cod__fallback" data-cod-fallback hidden>
+            Continuar al checkout de Shopify
+          </button>
+        {% endif %}
+      </form>
+    </div>
+
+    <div class="pack-cod__success" data-cod-success hidden>
+      <h3>{{ section.settings.cod_success_title }}</h3>
+      <p data-cod-success-text>{{ section.settings.cod_success_message }}</p>
+      <p class="pack-cod__order-name" data-cod-order-name></p>
+      <button type="button" class="pack-button pack-button--buy" data-cod-done>Listo</button>
+    </div>
+  </div>
+</div>

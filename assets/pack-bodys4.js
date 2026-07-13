@@ -176,6 +176,7 @@
         available: variant.available,
         image: variant.featured_image && variant.featured_image.src ? variant.featured_image.src : "",
         second_image: "",
+        price: Math.round(parseFloat(variant.price || 0) * 100),
         options: options
       };
     });
@@ -295,6 +296,22 @@
     var productsGrid = section.querySelector("[data-products-grid]");
     var paginationNode = section.querySelector("[data-pagination]");
     var variantContent = section.querySelector("[data-variant-content]");
+    var codEnabled = section.dataset.codEnabled !== "false";
+    var codCheckout =
+      codEnabled && global.PackCodCheckout
+        ? global.PackCodCheckout.create(section, {
+            orderEndpoint: section.dataset.codEndpoint || "/apps/cod-express/order",
+            shippingFlat: Number(section.dataset.codShippingFlat || 0),
+            freeShippingThreshold: Number(section.dataset.codFreeShippingThreshold || 0),
+            currency: section.dataset.codCurrency || "COP",
+            packLabel: section.dataset.codPackLabel || "Pack Bodys",
+            submitLabel: section.dataset.codSubmitLabel || "Confirmar pedido COD",
+            loadingLabel: section.dataset.codLoadingLabel || "Procesando...",
+            showCheckoutFallback: section.dataset.codFallback !== "false",
+            cartUrl: cartUrl,
+            checkoutUrl: checkoutUrl
+          })
+        : null;
 
     var currentState = {
       currentSlot: null,
@@ -582,6 +599,16 @@
     function addPackToCart() {
       var items = validateSelection();
       if (!items) {
+        return;
+      }
+
+      if (codCheckout) {
+        codCheckout.open(items, products, {
+          onComplete: function () {
+            resetSelections();
+            showMessage("Pedido registrado correctamente.", false);
+          }
+        });
         return;
       }
 

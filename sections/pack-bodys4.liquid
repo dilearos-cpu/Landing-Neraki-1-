@@ -30,6 +30,7 @@
   endif
 %}
 {{ 'pack-bodys4.css' | asset_url | stylesheet_tag }}
+{{ 'pack-cod-checkout.css' | asset_url | stylesheet_tag }}
 <section
   class="pack-ui"
   id="pack-ui-{{ section.id }}"
@@ -40,6 +41,15 @@
   data-products-limit="{{ products_limit }}"
   data-cart-url="{{ routes.cart_add_url }}"
   data-checkout-url="{{ routes.checkout_url }}"
+  data-cod-enabled="{{ section.settings.cod_enabled }}"
+  data-cod-endpoint="{{ section.settings.cod_order_endpoint | escape }}"
+  data-cod-shipping-flat="{{ section.settings.cod_shipping_flat }}"
+  data-cod-free-shipping-threshold="{{ section.settings.cod_free_shipping_threshold }}"
+  data-cod-currency="{{ cart.currency.iso_code | default: shop.currency }}"
+  data-cod-pack-label="{{ section.settings.cod_pack_label | escape }}"
+  data-cod-submit-label="{{ section.settings.cod_submit_label | escape }}"
+  data-cod-loading-label="{{ section.settings.loading_button_label | escape }}"
+  data-cod-fallback="{{ section.settings.cod_show_checkout_fallback }}"
   data-button-default-text="{{ section.settings.buy_button_label | escape }}"
   data-button-loading-text="{{ section.settings.loading_button_label | escape }}"
   data-metafield-namespace="{{ section.settings.metafield_namespace | escape }}"
@@ -109,6 +119,8 @@
       </div>
     </div>
 
+    {% render 'pack-cod-modal', section: section %}
+
     <script type="application/json" data-pack-products>
       [
         {% for product in pack_collection.products limit: liquid_products_limit %}
@@ -167,6 +179,7 @@
                   "available": {{ variant.available | json }},
                   "image": {{ variant_image | json }},
                   "second_image": {{ second_image | json }},
+                  "price": {{ variant.price | json }},
                   "options": {{ variant.options | json }}
                 }{% unless forloop.last %},{% endunless %}
               {% endfor %}
@@ -185,6 +198,7 @@
     </script>
   {% endif %}
 </section>
+<script src="{{ 'pack-cod-checkout.js' | asset_url }}" defer></script>
 <script src="{{ 'pack-bodys4.js' | asset_url }}" defer></script>
 
 {% schema %}
@@ -283,6 +297,86 @@
       "id": "metafield_key",
       "label": "Key del metafield",
       "default": "custom_second_image"
+    },
+    {
+      "type": "header",
+      "content": "Checkout express COD"
+    },
+    {
+      "type": "checkbox",
+      "id": "cod_enabled",
+      "label": "Usar checkout express COD",
+      "default": true,
+      "info": "Abre un formulario dentro del theme (estilo EasySell) en lugar de redirigir al checkout de Shopify."
+    },
+    {
+      "type": "text",
+      "id": "cod_form_title",
+      "label": "Titulo del formulario",
+      "default": "Finaliza tu pedido"
+    },
+    {
+      "type": "text",
+      "id": "cod_form_subtitle",
+      "label": "Subtitulo",
+      "default": "Pago contra entrega. Completa tus datos y confirmamos por WhatsApp."
+    },
+    {
+      "type": "text",
+      "id": "cod_submit_label",
+      "label": "Texto boton confirmar",
+      "default": "Confirmar pedido COD"
+    },
+    {
+      "type": "text",
+      "id": "cod_pack_label",
+      "label": "Etiqueta del pack en el pedido",
+      "default": "Pack Bodys"
+    },
+    {
+      "type": "text",
+      "id": "cod_order_endpoint",
+      "label": "URL app proxy pedido",
+      "default": "/apps/cod-express/order",
+      "info": "Requiere instalar la app cod-express incluida en este repo."
+    },
+    {
+      "type": "number",
+      "id": "cod_shipping_flat",
+      "label": "Costo de envio fijo (centavos)",
+      "default": 0,
+      "info": "Ejemplo: 1500000 = $15.000 COP. Usa centavos como en Shopify."
+    },
+    {
+      "type": "number",
+      "id": "cod_free_shipping_threshold",
+      "label": "Envio gratis desde (centavos)",
+      "default": 0,
+      "info": "0 = desactivado."
+    },
+    {
+      "type": "text",
+      "id": "cod_payment_note",
+      "label": "Nota de pago",
+      "default": "Pagas al recibir tu pedido en la puerta de tu casa."
+    },
+    {
+      "type": "text",
+      "id": "cod_success_title",
+      "label": "Titulo pedido confirmado",
+      "default": "¡Pedido confirmado!"
+    },
+    {
+      "type": "textarea",
+      "id": "cod_success_message",
+      "label": "Mensaje pedido confirmado",
+      "default": "Gracias. Te contactaremos pronto para coordinar la entrega."
+    },
+    {
+      "type": "checkbox",
+      "id": "cod_show_checkout_fallback",
+      "label": "Mostrar boton fallback al checkout Shopify",
+      "default": true
     },
     {
       "type": "header",
