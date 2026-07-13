@@ -139,8 +139,8 @@
             "second_by_color": {
               {% assign first_color_entry = true %}
               {% for variant in product.variants %}
-                {% render 'variant-second-image-url', variant: variant, namespace: section.settings.metafield_namespace, metafield_key: section.settings.metafield_key %}
-                {% assign second_image = variant_second_image_url %}
+                {% capture second_image %}{% render 'variant-second-image-url', variant: variant, namespace: section.settings.metafield_namespace, metafield_key: section.settings.metafield_key %}{% endcapture %}
+                {% assign second_image = second_image | strip %}
                 {% if second_image != blank %}
                   {% assign color_value = variant.options[color_option_index] %}
                   {% unless first_color_entry %},{% endunless %}
@@ -159,8 +159,8 @@
                 {% else %}
                   {% assign variant_image = '' %}
                 {% endif %}
-                {% render 'variant-second-image-url', variant: variant, namespace: section.settings.metafield_namespace, metafield_key: section.settings.metafield_key %}
-                {% assign second_image = variant_second_image_url %}
+                {% capture second_image %}{% render 'variant-second-image-url', variant: variant, namespace: section.settings.metafield_namespace, metafield_key: section.settings.metafield_key %}{% endcapture %}
+                {% assign second_image = second_image | strip %}
                 {
                   "id": {{ variant.id | json }},
                   "title": {{ variant.title | json }},
