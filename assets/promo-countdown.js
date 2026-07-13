@@ -59,11 +59,10 @@
     var minutesNode = section.querySelector("[data-minutes]");
     var secondsNode = section.querySelector("[data-seconds]");
     var promosCountNode = section.querySelector("[data-promos-count]");
-    var promosTextNode = section.querySelector(".promo-countdown__promos");
+    var promosBarNode = section.querySelector("[data-promos-bar]");
     var barFillNode = section.querySelector("[data-bar-fill]");
-    var barLabelNode = section.querySelector("[data-bar-label]");
     var settings = readSettings(section);
-    var baseAvailable = Math.max(Number(settings.promosAvailable) || 0, 0);
+    var baseAvailable = Math.max(Number(settings.promosAvailable) || 0, 1);
     var durationHours = Number(section.dataset.durationHours || 24);
     var storageKey = section.dataset.storageKey || "promo-countdown-default";
     var timerId = null;
@@ -71,28 +70,23 @@
     var lastDisplayed = baseAvailable;
 
     function updateBar() {
-      var total = Math.max(Number(settings.promosTotal) || 1, 1);
       var available = Math.max(baseAvailable - filledSlots, 0);
-      var percent = Math.min((available / total) * 100, 100);
+      var percent = Math.min((available / baseAvailable) * 100, 100);
 
       if (promosCountNode) {
         promosCountNode.textContent = String(available);
       }
 
       if (barFillNode) {
-        barFillNode.style.width = percent + "%";
-      }
-
-      if (barLabelNode) {
-        barLabelNode.textContent = available + " " + (settings.unitsLabel || "unds");
+        barFillNode.style.width = Math.max(percent, available > 0 ? 28 : 0) + "%";
       }
 
       if (available < lastDisplayed) {
         section.classList.add("promo-countdown--slots-updated");
-        if (promosTextNode) {
-          promosTextNode.classList.remove("promo-countdown__promos-bump");
-          void promosTextNode.offsetWidth;
-          promosTextNode.classList.add("promo-countdown__promos-bump");
+        if (promosBarNode) {
+          promosBarNode.classList.remove("promo-countdown__promos-bump");
+          void promosBarNode.offsetWidth;
+          promosBarNode.classList.add("promo-countdown__promos-bump");
         }
         window.setTimeout(function () {
           section.classList.remove("promo-countdown--slots-updated");

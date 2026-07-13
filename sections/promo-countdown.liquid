@@ -30,19 +30,19 @@
       </div>
     </div>
 
-    <p class="promo-countdown__promos">
-      {{ section.settings.promos_prefix }}
-      <strong data-promos-count>{{ section.settings.promos_available }}</strong>
-      {{ section.settings.promos_suffix }}
-    </p>
-
-    <div class="promo-countdown__bar" aria-hidden="true">
-      <div
-        class="promo-countdown__bar-fill"
-        data-bar-fill
-        style="width: {{ section.settings.promos_available | times: 100 | divided_by: section.settings.promos_total | at_most: 100 }}%;"
-      >
-        <span data-bar-label>{{ section.settings.promos_available }} {{ section.settings.units_label }}</span>
+    <div class="promo-countdown__promos-bar" data-promos-bar aria-live="polite">
+      <div class="promo-countdown__bar-track">
+        <div
+          class="promo-countdown__bar-fill"
+          data-bar-fill
+          style="width: 100%;"
+        >
+          <p class="promo-countdown__bar-text" data-bar-label>
+            <span data-promos-prefix>{{ section.settings.promos_prefix }}</span>
+            <strong data-promos-count>{{ section.settings.promos_available }}</strong>
+            <span data-promos-suffix>{{ section.settings.promos_suffix }}</span>
+          </p>
+        </div>
       </div>
     </div>
 
