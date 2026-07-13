@@ -2,7 +2,12 @@
   Modal de checkout express COD (estilo EasySell).
   Se abre desde Pack Bodys al pulsar Comprar ahora.
 {% endcomment %}
-<div class="pack-cod" data-pack-cod hidden>
+<div
+  class="pack-cod"
+  data-pack-cod
+  hidden
+  style="--pack-cod-accent: {{ section.settings.cod_accent_color | default: '#111111' }};"
+>
   <div class="pack-cod__dialog" role="dialog" aria-modal="true" aria-label="{{ section.settings.cod_form_title | escape }}">
     <button type="button" class="pack-cod__close" data-cod-close aria-label="Cerrar">&times;</button>
 
@@ -29,10 +34,29 @@
             <dd data-cod-total>$0</dd>
           </div>
         </dl>
-        <p class="pack-cod__payment-note">{{ section.settings.cod_payment_note }}</p>
+        <p class="pack-cod__payment-note" data-cod-payment-note>{{ section.settings.cod_payment_note }}</p>
       </div>
 
       <form class="pack-cod__form" data-cod-form novalidate>
+        {% if section.settings.cod_enable_online_payment %}
+          <fieldset class="pack-cod__payments" data-cod-payments>
+            <legend class="pack-cod__payments-title">Metodo de pago</legend>
+            <label class="pack-cod__payment-option pack-cod__payment-option--active">
+              <input type="radio" name="payment_method" value="cod" checked>
+              <span class="pack-cod__payment-label">
+                <strong>{{ section.settings.cod_payment_cod_title }}</strong>
+                <small>{{ section.settings.cod_payment_cod_hint }}</small>
+              </span>
+            </label>
+            <label class="pack-cod__payment-option">
+              <input type="radio" name="payment_method" value="online">
+              <span class="pack-cod__payment-label">
+                <strong>{{ section.settings.cod_payment_online_title }}</strong>
+                <small>{{ section.settings.cod_payment_online_hint }}</small>
+              </span>
+            </label>
+          </fieldset>
+        {% endif %}
         <div class="pack-cod__field">
           <label for="pack-cod-name-{{ section.id }}">Nombre completo *</label>
           <input id="pack-cod-name-{{ section.id }}" name="full_name" type="text" autocomplete="name" required>

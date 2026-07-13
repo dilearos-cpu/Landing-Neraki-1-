@@ -51,6 +51,11 @@
   data-cod-submit-label="{{ section.settings.cod_submit_label | escape }}"
   data-cod-loading-label="{{ section.settings.loading_button_label | escape }}"
   data-cod-fallback="{{ section.settings.cod_show_checkout_fallback }}"
+  data-cod-enable-online="{{ section.settings.cod_enable_online_payment }}"
+  data-cod-online-submit-label="{{ section.settings.cod_online_submit_label | escape }}"
+  data-cod-payment-note="{{ section.settings.cod_payment_note | escape }}"
+  data-cod-online-payment-note="{{ section.settings.cod_payment_online_hint | escape }}"
+  data-cod-accent="{{ section.settings.cod_accent_color }}"
   data-button-default-text="{{ section.settings.buy_button_label | escape }}"
   data-button-loading-text="{{ section.settings.loading_button_label | escape }}"
   data-metafield-namespace="{{ section.settings.metafield_namespace | escape }}"
@@ -325,8 +330,51 @@
     {
       "type": "text",
       "id": "cod_submit_label",
-      "label": "Texto boton confirmar",
-      "default": "Confirmar pedido COD"
+      "label": "Texto boton confirmar COD",
+      "default": "Confirmar pedido contra entrega"
+    },
+    {
+      "type": "checkbox",
+      "id": "cod_enable_online_payment",
+      "label": "Mostrar pago en linea (Shopify Checkout)",
+      "default": true,
+      "info": "Mercado Pago, tarjeta y otros metodos activos en Shopify aparecen en el checkout nativo."
+    },
+    {
+      "type": "text",
+      "id": "cod_payment_cod_title",
+      "label": "Titulo pago contra entrega",
+      "default": "Contra entrega (COD)"
+    },
+    {
+      "type": "text",
+      "id": "cod_payment_cod_hint",
+      "label": "Descripcion pago COD",
+      "default": "Pagas al recibir tu pedido"
+    },
+    {
+      "type": "text",
+      "id": "cod_payment_online_title",
+      "label": "Titulo pago en linea",
+      "default": "Mercado Pago / Tarjeta"
+    },
+    {
+      "type": "text",
+      "id": "cod_payment_online_hint",
+      "label": "Descripcion pago en linea",
+      "default": "Checkout seguro de Shopify con tus metodos activos"
+    },
+    {
+      "type": "text",
+      "id": "cod_online_submit_label",
+      "label": "Texto boton pago en linea",
+      "default": "Continuar al pago seguro"
+    },
+    {
+      "type": "color",
+      "id": "cod_accent_color",
+      "label": "Color acento checkout",
+      "default": "#111111"
     },
     {
       "type": "text",

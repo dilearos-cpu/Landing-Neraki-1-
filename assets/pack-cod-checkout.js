@@ -57,6 +57,11 @@
     return null;
   }
 
+  function cartAddUrl(cartUrl) {
+    var base = String(cartUrl || "/cart/add").replace(/\.js$/, "");
+    return base + ".js";
+  }
+
   function PackCodCheckout(section, config) {
     this.section = section;
     this.config = config || {};
@@ -73,10 +78,13 @@
     this.submitButton = section.querySelector("[data-cod-submit]");
     this.fallbackButton = section.querySelector("[data-cod-fallback]");
     this.orderNameNode = section.querySelector("[data-cod-order-name]");
+    this.paymentNoteNode = section.querySelector("[data-cod-payment-note]");
+    this.paymentsFieldset = section.querySelector("[data-cod-payments]");
     this.grid = section.querySelector(".pack-cod__grid");
     this.pendingItems = [];
     this.pendingSummary = null;
     this.onComplete = null;
+    this.isLoading = false;
     this.bindEvents();
   }
 
@@ -97,6 +105,25 @@
       this.form.addEventListener("submit", function (event) {
         event.preventDefault();
         self.submit();
+      });
+
+      this.form.addEventListener("change", function (event) {
+        if (event.target && event.target.name === "payment_method") {
+          self.updatePaymentUI();
+        }
+      });
+    }
+
+    if (this.paymentsFieldset) {
+      this.paymentsFieldset.addEventListener("click", function (event) {
+        var option = event.target.closest(".pack-cod__payment-option");
+        if (!option) {
+          return;
+        }
+        var options = self.paymentsFieldset.querySelectorAll(".pack-cod__payment-option");
+        options.forEach(function (node) {
+          node.classList.toggle("pack-cod__payment-option--active", node === option);
+        });
       });
     }
 
@@ -121,6 +148,44 @@
     return Number(this.config.taxRatePercent || 19) / 100;
   };
 
+  PackCodCheckout.prototype.getPaymentMethod = function () {
+    if (!this.config.enableOnlinePayment || !this.form) {
+      return "cod";
+    }
+    var selected = this.form.querySelector('input[name="payment_method"]:checked');
+    return selected && selected.value === "online" ? "online" : "cod";
+  };
+
+  PackCodCheckout.prototype.updatePaymentUI = function () {
+    if (!this.submitButton) {
+      return;
+    }
+
+    var method = this.getPaymentMethod();
+    var isOnline = method === "online";
+
+    if (this.isLoading) {
+      this.submitButton.textContent = isOnline
+        ? this.config.onlineLoadingLabel || "Redirigiendo al checkout..."
+        : this.config.loadingLabel || "Procesando...";
+    } else {
+      this.submitButton.textContent = isOnline
+        ? this.config.onlineSubmitLabel || "Continuar al pago seguro"
+        : this.config.submitLabel || "Confirmar pedido";
+    }
+
+    if (this.paymentNoteNode) {
+      this.paymentNoteNode.textContent = isOnline
+        ? this.config.paymentNoteOnline || "Checkout seguro de Shopify con tus metodos activos."
+        : this.config.paymentNoteCod || "Pagas al recibir tu pedido.";
+      this.paymentNoteNode.classList.toggle("pack-cod__payment-note--online", isOnline);
+    }
+
+    if (this.submitButton) {
+      this.submitButton.classList.toggle("pack-cod__submit--online", isOnline);
+    }
+  };
+
   PackCodCheckout.prototype.renderSummary = function (lineItems) {
     var self = this;
     var subtotal = 0;
@@ -132,7 +197,7 @@
         subtotal += Number(item.price || 0);
         var image = item.image
           ? '<img src="' + item.image + '" alt="">'
-          : '<div style="width:56px;height:56px;background:#f5f5f5;border-radius:6px;"></div>';
+          : '<div class="pack-cod__item-placeholder"></div>';
         return (
           '<li class="pack-cod__item">' +
           image +
@@ -212,6 +277,20 @@
     this.successPanel.hidden = true;
     this.grid.hidden = false;
     this.hideError();
+
+    if (this.paymentsFieldset) {
+      var codRadio = this.form.querySelector('input[name="payment_method"][value="cod"]');
+      if (codRadio) {
+        codRadio.checked = true;
+      }
+      var paymentOptions = this.paymentsFieldset.querySelectorAll(".pack-cod__payment-option");
+      paymentOptions.forEach(function (node, index) {
+        node.classList.toggle("pack-cod__payment-option--active", index === 0);
+      });
+    }
+
+    this.updatePaymentUI();
+
     if (this.fallbackButton) {
       this.fallbackButton.hidden = true;
     }
@@ -243,13 +322,74 @@
   };
 
   PackCodCheckout.prototype.setLoading = function (isLoading) {
+    this.isLoading = isLoading;
     if (!this.submitButton) {
       return;
     }
     this.submitButton.disabled = isLoading;
-    this.submitButton.textContent = isLoading
-      ? this.config.loadingLabel || "Procesando..."
-      : this.config.submitLabel || "Confirmar pedido";
+    this.updatePaymentUI();
+  };
+
+  PackCodCheckout.prototype.readFormData = function () {
+    var formData = new FormData(this.form);
+    var fullName = String(formData.get("full_name") || "").trim();
+    var names = splitName(fullName);
+    return {
+      formData: formData,
+      fullName: fullName,
+      names: names,
+      phone: String(formData.get("phone") || "").trim(),
+      email: String(formData.get("email") || "").trim(),
+      city: String(formData.get("city") || "").trim(),
+      province: String(formData.get("province") || "").trim(),
+      address1: String(formData.get("address1") || "").trim(),
+      note: String(formData.get("note") || "").trim()
+    };
+  };
+
+  PackCodCheckout.prototype.buildCartAttributes = function (customer) {
+    var attributes = {
+      "Nombre completo": customer.fullName,
+      Telefono: customer.phone,
+      Ciudad: customer.city,
+      Departamento: customer.province,
+      Direccion: customer.address1,
+      "Pack express": this.config.packLabel || "Pack Bodys",
+      "Metodo de pago": "En linea (Shopify Checkout)"
+    };
+
+    if (customer.email) {
+      attributes.Email = customer.email;
+    }
+    if (customer.note) {
+      attributes["Barrio / Referencia"] = customer.note;
+    }
+
+    return attributes;
+  };
+
+  PackCodCheckout.prototype.buildCartNote = function (customer) {
+    var lines = [
+      (this.config.packLabel || "Pack Bodys") + " — pago en linea",
+      "Nombre: " + customer.fullName,
+      "Telefono: " + customer.phone
+    ];
+
+    if (customer.email) {
+      lines.push("Email: " + customer.email);
+    }
+
+    lines.push(
+      "Ciudad: " + customer.city,
+      "Departamento: " + customer.province,
+      "Direccion: " + customer.address1
+    );
+
+    if (customer.note) {
+      lines.push("Referencia: " + customer.note);
+    }
+
+    return lines.join("\n");
   };
 
   PackCodCheckout.prototype.fallbackToCheckout = function () {
@@ -259,7 +399,7 @@
     }
 
     this.setLoading(true);
-    fetch((this.config.cartUrl || "/cart/add.js").replace(/\.js$/, "") + ".js", {
+    fetch(cartAddUrl(this.config.cartUrl), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -304,30 +444,75 @@
     });
   }
 
-  PackCodCheckout.prototype.submit = function () {
+  PackCodCheckout.prototype.submitOnline = function (customer) {
     var self = this;
-    if (!this.form || !this.pendingItems.length) {
-      return;
-    }
 
-    if (!this.form.reportValidity()) {
-      return;
-    }
+    fetch("/cart/clear.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      }
+    })
+      .catch(function () {
+        return null;
+      })
+      .then(function () {
+        return fetch(cartAddUrl(self.config.cartUrl), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json"
+          },
+          body: JSON.stringify({ items: self.pendingItems })
+        });
+      })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("No se pudo agregar el pack al carrito.");
+        }
+        return fetch("/cart/update.js", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json"
+          },
+          body: JSON.stringify({
+            note: self.buildCartNote(customer),
+            attributes: self.buildCartAttributes(customer)
+          })
+        });
+      })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("No se pudo preparar el checkout.");
+        }
+        window.location.href = self.config.checkoutUrl || "/checkout";
+      })
+      .catch(function (error) {
+        self.showError(
+          error.message +
+            ". Si el problema continua, usa el checkout alternativo o contacta a la tienda."
+        );
+      })
+      .finally(function () {
+        self.setLoading(false);
+      });
+  };
 
-    var formData = new FormData(this.form);
-    var fullName = String(formData.get("full_name") || "").trim();
-    var names = splitName(fullName);
+  PackCodCheckout.prototype.submitCod = function (customer) {
+    var self = this;
     var payload = {
       customer: {
-        firstName: names.firstName,
-        lastName: names.lastName,
-        phone: String(formData.get("phone") || "").trim(),
-        email: String(formData.get("email") || "").trim()
+        firstName: customer.names.firstName,
+        lastName: customer.names.lastName,
+        phone: customer.phone,
+        email: customer.email
       },
       shippingAddress: {
-        address1: String(formData.get("address1") || "").trim(),
-        city: String(formData.get("city") || "").trim(),
-        province: String(formData.get("province") || "").trim(),
+        address1: customer.address1,
+        city: customer.city,
+        province: customer.province,
         country: "Colombia",
         zip: ""
       },
@@ -337,15 +522,12 @@
           quantity: item.quantity || 1
         };
       }),
-      note: String(formData.get("note") || "").trim(),
+      note: customer.note,
       shippingPrice: this.pendingSummary ? this.pendingSummary.shipping : 0,
       taxRate: this.pendingSummary ? this.pendingSummary.taxRate : this.getTaxRate(),
       taxAmount: this.pendingSummary ? this.pendingSummary.taxAmount : 0,
       packLabel: this.config.packLabel || "Pack Bodys"
     };
-
-    this.setLoading(true);
-    this.hideError();
 
     fetch(this.config.orderEndpoint || "/apps/cod-express", {
       method: "POST",
@@ -373,6 +555,29 @@
       .finally(function () {
         self.setLoading(false);
       });
+  };
+
+  PackCodCheckout.prototype.submit = function () {
+    if (!this.form || !this.pendingItems.length) {
+      return;
+    }
+
+    if (!this.form.reportValidity()) {
+      return;
+    }
+
+    var customer = this.readFormData();
+    var paymentMethod = this.getPaymentMethod();
+
+    this.setLoading(true);
+    this.hideError();
+
+    if (paymentMethod === "online") {
+      this.submitOnline(customer);
+      return;
+    }
+
+    this.submitCod(customer);
   };
 
   global.PackCodCheckout = {

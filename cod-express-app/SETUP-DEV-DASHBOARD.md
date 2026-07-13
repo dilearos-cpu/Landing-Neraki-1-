@@ -146,8 +146,9 @@ npm run theme:push
 Theme Editor → Pack Bodys 4 → Checkout express COD:
 
 - ✅ Usar checkout express COD
-- URL app proxy: `/apps/cod-express/order`
+- URL app proxy: `/apps/cod-express` (sin `/order` al final)
 - IVA: 19%
+- ✅ Mostrar pago en linea (Shopify Checkout) — Mercado Pago y tarjeta en checkout nativo
 
 ### 13. Probar pedido
 
@@ -171,6 +172,29 @@ Theme Editor → Pack Bodys 4 → Checkout express COD:
 | `Configura SHOPIFY_CLIENT_ID...` | Faltan variables en Render |
 | Primera petición muy lenta | Render free "despierta" tras ~15 min inactivo |
 | 401 en proxy | Reinstala app o revisa que la versión tenga `write_app_proxy` |
+
+---
+
+## Mantener Render despierto (sin pedidos ficticios en Shopify)
+
+En el plan **Free**, Render apaga el servicio tras **~15 minutos sin tráfico**. La primera petición después tarda ~30–60 s en "despertar".
+
+**No hace falta crear pedidos de prueba en Shopify.** Basta con hacer ping al endpoint de salud del servidor:
+
+```
+https://landing-neraki-1.onrender.com/health
+```
+
+Ese ping solo toca Render; **no crea pedidos ni llama a la API de Shopify**.
+
+### Opción recomendada: monitor externo gratuito
+
+1. Crea cuenta en [UptimeRobot](https://uptimerobot.com) o [cron-job.org](https://cron-job.org)
+2. Nuevo monitor HTTP cada **10–14 minutos** (menos de 15 para evitar el spin-down)
+3. URL: `https://landing-neraki-1.onrender.com/health`
+4. Método: GET — respuesta esperada: `{"ok":true,...}`
+
+Con eso el checkout COD responde rápido casi siempre, sin afectar pedidos ni métricas de la tienda.
 
 ---
 

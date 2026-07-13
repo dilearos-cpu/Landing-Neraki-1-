@@ -308,7 +308,12 @@
           currency: section.dataset.codCurrency || "COP",
           packLabel: section.dataset.codPackLabel || "Pack Bodys",
           submitLabel: section.dataset.codSubmitLabel || "Confirmar pedido COD",
+          onlineSubmitLabel: section.dataset.codOnlineSubmitLabel || "Continuar al pago seguro",
           loadingLabel: section.dataset.codLoadingLabel || "Procesando...",
+          onlineLoadingLabel: "Redirigiendo al checkout...",
+          paymentNoteCod: section.dataset.codPaymentNote || "",
+          paymentNoteOnline: section.dataset.codOnlinePaymentNote || "",
+          enableOnlinePayment: section.dataset.codEnableOnline !== "false",
           showCheckoutFallback: section.dataset.codFallback !== "false",
           cartUrl: cartUrl,
           checkoutUrl: checkoutUrl
