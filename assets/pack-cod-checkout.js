@@ -127,6 +127,55 @@
     return "cliente@checkout.caletzza.local";
   }
 
+  function buildCheckoutAddressPayload(customer) {
+    var provinceCode = CO_PROVINCE_CODES[customer.province] || "CUN";
+    var phone = normalizePhone(customer.phone);
+    var address2 = customer.note ? String(customer.note).trim() : "";
+
+    return {
+      phone: phone,
+      deliveryAddress: {
+        firstName: customer.names.firstName,
+        lastName: customer.names.lastName,
+        address1: customer.address1,
+        address2: address2,
+        city: customer.city,
+        provinceCode: provinceCode,
+        countryCode: "CO",
+        zip: "000000",
+        phone: phone
+      },
+      mailingAddress: {
+        firstName: customer.names.firstName,
+        lastName: customer.names.lastName,
+        address1: customer.address1,
+        address2: address2,
+        city: customer.city,
+        province: customer.province,
+        country: "Colombia",
+        zip: "000000",
+        phone: phone
+      },
+      selectableAddress: {
+        selected: true,
+        oneTimeUse: true,
+        address: {
+          deliveryAddress: {
+            firstName: customer.names.firstName,
+            lastName: customer.names.lastName,
+            address1: customer.address1,
+            address2: address2,
+            city: customer.city,
+            provinceCode: provinceCode,
+            countryCode: "CO",
+            zip: "000000",
+            phone: phone
+          }
+        }
+      }
+    };
+  }
+
   function PackCodCheckout(section, config) {
     this.section = section;
     this.config = config || {};
@@ -435,6 +484,7 @@
       Ciudad: customer.city,
       Departamento: customer.province,
       Direccion: customer.address1,
+      "Codigo postal": "000000",
       "Pack express": this.config.packLabel || "Pack Bodys",
       "Metodo de pago": "En linea (Shopify Checkout)"
     };
@@ -463,7 +513,8 @@
     lines.push(
       "Ciudad: " + customer.city,
       "Departamento: " + customer.province,
-      "Direccion: " + customer.address1
+      "Direccion: " + customer.address1,
+      "Codigo postal: 000000"
     );
 
     if (customer.note) {
@@ -563,9 +614,8 @@
 
   PackCodCheckout.prototype.submitOnline = function (customer) {
     var self = this;
-    var provinceCode = CO_PROVINCE_CODES[customer.province] || "CUN";
-    var phone = normalizePhone(customer.phone);
     var email = checkoutEmail(customer);
+    var addressPayload = buildCheckoutAddressPayload(customer);
     var lines = this.pendingItems.map(function (item) {
       return {
         merchandiseId: variantGid(item.id),
@@ -581,33 +631,6 @@
       " }" +
       "}";
 
-    var identityMutation =
-      "mutation cartBuyerIdentityUpdate($cartId: ID!, $identity: CartBuyerIdentityInput!) {" +
-      " cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $identity) {" +
-      " cart { id checkoutUrl }" +
-      " userErrors { field message }" +
-      " }" +
-      "}";
-
-    var addressMutation =
-      "mutation cartDeliveryAddressesAdd($cartId: ID!, $addresses: [CartSelectableAddressInput!]!) {" +
-      " cartDeliveryAddressesAdd(cartId: $cartId, addresses: $addresses) {" +
-      " cart { id checkoutUrl }" +
-      " userErrors { field message }" +
-      " }" +
-      "}";
-
-    var noteMutation =
-      "mutation cartNoteUpdate($cartId: ID!, $note: String!) {" +
-      " cartNoteUpdate(cartId: $cartId, note: $note) {" +
-      " cart { id checkoutUrl }" +
-      " userErrors { field message }" +
-      " }" +
-      "}";
-
-    var cartId = "";
-    var checkoutUrl = "";
-
     function ensureNoErrors(result, key) {
       var errors = result && result[key] && result[key].userErrors;
       if (errors && errors.length) {
@@ -621,66 +644,31 @@
     this.storefrontGraphql(cartCreateMutation, {
       input: {
         lines: lines,
+        note: customer.note || undefined,
         buyerIdentity: {
           email: email,
-          phone: phone,
-          countryCode: "CO"
+          phone: addressPayload.phone,
+          countryCode: "CO",
+          preferences: {
+            delivery: {
+              deliveryMethod: ["SHIPPING"]
+            }
+          },
+          deliveryAddressPreferences: [
+            {
+              deliveryAddress: addressPayload.mailingAddress,
+              oneTimeUse: true
+            }
+          ]
+        },
+        delivery: {
+          addresses: [addressPayload.selectableAddress]
         }
       }
     })
       .then(function (data) {
         var result = ensureNoErrors(data, "cartCreate");
-        cartId = result.cart.id;
-        checkoutUrl = result.cart.checkoutUrl;
-        return self.storefrontGraphql(identityMutation, {
-          cartId: cartId,
-          identity: {
-            email: email,
-            phone: phone,
-            countryCode: "CO"
-          }
-        });
-      })
-      .then(function (data) {
-        var result = ensureNoErrors(data, "cartBuyerIdentityUpdate");
-        checkoutUrl = result.cart.checkoutUrl || checkoutUrl;
-        return self.storefrontGraphql(addressMutation, {
-          cartId: cartId,
-          addresses: [
-            {
-              selected: true,
-              oneTimeUse: true,
-              address: {
-                deliveryAddress: {
-                  firstName: customer.names.firstName,
-                  lastName: customer.names.lastName,
-                  address1: customer.address1,
-                  city: customer.city,
-                  provinceCode: provinceCode,
-                  countryCode: "CO",
-                  zip: "000000",
-                  phone: phone
-                }
-              }
-            }
-          ]
-        });
-      })
-      .then(function (data) {
-        var result = ensureNoErrors(data, "cartDeliveryAddressesAdd");
-        checkoutUrl = result.cart.checkoutUrl || checkoutUrl;
-        if (!customer.note) {
-          return null;
-        }
-        return self.storefrontGraphql(noteMutation, {
-          cartId: cartId,
-          note: customer.note
-        });
-      })
-      .then(function (data) {
-        if (data && data.cartNoteUpdate) {
-          checkoutUrl = data.cartNoteUpdate.cart.checkoutUrl || checkoutUrl;
-        }
+        var checkoutUrl = result.cart.checkoutUrl;
         if (!checkoutUrl) {
           throw new Error("No se obtuvo la URL de checkout.");
         }

@@ -161,6 +161,20 @@ Theme Editor → Pack Bodys 4 → Checkout express COD:
 - Pantalla "¡Pedido confirmado!" con `#número`
 - Admin → Pedidos → nuevo pedido (pago pendiente)
 
+### 14. Checkout Mercado Pago — facturación = envío
+
+La API de Shopify **no permite** enviar la dirección de facturación por separado desde el theme. Solo se puede prefijar **envío**. Para que facturación quede igual a entrega (con código postal `000000`):
+
+1. Admin Shopify → **Configuración** → **Checkout**
+2. En **Preferencias avanzadas** → **Recopilación de direcciones** (Address collection)
+3. Activa **Permitir que las direcciones de envío y facturación sean diferentes**
+4. **Desactiva** la opción **No usar la dirección de envío como facturación por defecto**
+   - Así Shopify copia automáticamente envío → facturación (incluido CP `000000`)
+5. Opcional (más estricto): exige que envío y facturación coincidan
+6. **Guardar**
+
+El theme ya envía envío completo con `zip: 000000` vía Storefront API. Con el ajuste del Admin, facturación se rellena sola al pagar con Mercado Pago.
+
 ---
 
 ## Solución de problemas
@@ -171,6 +185,7 @@ Theme Editor → Pack Bodys 4 → Checkout express COD:
 | `No se pudo obtener el access token` | App instalada en caletzza + Client ID/Secret correctos |
 | `Configura SHOPIFY_CLIENT_ID...` | Faltan variables en Render |
 | Primera petición muy lenta | Render free "despierta" tras ~15 min inactivo |
+| Facturación vacía en Mercado Pago | Admin → Checkout → desactivar "No usar envío como facturación por defecto" (ver §14) |
 | 401 en proxy | Reinstala app o revisa que la versión tenga `write_app_proxy` |
 
 ---
