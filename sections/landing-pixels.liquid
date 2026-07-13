@@ -1,0 +1,131 @@
+{% liquid
+  assign enable_meta = section.settings.enable_meta
+  assign meta_pixel_id = section.settings.meta_pixel_id | strip
+  assign enable_tiktok = section.settings.enable_tiktok
+  assign tiktok_pixel_id = section.settings.tiktok_pixel_id | strip
+  assign enable_google = section.settings.enable_google
+  assign google_ads_id = section.settings.google_ads_id | strip
+  assign custom_scripts = section.settings.custom_scripts
+%}
+
+{% if request.design_mode %}
+  <div class="landing-pixels-note">
+    Pixels de: <strong>{{ section.settings.landing_name | default: 'esta landing' }}</strong>.
+    Esta seccion solo debe estar en esta pagina, no en el header global.
+  </div>
+{% endif %}
+
+{% render 'tracking-pixels',
+  enable_meta: enable_meta,
+  meta_pixel_id: meta_pixel_id,
+  enable_tiktok: enable_tiktok,
+  tiktok_pixel_id: tiktok_pixel_id,
+  enable_google: enable_google,
+  google_ads_id: google_ads_id,
+  custom_scripts: custom_scripts,
+  design_mode: false
+%}
+
+<style>
+  .landing-pixels-note {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: #f4f4f4;
+    border: 1px dashed #999;
+    font-size: 13px;
+    text-align: center;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Pixels de landing",
+  "tag": "section",
+  "class": "landing-pixels-section",
+  "enabled_on": {
+    "templates": ["page", "index"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Usa una seccion de estas por landing. Ejemplo: en la landing de basicas pegas el pixel de basicas; en la de bodys, el de bodys. Para checkout y pagina de gracias usa el pixel personalizado del repositorio (checkout-dual-pixels.js) en Configuracion → Eventos de cliente."
+    },
+    {
+      "type": "text",
+      "id": "landing_name",
+      "label": "Nombre de la landing",
+      "default": "Basicas",
+      "info": "Solo para identificarla en el editor. Ej: Basicas o Bodys"
+    },
+    {
+      "type": "header",
+      "content": "Meta (Facebook / Instagram)"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_meta",
+      "label": "Activar Meta Pixel",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "meta_pixel_id",
+      "label": "Meta Pixel ID"
+    },
+    {
+      "type": "header",
+      "content": "TikTok"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_tiktok",
+      "label": "Activar TikTok Pixel",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "tiktok_pixel_id",
+      "label": "TikTok Pixel ID"
+    },
+    {
+      "type": "header",
+      "content": "Google Ads / Analytics"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_google",
+      "label": "Activar Google tag",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "google_ads_id",
+      "label": "Google ID",
+      "info": "AW-XXXXXXXXX o G-XXXXXXXXXX"
+    },
+    {
+      "type": "header",
+      "content": "Codigo personalizado"
+    },
+    {
+      "type": "textarea",
+      "id": "custom_scripts",
+      "label": "Scripts adicionales"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Pixels landing basicas",
+      "settings": {
+        "landing_name": "Basicas"
+      }
+    },
+    {
+      "name": "Pixels landing bodys",
+      "settings": {
+        "landing_name": "Bodys"
+      }
+    }
+  ]
+}
+{% endschema %}
