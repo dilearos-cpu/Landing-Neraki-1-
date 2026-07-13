@@ -224,7 +224,7 @@ Notificaciones emergentes tipo *"Juanito ha comprado un pack de bodys x4 hace 1 
 3. En **Pack / Producto** configura el nombre del pack y las unidades (ej: `pack de bodys` x4).
 4. Opcional: agrega bloques **Campaña adicional** si quieres rotar varios packs distintos.
 5. Ajusta tiempos, posicion, ciudades y nombres en los ajustes globales de la seccion.
-5. Guarda y publica.
+6. Guarda y publica.
 
 Cada bloque funciona como un shortcode independiente. Si tienes varios bloques, el popup elige uno al azar en cada ciclo.
 
