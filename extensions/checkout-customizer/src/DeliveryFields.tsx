@@ -5,6 +5,7 @@ import { FieldSection } from "./shared/FieldRenderer";
 import { PostalCodeWorkaroundSection } from "./shared/PostalCodeWorkaround";
 import {
   METAFIELD_NAMESPACE,
+  normalizePostalCodeWorkaround,
   parseConfig,
   type PostalCodeWorkaround,
 } from "./shared/config";
@@ -37,5 +38,5 @@ function usePostalCodeSettings(): PostalCodeWorkaround {
   const configEntry = configEntries.find((entry) => entry.metafield?.value);
   const config = parseConfig(configEntry?.metafield?.value);
 
-  return config.postalCodeWorkaround;
+  return normalizePostalCodeWorkaround(config.postalCodeWorkaround);
 }

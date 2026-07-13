@@ -67,12 +67,18 @@ export interface CheckoutCustomizerConfig {
   postalCodeWorkaround: PostalCodeWorkaround;
 }
 
+export type PostalCodeDisplayMode = "collapsed" | "banner" | "silent";
+
 export interface PostalCodeWorkaround {
   enabled: boolean;
   autoFill: boolean;
   defaultValue: string;
   showBanner: boolean;
   bannerMessage: string;
+  displayMode: PostalCodeDisplayMode;
+  collapsedSummary: string;
+  expandedMessage: string;
+  allowManualEdit: boolean;
 }
 
 export const METAFIELD_NAMESPACE = "$app:checkout_customizer";
@@ -152,7 +158,26 @@ export function createDefaultPostalCodeWorkaround(): PostalCodeWorkaround {
     showBanner: true,
     bannerMessage:
       "Si tu zona no usa código postal, puedes dejar el valor que aparece o escribir 00000.",
+    displayMode: "collapsed",
+    collapsedSummary:
+      "Código postal completado automáticamente. Toca aquí si deseas cambiarlo.",
+    expandedMessage:
+      "Hemos rellenado el código postal por ti para agilizar tu compra. Si conoces el tuyo, puedes editarlo abajo.",
+    allowManualEdit: true,
   };
+}
+
+export function normalizePostalCodeWorkaround(
+  input?: Partial<PostalCodeWorkaround>,
+): PostalCodeWorkaround {
+  const defaults = createDefaultPostalCodeWorkaround();
+  const merged = { ...defaults, ...input };
+
+  if (!input?.displayMode) {
+    merged.displayMode = input?.showBanner === false ? "silent" : "collapsed";
+  }
+
+  return merged;
 }
 
 export function createDefaultConfig(): CheckoutCustomizerConfig {
@@ -184,8 +209,9 @@ export function parseConfig(raw: string | null | undefined): CheckoutCustomizerC
       customFields: parsed.customFields ?? [],
       defaultFieldSettings:
         parsed.defaultFieldSettings ?? createDefaultConfig().defaultFieldSettings,
-      postalCodeWorkaround:
-        parsed.postalCodeWorkaround ?? createDefaultPostalCodeWorkaround(),
+      postalCodeWorkaround: normalizePostalCodeWorkaround(
+        parsed.postalCodeWorkaround,
+      ),
     };
   } catch {
     return createDefaultConfig();

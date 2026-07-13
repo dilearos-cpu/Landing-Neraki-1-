@@ -13,8 +13,10 @@ import { persistConfigAction } from "../utils/checkout-config-actions.server";
 import {
   DEFAULT_FIELD_OPTIONS,
   createDefaultPostalCodeWorkaround,
+  normalizePostalCodeWorkaround,
   type DefaultFieldAction,
   type DefaultFieldSetting,
+  type PostalCodeDisplayMode,
   type PostalCodeWorkaround,
 } from "../types/checkout-config";
 
@@ -28,6 +30,24 @@ export const action = async (actionArgs: ActionFunctionArgs) => {
   await persistConfigAction(actionArgs);
   return { ok: true };
 };
+
+const DISPLAY_MODE_OPTIONS: Array<{
+  value: PostalCodeDisplayMode;
+  label: string;
+}> = [
+  {
+    value: "collapsed",
+    label: "Aviso colapsado (recomendado)",
+  },
+  {
+    value: "banner",
+    label: "Banner siempre visible",
+  },
+  {
+    value: "silent",
+    label: "Solo autocompletar, sin aviso",
+  },
+];
 
 const ACTION_OPTIONS: Array<{ value: DefaultFieldAction; label: string }> = [
   { value: "show", label: "Mostrar (predeterminado)" },
@@ -53,7 +73,9 @@ export default function DefaultFieldsPage() {
   );
   const [postalCodeWorkaround, setPostalCodeWorkaround] =
     useState<PostalCodeWorkaround>(
-      config.postalCodeWorkaround ?? createDefaultPostalCodeWorkaround(),
+      normalizePostalCodeWorkaround(
+        config.postalCodeWorkaround ?? createDefaultPostalCodeWorkaround(),
+      ),
     );
   const fetcher = useFetcher<typeof action>();
   const shopify = useAppBridge();
@@ -100,10 +122,11 @@ export default function DefaultFieldsPage() {
       </s-section>
 
       <s-section heading="Código postal">
-        <s-banner tone="warning" heading="No se puede eliminar">
-          Shopify exige el campo de código postal en el checkout para validar
-          pagos. Ninguna app puede quitarlo. La alternativa más práctica es
-          autocompletarlo con un valor genérico.
+        <s-banner tone="warning" heading="El campo nativo no se puede ocultar">
+          Shopify no permite ocultar el campo de código postal del formulario
+          de dirección. Lo que sí hace esta app: autocompletarlo y mostrar un
+          aviso discreto colapsado, con opción de editarlo si el cliente lo
+          desea.
         </s-banner>
         <s-stack direction="block" gap="base">
           <s-switch
@@ -139,29 +162,76 @@ export default function DefaultFieldsPage() {
               }));
             }}
           />
-          <s-switch
-            label="Mostrar aviso al cliente"
-            checked={postalCodeWorkaround.showBanner}
+          <s-select
+            label="Cómo mostrar el aviso al cliente"
+            value={postalCodeWorkaround.displayMode}
             onChange={(event: Event) => {
-              const target = event.currentTarget as HTMLInputElement;
+              const target = event.currentTarget as HTMLSelectElement;
               setPostalCodeWorkaround((current) => ({
                 ...current,
-                showBanner: target.checked,
+                displayMode: target.value as PostalCodeDisplayMode,
+                showBanner: target.value === "banner",
               }));
             }}
-          />
-          <s-text-area
-            label="Mensaje del aviso"
-            rows={3}
-            value={postalCodeWorkaround.bannerMessage}
-            onInput={(event: Event) => {
-              const target = event.currentTarget as HTMLTextAreaElement;
-              setPostalCodeWorkaround((current) => ({
-                ...current,
-                bannerMessage: target.value,
-              }));
-            }}
-          />
+          >
+            {DISPLAY_MODE_OPTIONS.map((option) => (
+              <s-option key={option.value} value={option.value}>
+                {option.label}
+              </s-option>
+            ))}
+          </s-select>
+          {postalCodeWorkaround.displayMode === "collapsed" ? (
+            <>
+              <s-text-field
+                label="Texto colapsado (usa {zip} para el valor)"
+                value={postalCodeWorkaround.collapsedSummary}
+                onInput={(event: Event) => {
+                  const target = event.currentTarget as HTMLInputElement;
+                  setPostalCodeWorkaround((current) => ({
+                    ...current,
+                    collapsedSummary: target.value,
+                  }));
+                }}
+              />
+              <s-text-area
+                label="Mensaje al expandir"
+                rows={3}
+                value={postalCodeWorkaround.expandedMessage}
+                onInput={(event: Event) => {
+                  const target = event.currentTarget as HTMLTextAreaElement;
+                  setPostalCodeWorkaround((current) => ({
+                    ...current,
+                    expandedMessage: target.value,
+                  }));
+                }}
+              />
+              <s-switch
+                label="Permitir editar el código postal al expandir"
+                checked={postalCodeWorkaround.allowManualEdit}
+                onChange={(event: Event) => {
+                  const target = event.currentTarget as HTMLInputElement;
+                  setPostalCodeWorkaround((current) => ({
+                    ...current,
+                    allowManualEdit: target.checked,
+                  }));
+                }}
+              />
+            </>
+          ) : null}
+          {postalCodeWorkaround.displayMode === "banner" ? (
+            <s-text-area
+              label="Mensaje del banner"
+              rows={3}
+              value={postalCodeWorkaround.bannerMessage}
+              onInput={(event: Event) => {
+                const target = event.currentTarget as HTMLTextAreaElement;
+                setPostalCodeWorkaround((current) => ({
+                  ...current,
+                  bannerMessage: target.value,
+                }));
+              }}
+            />
+          ) : null}
         </s-stack>
       </s-section>
 
