@@ -1,0 +1,31 @@
+api_version = "2025-10"
+
+[[extensions]]
+name = "Checkout Customizer"
+handle = "checkout-customizer"
+type = "ui_extension"
+uid = "a8f3c2d1-9b4e-4f6a-8c7d-2e1f0a9b8c7d"
+
+[[extensions.targeting]]
+module = "./src/HeaderBanner.tsx"
+target = "purchase.checkout.header.render-after"
+
+[[extensions.targeting]]
+module = "./src/ContactFields.tsx"
+target = "purchase.checkout.contact.render-after"
+
+[[extensions.targeting]]
+module = "./src/DeliveryFields.tsx"
+target = "purchase.checkout.delivery-address.render-after"
+
+[[extensions.targeting]]
+module = "./src/BlockExtension.tsx"
+target = "purchase.checkout.block.render"
+
+[extensions.capabilities]
+block_progress = true
+api_access = false
+
+[[extensions.metafields]]
+namespace = "$app:checkout_customizer"
+key = "config"
