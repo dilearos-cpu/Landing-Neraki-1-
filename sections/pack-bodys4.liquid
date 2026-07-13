@@ -44,6 +44,7 @@
   data-cod-enabled="{{ section.settings.cod_enabled }}"
   data-cod-endpoint="{{ section.settings.cod_order_endpoint | escape }}"
   data-cod-shipping-flat="{{ section.settings.cod_shipping_flat }}"
+  data-cod-tax-rate="{{ section.settings.cod_tax_rate }}"
   data-cod-free-shipping-threshold="{{ section.settings.cod_free_shipping_threshold }}"
   data-cod-currency="{{ cart.currency.iso_code | default: shop.currency }}"
   data-cod-pack-label="{{ section.settings.cod_pack_label | escape }}"
@@ -339,6 +340,17 @@
       "label": "URL app proxy pedido",
       "default": "/apps/cod-express/order",
       "info": "Requiere instalar la app cod-express incluida en este repo."
+    },
+    {
+      "type": "range",
+      "id": "cod_tax_rate",
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "unit": "%",
+      "label": "IVA (impuesto)",
+      "default": 19,
+      "info": "Porcentaje aplicado sobre el subtotal del pack."
     },
     {
       "type": "number",

@@ -70,19 +70,34 @@ async function shopifyGraphql(query, variables) {
 async function createCodOrder(body) {
   const customer = body.customer || {};
   const shippingAddress = body.shippingAddress || {};
-  const lineItems = (body.lineItems || []).map((item) => ({
+  const variantLineItems = (body.lineItems || []).map((item) => ({
     variantId: variantGid(item.variantId),
     quantity: Number(item.quantity || 1)
   }));
 
-  if (!lineItems.length) {
+  if (!variantLineItems.length) {
     throw new Error("No hay productos en el pedido.");
+  }
+
+  const taxRate = Number(body.taxRate ?? 0.19);
+  const taxAmountCents = Math.round(Number(body.taxAmount || 0));
+  const taxPercent = Math.round(taxRate * 100);
+  const lineItems = variantLineItems.slice();
+
+  if (taxAmountCents > 0) {
+    lineItems.push({
+      title: `IVA (${taxPercent}%)`,
+      quantity: 1,
+      originalUnitPrice: moneyFromCents(taxAmountCents)
+    });
   }
 
   const draftInput = {
     email: customer.email || undefined,
     phone: customer.phone || undefined,
-    note: [body.packLabel, body.note].filter(Boolean).join(" | ") || undefined,
+    note: [body.packLabel, body.note, taxAmountCents > 0 ? `IVA ${taxPercent}% incluido` : ""]
+      .filter(Boolean)
+      .join(" | ") || undefined,
     tags: ["COD", "Pack-Express", body.packLabel].filter(Boolean),
     shippingAddress: {
       firstName: customer.firstName || "Cliente",

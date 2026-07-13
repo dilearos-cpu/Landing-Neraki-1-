@@ -303,6 +303,7 @@
         codCheckout = window.PackCodCheckout.create(section, {
           orderEndpoint: section.dataset.codEndpoint || "/apps/cod-express/order",
           shippingFlat: Number(section.dataset.codShippingFlat || 0),
+          taxRatePercent: Number(section.dataset.codTaxRate || 19),
           freeShippingThreshold: Number(section.dataset.codFreeShippingThreshold || 0),
           currency: section.dataset.codCurrency || "COP",
           packLabel: section.dataset.codPackLabel || "Pack Bodys",

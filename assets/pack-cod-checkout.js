@@ -66,6 +66,8 @@
     this.errorNode = section.querySelector("[data-cod-error]");
     this.itemsNode = section.querySelector("[data-cod-items]");
     this.subtotalNode = section.querySelector("[data-cod-subtotal]");
+    this.taxNode = section.querySelector("[data-cod-tax]");
+    this.taxRow = section.querySelector("[data-cod-tax-row]");
     this.shippingNode = section.querySelector("[data-cod-shipping]");
     this.totalNode = section.querySelector("[data-cod-total]");
     this.submitButton = section.querySelector("[data-cod-submit]");
@@ -115,10 +117,15 @@
     }
   };
 
+  PackCodCheckout.prototype.getTaxRate = function () {
+    return Number(this.config.taxRatePercent || 19) / 100;
+  };
+
   PackCodCheckout.prototype.renderSummary = function (lineItems) {
     var self = this;
     var subtotal = 0;
     var shipping = Number(this.config.shippingFlat || 0);
+    var taxRate = this.getTaxRate();
 
     this.itemsNode.innerHTML = lineItems
       .map(function (item) {
@@ -145,15 +152,25 @@
       shipping = 0;
     }
 
+    var taxAmount = Math.round(subtotal * taxRate);
+
     this.pendingSummary = {
       subtotal: subtotal,
+      taxAmount: taxAmount,
+      taxRate: taxRate,
       shipping: shipping,
-      total: subtotal + shipping
+      total: subtotal + taxAmount + shipping
     };
 
     this.subtotalNode.textContent = formatMoney(subtotal, this.config.currency);
+    if (this.taxNode) {
+      this.taxNode.textContent = formatMoney(taxAmount, this.config.currency);
+    }
+    if (this.taxRow) {
+      this.taxRow.hidden = taxRate <= 0;
+    }
     this.shippingNode.textContent = shipping > 0 ? formatMoney(shipping, this.config.currency) : "Gratis";
-    this.totalNode.textContent = formatMoney(subtotal + shipping, this.config.currency);
+    this.totalNode.textContent = formatMoney(subtotal + taxAmount + shipping, this.config.currency);
   };
 
   PackCodCheckout.prototype.buildLineItems = function (cartItems, products) {
@@ -299,6 +316,8 @@
       }),
       note: String(formData.get("note") || "").trim(),
       shippingPrice: this.pendingSummary ? this.pendingSummary.shipping : 0,
+      taxRate: this.pendingSummary ? this.pendingSummary.taxRate : this.getTaxRate(),
+      taxAmount: this.pendingSummary ? this.pendingSummary.taxAmount : 0,
       packLabel: this.config.packLabel || "Pack Bodys"
     };
 
