@@ -30,7 +30,7 @@
 }
 
 .promo-countdown__value {
-  font-size: clamp(2rem, 6vw, 3rem);
+  font-size: var(--promo-timer-value-size, 48px);
   font-weight: 700;
   line-height: 1;
   color: var(--promo-number-color, #d2b49b);
@@ -39,8 +39,8 @@
 
 .promo-countdown__label {
   margin-top: 8px;
-  font-size: 0.95rem;
-  color: #555;
+  font-size: var(--promo-timer-label-size, 15px);
+  color: var(--promo-timer-label-color, #555);
   text-transform: lowercase;
 }
 

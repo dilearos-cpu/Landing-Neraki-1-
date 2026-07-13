@@ -12,6 +12,9 @@
     --promo-color-low: {{ section.settings.progress_color_low }};
     --promo-color-mid: {{ section.settings.progress_color_mid }};
     --promo-color-high: {{ section.settings.progress_color_high }};
+    --promo-timer-value-size: {{ section.settings.timer_number_size }}px;
+    --promo-timer-label-size: {{ section.settings.timer_label_size }}px;
+    --promo-timer-label-color: {{ section.settings.timer_label_color }};
   "
 >
   <div class="promo-countdown__inner">
@@ -111,6 +114,38 @@
       "id": "seconds_label",
       "label": "Etiqueta segundos",
       "default": "segundos"
+    },
+    {
+      "type": "header",
+      "content": "Tamano del contador"
+    },
+    {
+      "type": "range",
+      "id": "timer_number_size",
+      "min": 20,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "label": "Tamano de los numeros",
+      "default": 48,
+      "info": "Aplica a horas, minutos y segundos."
+    },
+    {
+      "type": "range",
+      "id": "timer_label_size",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "Tamano de las etiquetas",
+      "default": 15,
+      "info": "Aplica a horas, minutos y segundos."
+    },
+    {
+      "type": "color",
+      "id": "timer_label_color",
+      "label": "Color de las etiquetas",
+      "default": "#555555"
     },
     {
       "type": "header",
