@@ -241,7 +241,7 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true, shop: SHOP_DOMAIN });
 });
 
-app.post(["/proxy/order", "/proxy/order/"], handleProxyOrder);
+app.post(["/proxy/order", "/proxy/order/", "/proxy/order/order", "/proxy/order/order/"], handleProxyOrder);
 
 app.post("/order", async (req, res) => {
   try {

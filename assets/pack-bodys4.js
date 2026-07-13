@@ -301,7 +301,7 @@
     if (codEnabled && window.PackCodCheckout) {
       try {
         codCheckout = window.PackCodCheckout.create(section, {
-          orderEndpoint: section.dataset.codEndpoint || "/apps/cod-express/order",
+          orderEndpoint: section.dataset.codEndpoint || "/apps/cod-express",
           shippingFlat: Number(section.dataset.codShippingFlat || 0),
           taxRatePercent: Number(section.dataset.codTaxRate || 19),
           freeShippingThreshold: Number(section.dataset.codFreeShippingThreshold || 0),

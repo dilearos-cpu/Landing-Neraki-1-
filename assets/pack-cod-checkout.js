@@ -347,7 +347,7 @@
     this.setLoading(true);
     this.hideError();
 
-    fetch(this.config.orderEndpoint || "/apps/cod-express/order", {
+    fetch(this.config.orderEndpoint || "/apps/cod-express", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
