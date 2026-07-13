@@ -187,14 +187,43 @@ https://landing-neraki-1.onrender.com/health
 
 Ese ping solo toca Render; **no crea pedidos ni llama a la API de Shopify**.
 
-### Opción recomendada: monitor externo gratuito
+### Cuenta cron-job.org (Caletzza)
 
-1. Crea cuenta en [UptimeRobot](https://uptimerobot.com) o [cron-job.org](https://cron-job.org)
-2. Nuevo monitor HTTP cada **10–14 minutos** (menos de 15 para evitar el spin-down)
-3. URL: `https://landing-neraki-1.onrender.com/health`
-4. Método: GET — respuesta esperada: `{"ok":true,...}`
+| Dato | Valor |
+|------|-------|
+| **Servicio** | [cron-job.org](https://cron-job.org) |
+| **Correo de la cuenta** | `dilearos@hotmail.com` |
+| **Nombre del cron job** | `Mantener despierto COD Express Caletzza` |
+| **URL** | `https://landing-neraki-1.onrender.com/health` |
+| **Método** | `GET` |
+| **Frecuencia** | Cada **10 minutos** (`*/10 * * * *`) |
+| **Respuesta esperada** | HTTP `200` + `{"ok":true,"shop":"caletzza.myshopify.com"}` |
 
-Con eso el checkout COD responde rápido casi siempre, sin afectar pedidos ni métricas de la tienda.
+> Si pierdes acceso, usa **Forgot password** en cron-job.org con `dilearos@hotmail.com`.
+
+### Paso a paso en cron-job.org
+
+1. Entra a **https://cron-job.org** e inicia sesión con `dilearos@hotmail.com`.
+2. Menú **Cronjobs** → **Create cronjob** (o edita el job existente).
+3. Completa los campos:
+   - **Title:** `Mantener despierto COD Express Caletzza`
+   - **URL:** `https://landing-neraki-1.onrender.com/health`
+   - **Schedule:** cada 10 minutos (`*/10 * * * *` o intervalo "Every 10 minutes")
+   - **Request method:** `GET`
+4. Opciones recomendadas:
+   - **Timeout:** 60 s (por si Render está despertando)
+   - **Notify on failure:** activado (opcional, para recibir alerta si falla)
+5. Guarda y verifica que el job esté **Enabled**.
+6. Pulsa **Run now** / **Realizar ejecución de prueba** y confirma:
+   - Estado **200 OK**
+   - Tiempo ~200–500 ms si ya está despierto (o 30–60 s si acaba de despertar)
+   - Body JSON: `{"ok":true,"shop":"caletzza.myshopify.com"}`
+
+### Alternativa: UptimeRobot
+
+Si prefieres otro servicio, [UptimeRobot](https://uptimerobot.com) con el mismo URL y intervalo de **10–14 minutos** también funciona.
+
+Con cualquiera de los dos, el checkout COD responde rápido casi siempre, sin afectar pedidos ni métricas de la tienda.
 
 ---
 
@@ -206,5 +235,6 @@ Con eso el checkout COD responde rápido casi siempre, sin afectar pedidos ni m�
 - [ ] Client ID y Secret guardados
 - [ ] Render desplegado con 4 variables
 - [ ] `/health` OK
+- [ ] Cron job en cron-job.org activo (`dilearos@hotmail.com`, cada 10 min)
 - [ ] Proxy URL actualizada con URL de Render
 - [ ] Pedido de prueba en Admin

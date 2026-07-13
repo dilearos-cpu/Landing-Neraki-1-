@@ -90,3 +90,9 @@ La app vive en `cod-express-app/`. Sin ella el formulario se muestra pero no pue
 
 Ver instrucciones completas en [cod-express-app/README.md](cod-express-app/README.md).
 
+### Mantener Render despierto (cron-job.org)
+
+En plan Free, Render se apaga tras ~15 min sin tráfico. Hay un cron job configurado en **cron-job.org** (cuenta `dilearos@hotmail.com`) que hace GET cada 10 min a `https://landing-neraki-1.onrender.com/health`. No crea pedidos en Shopify.
+
+Detalle paso a paso: [cod-express-app/SETUP-DEV-DASHBOARD.md](cod-express-app/SETUP-DEV-DASHBOARD.md#mantener-render-despierto-sin-pedidos-ficticios-en-shopify).
+
