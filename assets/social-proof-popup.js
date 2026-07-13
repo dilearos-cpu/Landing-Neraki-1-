@@ -129,6 +129,10 @@
 
     root.dataset.initialized = "true";
 
+    if (root.parentNode && root.parentNode !== document.body) {
+      document.body.appendChild(root);
+    }
+
     var toast = root.querySelector(".social-proof-popup__toast");
     var messageNode = root.querySelector(".social-proof-popup__message");
     var imageWrap = root.querySelector(".social-proof-popup__image-wrap");

@@ -221,12 +221,9 @@ Notificaciones emergentes tipo *"Juanito ha comprado un pack de bodys x4 hace 1 
 
 1. Copia los archivos a tu tema Shopify.
 2. En el editor del tema, agrega la seccion **Popup prueba social** solo en las paginas donde quieras mostrarlo (landing de pack, producto, etc.).
-3. En **Campaña / Shortcode** crea cada variante:
-   - **ID del shortcode** → identificador unico (ej: `pack-bodys-4`)
-   - **Nombre del pack** → ej: `pack de bodys`, `pack basicas`
-   - **Unidades fijas** → ej: `4`, `10`
-   - **Unidades aleatorias** → activa para variar entre min y max
-4. Ajusta tiempos, posicion, ciudades y nombres en los ajustes globales de la seccion.
+3. En **Pack / Producto** configura el nombre del pack y las unidades (ej: `pack de bodys` x4).
+4. Opcional: agrega bloques **Campaña adicional** si quieres rotar varios packs distintos.
+5. Ajusta tiempos, posicion, ciudades y nombres en los ajustes globales de la seccion.
 5. Guarda y publica.
 
 Cada bloque funciona como un shortcode independiente. Si tienes varios bloques, el popup elige uno al azar en cada ciclo.

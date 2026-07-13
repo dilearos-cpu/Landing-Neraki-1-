@@ -46,7 +46,18 @@
       "messageTemplate": {{ spp_message_template | json }},
       "timePhrases": {{ section.settings.time_phrases | default: 'hace un momento,hace 1 minuto,hace 2 minutos,hace 5 minutos,hace 8 minutos,hace 12 minutos,hace 15 minutos' | split: ',' | json }},
       "campaigns": [
+        {
+          "id": "default",
+          "packLabel": {{ section.settings.pack_label | default: 'pack de bodys' | json }},
+          "unitsFixed": {{ section.settings.units_fixed | default: 4 | json }},
+          "randomUnits": {{ section.settings.random_units | json }},
+          "unitsMin": {{ section.settings.units_min | default: 2 | json }},
+          "unitsMax": {{ section.settings.units_max | default: 10 | json }},
+          "names": [],
+          "image": {% if section.settings.product_image != blank %}{{ section.settings.product_image | image_url: width: 96 | json }}{% else %}null{% endif %}
+        }
         {%- assign campaign_blocks = section.blocks | where: 'type', 'popup_campaign' -%}
+        {%- if campaign_blocks.size > 0 -%},{%- endif -%}
         {%- for block in campaign_blocks -%}
           {
             "id": {{ block.settings.shortcode_id | default: block.id | json }},
@@ -80,6 +91,56 @@
   "tag": "section",
   "class": "social-proof-popup-section",
   "settings": [
+    {
+      "type": "header",
+      "content": "Pack / Producto"
+    },
+    {
+      "type": "text",
+      "id": "pack_label",
+      "label": "Nombre del pack",
+      "default": "pack de bodys",
+      "info": "Ejemplo: pack de bodys, pack básicas, set premium"
+    },
+    {
+      "type": "range",
+      "id": "units_fixed",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "label": "Unidades del pack",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "random_units",
+      "label": "Usar unidades aleatorias",
+      "default": false,
+      "info": "Si está activo, ignora las unidades fijas y elige un número al azar entre el mínimo y el máximo."
+    },
+    {
+      "type": "range",
+      "id": "units_min",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "label": "Unidades mínimas (aleatorio)",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "units_max",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "label": "Unidades máximas (aleatorio)",
+      "default": 10
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image",
+      "label": "Imagen del producto (opcional)"
+    },
     {
       "type": "header",
       "content": "Comportamiento"
@@ -207,7 +268,7 @@
   "blocks": [
     {
       "type": "popup_campaign",
-      "name": "Campaña / Shortcode",
+      "name": "Campaña adicional",
       "settings": [
         {
           "type": "text",
@@ -263,25 +324,10 @@
   "presets": [
     {
       "name": "Popup prueba social",
-      "blocks": [
-        {
-          "type": "popup_campaign",
-          "settings": {
-            "shortcode_id": "pack-bodys-4",
-            "pack_label": "pack de bodys",
-            "units_fixed": 4
-          }
-        },
-        {
-          "type": "popup_campaign",
-          "settings": {
-            "shortcode_id": "pack-bodys-10",
-            "pack_label": "pack de bodys",
-            "units_fixed": 10,
-            "random_units": false
-          }
-        }
-      ]
+      "settings": {
+        "pack_label": "pack de bodys",
+        "units_fixed": 4
+      }
     }
   ]
 }
