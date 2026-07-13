@@ -68,7 +68,7 @@ Equivalente al plugin WooCommerce **Segunda Imagen**. Muestra una segunda foto a
 
 1. **Configuración → Datos personalizados → Variantes → Agregar definición**
 2. Nombre: `Segunda imagen`
-3. Namespace y clave: `custom.second_image`
+3. Namespace: `custom`, clave: la que muestre Admin (ej. `custom_second_image` si el nombre fue `custom.second_image`)
 4. Tipo: **Archivo** → una imagen
 5. En cada variante (o una por color), sube la segunda imagen
 

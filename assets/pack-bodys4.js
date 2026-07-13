@@ -129,7 +129,7 @@
     }
 
     var namespace = (section && section.dataset.metafieldNamespace) || "custom";
-    var metafieldKey = (section && section.dataset.metafieldKey) || "second_image";
+    var metafieldKey = (section && section.dataset.metafieldKey) || "custom_second_image";
     var secondsUrl =
       "/products/" +
       encodeURIComponent(product.handle) +

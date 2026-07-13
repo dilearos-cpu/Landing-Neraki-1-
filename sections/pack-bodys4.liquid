@@ -139,19 +139,8 @@
             "second_by_color": {
               {% assign first_color_entry = true %}
               {% for variant in product.variants %}
-                {% assign second_image = '' %}
-                {% assign second_meta = variant.metafields[section.settings.metafield_namespace][section.settings.metafield_key] %}
-                {% if second_meta != blank %}
-                  {% if second_meta.value.url %}
-                    {% assign second_image = second_meta.value | image_url: width: 600 %}
-                  {% elsif second_meta.type == 'file_reference' %}
-                    {% assign second_image = second_meta | image_url: width: 600 %}
-                  {% elsif second_meta.value contains 'http' or second_meta.value contains '//' %}
-                    {% assign second_image = second_meta.value %}
-                  {% else %}
-                    {% assign second_image = second_meta | image_url: width: 600 %}
-                  {% endif %}
-                {% endif %}
+                {% render 'variant-second-image-url', variant: variant, namespace: section.settings.metafield_namespace, metafield_key: section.settings.metafield_key %}
+                {% assign second_image = variant_second_image_url %}
                 {% if second_image != blank %}
                   {% assign color_value = variant.options[color_option_index] %}
                   {% unless first_color_entry %},{% endunless %}
@@ -170,19 +159,8 @@
                 {% else %}
                   {% assign variant_image = '' %}
                 {% endif %}
-                {% assign second_image = '' %}
-                {% assign second_meta = variant.metafields[section.settings.metafield_namespace][section.settings.metafield_key] %}
-                {% if second_meta != blank %}
-                  {% if second_meta.value.url %}
-                    {% assign second_image = second_meta.value | image_url: width: 600 %}
-                  {% elsif second_meta.type == 'file_reference' %}
-                    {% assign second_image = second_meta | image_url: width: 600 %}
-                  {% elsif second_meta.value contains 'http' or second_meta.value contains '//' %}
-                    {% assign second_image = second_meta.value %}
-                  {% else %}
-                    {% assign second_image = second_meta | image_url: width: 600 %}
-                  {% endif %}
-                {% endif %}
+                {% render 'variant-second-image-url', variant: variant, namespace: section.settings.metafield_namespace, metafield_key: section.settings.metafield_key %}
+                {% assign second_image = variant_second_image_url %}
                 {
                   "id": {{ variant.id | json }},
                   "title": {{ variant.title | json }},
@@ -298,13 +276,13 @@
       "id": "metafield_namespace",
       "label": "Namespace del metafield",
       "default": "custom",
-      "info": "Crea en Shopify Admin un metafield de variante: custom.second_image (tipo archivo/imagen). Una imagen por color aplica a todas las tallas."
+      "info": "Metafield de variante en Admin (tipo archivo/imagen). Namespace: custom. Key: la que muestre Admin bajo el nombre (ej. custom_second_image)."
     },
     {
       "type": "text",
       "id": "metafield_key",
       "label": "Key del metafield",
-      "default": "second_image"
+      "default": "custom_second_image"
     },
     {
       "type": "header",

@@ -1,0 +1,19 @@
+{% comment %}
+  Resuelve la URL de segunda imagen de una variante desde metafield file_reference.
+  Uso: {% render 'variant-second-image-url', variant: variant, namespace: ns, metafield_key: key %}
+  Resultado en variable `variant_second_image_url`
+{% endcomment %}
+{% liquid
+  assign ns = namespace | default: 'custom'
+  assign key = metafield_key | default: 'custom_second_image'
+  assign variant_second_image_url = ''
+
+  assign second_meta = variant.metafields[ns][key]
+  if second_meta != blank
+    if second_meta.value != blank
+      assign variant_second_image_url = second_meta.value | image_url: width: 600
+    else
+      assign variant_second_image_url = second_meta | file_url
+    endif
+  endif
+%}

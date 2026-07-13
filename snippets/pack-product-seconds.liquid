@@ -1,6 +1,6 @@
 {% liquid
   assign ns = namespace | default: 'custom'
-  assign key = metafield_key | default: 'second_image'
+  assign key = metafield_key | default: 'custom_second_image'
   assign color_option_index = 0
 
   for option in product.options_with_values
@@ -21,19 +21,8 @@
   "second_by_color": {
     {% assign first_color = true %}
     {% for variant in product.variants %}
-      {% assign second_image = '' %}
-      {% assign second_meta = variant.metafields[ns][key] %}
-      {% if second_meta != blank %}
-        {% if second_meta.value.url %}
-          {% assign second_image = second_meta.value | image_url: width: 600 %}
-        {% elsif second_meta.type == 'file_reference' %}
-          {% assign second_image = second_meta | image_url: width: 600 %}
-        {% elsif second_meta.value contains 'http' or second_meta.value contains '//' %}
-          {% assign second_image = second_meta.value %}
-        {% else %}
-          {% assign second_image = second_meta | image_url: width: 600 %}
-        {% endif %}
-      {% endif %}
+      {% render 'variant-second-image-url', variant: variant, namespace: ns, metafield_key: key %}
+      {% assign second_image = variant_second_image_url %}
       {% if second_image != blank %}
         {% assign color_value = variant.options[color_option_index] %}
         {% unless first_color %},{% endunless %}
@@ -44,19 +33,8 @@
   },
   "variants": [
     {% for variant in product.variants %}
-      {% assign second_image = '' %}
-      {% assign second_meta = variant.metafields[ns][key] %}
-      {% if second_meta != blank %}
-        {% if second_meta.value.url %}
-          {% assign second_image = second_meta.value | image_url: width: 600 %}
-        {% elsif second_meta.type == 'file_reference' %}
-          {% assign second_image = second_meta | image_url: width: 600 %}
-        {% elsif second_meta.value contains 'http' or second_meta.value contains '//' %}
-          {% assign second_image = second_meta.value %}
-        {% else %}
-          {% assign second_image = second_meta | image_url: width: 600 %}
-        {% endif %}
-      {% endif %}
+      {% render 'variant-second-image-url', variant: variant, namespace: ns, metafield_key: key %}
+      {% assign second_image = variant_second_image_url %}
       {
         "id": {{ variant.id | json }},
         "second_image": {{ second_image | json }},

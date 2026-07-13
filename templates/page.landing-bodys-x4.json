@@ -230,6 +230,8 @@
         "padding_right": 32,
         "margin_top": 0,
         "margin_bottom": 0,
+        "metafield_namespace": "custom",
+        "metafield_key": "custom_second_image",
         "collection": "bodys",
         "slot_count": 4,
         "products_limit": 30,
