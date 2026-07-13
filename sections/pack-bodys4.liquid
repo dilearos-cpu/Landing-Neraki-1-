@@ -132,6 +132,9 @@
     <script type="application/json" data-pack-products>
       [
         {% for product in pack_collection.products limit: liquid_products_limit %}
+          {% unless product.available %}
+            {% continue %}
+          {% endunless %}
           {% liquid
             assign color_option_index = 0
             for option in product.options_with_values

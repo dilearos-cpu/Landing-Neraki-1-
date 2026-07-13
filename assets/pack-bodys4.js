@@ -163,10 +163,24 @@
     });
   }
 
+  function isProductInStock(product) {
+    if (!product || !product.default_variant_id) {
+      return false;
+    }
+
+    if (product.variants && product.variants.length > 1) {
+      return product.variants.some(function (variant) {
+        return variant.available;
+      });
+    }
+
+    return Boolean(product.available);
+  }
+
   function transformShopifyProduct(product) {
     var firstImage = product.images && product.images.length ? product.images[0].src : "";
     var variants = (product.variants || []).map(function (variant) {
-      var options = [variant.option1, variant.option2, variant.option3].filter(function (value) {
+      var optionValues = [variant.option1, variant.option2, variant.option3].filter(function (value) {
         return value !== null && value !== undefined && value !== "";
       });
 
@@ -177,11 +191,11 @@
         image: variant.featured_image && variant.featured_image.src ? variant.featured_image.src : "",
         second_image: "",
         price: Math.round(parseFloat(variant.price || 0) * 100),
-        options: options
+        options: optionValues
       };
     });
 
-    return {
+    var transformed = {
       id: product.id,
       handle: product.handle,
       name: product.title,
@@ -199,6 +213,8 @@
         };
       })
     };
+
+    return isProductInStock(transformed) ? transformed : null;
   }
 
   function fetchCollectionProducts(handle, limit) {
@@ -224,7 +240,10 @@
           }
 
           data.products.forEach(function (product) {
-            collected.push(transformShopifyProduct(product));
+            var transformed = transformShopifyProduct(product);
+            if (transformed) {
+              collected.push(transformed);
+            }
           });
 
           if (collected.length >= limit || data.products.length < requestLimit) {
@@ -269,7 +288,7 @@
 
     try {
       products = JSON.parse(productsNode.textContent).filter(function (product) {
-        return Boolean(product.default_variant_id);
+        return isProductInStock(product);
       });
     } catch (error) {
       console.error("Pack Bodys 4: no se pudo leer el catalogo de productos.", error);
@@ -279,7 +298,7 @@
 
     function bootstrapPackUI() {
       products = products.filter(function (product) {
-        return Boolean(product.default_variant_id);
+        return isProductInStock(product);
       });
 
       if (!products.length && productsLimit > 0) {
@@ -728,7 +747,9 @@
       fetchCollectionProducts(collectionHandle, productsLimit)
         .then(function (fetchedProducts) {
           if (fetchedProducts.length) {
-            products = fetchedProducts;
+            products = fetchedProducts.filter(function (product) {
+              return isProductInStock(product);
+            });
           }
           bootstrapPackUI();
         })

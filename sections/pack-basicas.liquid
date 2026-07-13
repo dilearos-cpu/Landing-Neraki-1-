@@ -107,6 +107,9 @@
           {% unless product.has_only_default_variant %}
             {% continue %}
           {% endunless %}
+          {% unless product.available %}
+            {% continue %}
+          {% endunless %}
           {% if product.featured_media %}
             {% assign featured = product.featured_media | image_url: width: 600 %}
           {% else %}

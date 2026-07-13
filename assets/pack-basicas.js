@@ -19,7 +19,7 @@
     var firstImage = product.images && product.images.length ? product.images[0].src : "";
     var variant = product.variants && product.variants[0] ? product.variants[0] : null;
 
-    if (!variant || !variant.id) {
+    if (!variant || !variant.id || !variant.available) {
       return null;
     }
 
@@ -112,7 +112,7 @@
 
     try {
       products = JSON.parse(productsNode.textContent).filter(function (product) {
-        return Boolean(product.default_variant_id);
+        return Boolean(product.default_variant_id) && product.available;
       });
     } catch (error) {
       console.error("Pack Basicas: no se pudo leer el catalogo de productos.", error);
@@ -129,7 +129,7 @@
 
     function bootstrapPackUI() {
       products = products.filter(function (product) {
-        return Boolean(product.default_variant_id);
+        return Boolean(product.default_variant_id) && product.available;
       });
 
       if (!products.length && productsLimit > 0) {
@@ -372,7 +372,9 @@
       fetchSimpleCollectionProducts(collectionHandle, productsLimit)
         .then(function (fetchedProducts) {
           if (fetchedProducts.length) {
-            products = fetchedProducts;
+            products = fetchedProducts.filter(function (product) {
+              return Boolean(product.default_variant_id) && product.available;
+            });
           }
 
           if (renderProductsRef) {

@@ -154,6 +154,9 @@
             >
               {% assign skip_card_product_styles = false %}
               {%- for product in collection.products -%}
+                {%- unless product.available -%}
+                  {%- continue -%}
+                {%- endunless -%}
                 {% assign lazy_load = false %}
                 {%- if forloop.index > 2 -%}
                   {%- assign lazy_load = true -%}
