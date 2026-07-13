@@ -315,6 +315,9 @@
           paymentNoteOnline: section.dataset.codOnlinePaymentNote || "",
           enableOnlinePayment: section.dataset.codEnableOnline !== "false",
           showCheckoutFallback: section.dataset.codFallback !== "false",
+          storefrontToken: section.dataset.codStorefrontToken || "",
+          storefrontApiUrl:
+            "/api/" + (section.dataset.codStorefrontApi || "2025-01") + "/graphql.json",
           cartUrl: cartUrl,
           checkoutUrl: checkoutUrl
         });

@@ -62,10 +62,77 @@
     return base + ".js";
   }
 
+  var CO_PROVINCE_CODES = {
+    Amazonas: "AMA",
+    Antioquia: "ANT",
+    Arauca: "ARA",
+    Atlantico: "ATL",
+    "Bogota D.C.": "DC",
+    Bolivar: "BOL",
+    Boyaca: "BOY",
+    Caldas: "CAL",
+    Caqueta: "CAQ",
+    Casanare: "CAS",
+    Cauca: "CAU",
+    Cesar: "CES",
+    Choco: "CHO",
+    Cordoba: "COR",
+    Cundinamarca: "CUN",
+    Guainia: "GUA",
+    Guaviare: "GUV",
+    Huila: "HUI",
+    "La Guajira": "LAG",
+    Magdalena: "MAG",
+    Meta: "MET",
+    Narino: "NAR",
+    "Norte de Santander": "NSA",
+    Putumayo: "PUT",
+    Quindio: "QUI",
+    Risaralda: "RIS",
+    "San Andres": "SAP",
+    Santander: "SAN",
+    Sucre: "SUC",
+    Tolima: "TOL",
+    "Valle del Cauca": "VAC",
+    Vaupes: "VAU",
+    Vichada: "VID"
+  };
+
+  function variantGid(variantId) {
+    return "gid://shopify/ProductVariant/" + variantId;
+  }
+
+  function normalizePhone(phone) {
+    var digits = String(phone || "").replace(/\D/g, "");
+    if (!digits) {
+      return "";
+    }
+    if (digits.indexOf("57") === 0 && digits.length >= 12) {
+      return "+" + digits;
+    }
+    if (digits.length === 10) {
+      return "+57" + digits;
+    }
+    return "+" + digits;
+  }
+
+  function checkoutEmail(customer) {
+    if (customer.email) {
+      return customer.email;
+    }
+    var digits = String(customer.phone || "").replace(/\D/g, "");
+    if (digits) {
+      return "cliente+" + digits + "@checkout.caletzza.local";
+    }
+    return "cliente@checkout.caletzza.local";
+  }
+
   function PackCodCheckout(section, config) {
     this.section = section;
     this.config = config || {};
     this.root = section.querySelector("[data-pack-cod]");
+    this.dialog = section.querySelector("[data-cod-dialog]");
+    this.mainPanel = section.querySelector("[data-cod-main]");
     this.form = section.querySelector("[data-cod-form]");
     this.successPanel = section.querySelector("[data-cod-success]");
     this.errorNode = section.querySelector("[data-cod-error]");
@@ -116,13 +183,13 @@
 
     if (this.paymentsFieldset) {
       this.paymentsFieldset.addEventListener("click", function (event) {
-        var option = event.target.closest(".pack-cod__payment-option");
+        var option = event.target.closest(".pack-cod__pay-card");
         if (!option) {
           return;
         }
-        var options = self.paymentsFieldset.querySelectorAll(".pack-cod__payment-option");
+        var options = self.paymentsFieldset.querySelectorAll(".pack-cod__pay-card");
         options.forEach(function (node) {
-          node.classList.toggle("pack-cod__payment-option--active", node === option);
+          node.classList.toggle("pack-cod__pay-card--active", node === option);
         });
       });
     }
@@ -274,7 +341,6 @@
     this.renderSummary(lineItems);
     this.form.hidden = false;
     this.form.reset();
-    this.successPanel.hidden = true;
     this.grid.hidden = false;
     this.hideError();
 
@@ -283,13 +349,21 @@
       if (codRadio) {
         codRadio.checked = true;
       }
-      var paymentOptions = this.paymentsFieldset.querySelectorAll(".pack-cod__payment-option");
+      var paymentOptions = this.paymentsFieldset.querySelectorAll(".pack-cod__pay-card");
       paymentOptions.forEach(function (node, index) {
-        node.classList.toggle("pack-cod__payment-option--active", index === 0);
+        node.classList.toggle("pack-cod__pay-card--active", index === 0);
       });
     }
 
     this.updatePaymentUI();
+
+    if (this.mainPanel) {
+      this.mainPanel.hidden = false;
+    }
+    if (this.dialog) {
+      this.dialog.classList.remove("pack-cod__dialog--success");
+    }
+    this.successPanel.hidden = true;
 
     if (this.fallbackButton) {
       this.fallbackButton.hidden = true;
@@ -444,7 +518,174 @@
     });
   }
 
+  PackCodCheckout.prototype.storefrontGraphql = function (query, variables) {
+    var self = this;
+    if (!this.config.storefrontToken) {
+      return Promise.reject(new Error("Falta el token Storefront API en la configuracion del theme."));
+    }
+
+    return fetch(this.config.storefrontApiUrl || "/api/2025-01/graphql.json", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shopify-Storefront-Access-Token": this.config.storefrontToken
+      },
+      body: JSON.stringify({ query: query, variables: variables })
+    }).then(function (response) {
+      return response.json();
+    }).then(function (payload) {
+      if (payload.errors && payload.errors.length) {
+        throw new Error(payload.errors[0].message);
+      }
+      return payload.data;
+    });
+  };
+
+  PackCodCheckout.prototype.showSuccess = function (orderName) {
+    if (this.mainPanel) {
+      this.mainPanel.hidden = true;
+    }
+    if (this.dialog) {
+      this.dialog.classList.add("pack-cod__dialog--success");
+    }
+    this.successPanel.hidden = false;
+    if (this.orderNameNode && orderName) {
+      this.orderNameNode.textContent = "Pedido " + orderName;
+    }
+  };
+
   PackCodCheckout.prototype.submitOnline = function (customer) {
+    var self = this;
+    var provinceCode = CO_PROVINCE_CODES[customer.province] || "CUN";
+    var phone = normalizePhone(customer.phone);
+    var email = checkoutEmail(customer);
+    var lines = this.pendingItems.map(function (item) {
+      return {
+        merchandiseId: variantGid(item.id),
+        quantity: item.quantity || 1
+      };
+    });
+
+    var cartCreateMutation =
+      "mutation cartCreate($input: CartInput!) {" +
+      " cartCreate(input: $input) {" +
+      " cart { id checkoutUrl }" +
+      " userErrors { field message }" +
+      " }" +
+      "}";
+
+    var identityMutation =
+      "mutation cartBuyerIdentityUpdate($cartId: ID!, $identity: CartBuyerIdentityInput!) {" +
+      " cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $identity) {" +
+      " cart { id checkoutUrl }" +
+      " userErrors { field message }" +
+      " }" +
+      "}";
+
+    var addressMutation =
+      "mutation cartDeliveryAddressesAdd($cartId: ID!, $addresses: [CartSelectableAddressInput!]!) {" +
+      " cartDeliveryAddressesAdd(cartId: $cartId, addresses: $addresses) {" +
+      " cart { id checkoutUrl }" +
+      " userErrors { field message }" +
+      " }" +
+      "}";
+
+    var noteMutation =
+      "mutation cartNoteUpdate($cartId: ID!, $note: String!) {" +
+      " cartNoteUpdate(cartId: $cartId, note: $note) {" +
+      " cart { id checkoutUrl }" +
+      " userErrors { field message }" +
+      " }" +
+      "}";
+
+    var cartId = "";
+    var checkoutUrl = "";
+
+    function ensureNoErrors(result, key) {
+      var errors = result && result[key] && result[key].userErrors;
+      if (errors && errors.length) {
+        throw new Error(errors.map(function (error) {
+          return error.message;
+        }).join(" "));
+      }
+      return result[key];
+    }
+
+    this.storefrontGraphql(cartCreateMutation, {
+      input: {
+        lines: lines,
+        buyerIdentity: {
+          email: email,
+          phone: phone,
+          countryCode: "CO"
+        }
+      }
+    })
+      .then(function (data) {
+        var result = ensureNoErrors(data, "cartCreate");
+        cartId = result.cart.id;
+        checkoutUrl = result.cart.checkoutUrl;
+        return self.storefrontGraphql(identityMutation, {
+          cartId: cartId,
+          identity: {
+            email: email,
+            phone: phone,
+            countryCode: "CO"
+          }
+        });
+      })
+      .then(function (data) {
+        var result = ensureNoErrors(data, "cartBuyerIdentityUpdate");
+        checkoutUrl = result.cart.checkoutUrl || checkoutUrl;
+        return self.storefrontGraphql(addressMutation, {
+          cartId: cartId,
+          addresses: [
+            {
+              selected: true,
+              oneTimeUse: true,
+              address: {
+                deliveryAddress: {
+                  firstName: customer.names.firstName,
+                  lastName: customer.names.lastName,
+                  address1: customer.address1,
+                  city: customer.city,
+                  provinceCode: provinceCode,
+                  countryCode: "CO",
+                  zip: "000000",
+                  phone: phone
+                }
+              }
+            }
+          ]
+        });
+      })
+      .then(function (data) {
+        var result = ensureNoErrors(data, "cartDeliveryAddressesAdd");
+        checkoutUrl = result.cart.checkoutUrl || checkoutUrl;
+        if (!customer.note) {
+          return null;
+        }
+        return self.storefrontGraphql(noteMutation, {
+          cartId: cartId,
+          note: customer.note
+        });
+      })
+      .then(function (data) {
+        if (data && data.cartNoteUpdate) {
+          checkoutUrl = data.cartNoteUpdate.cart.checkoutUrl || checkoutUrl;
+        }
+        if (!checkoutUrl) {
+          throw new Error("No se obtuvo la URL de checkout.");
+        }
+        window.location.href = checkoutUrl;
+      })
+      .catch(function (error) {
+        console.warn("Storefront checkout prefill failed, using fallback:", error);
+        self.submitOnlineFallback(customer);
+      });
+  };
+
+  PackCodCheckout.prototype.submitOnlineFallback = function (customer) {
     var self = this;
 
     fetch("/cart/clear.js", {
@@ -539,12 +780,7 @@
     })
       .then(parseOrderResponse)
       .then(function (data) {
-        self.form.hidden = true;
-        self.grid.hidden = true;
-        self.successPanel.hidden = false;
-        if (self.orderNameNode && data.orderName) {
-          self.orderNameNode.textContent = "Pedido " + data.orderName;
-        }
+        self.showSuccess(data.orderName);
       })
       .catch(function (error) {
         self.showError(
