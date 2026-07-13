@@ -18,9 +18,18 @@
     --grb-max-width: {{ section.settings.max_width }}px;
     --grb-shadow-y: {{ section.settings.shadow_y }}px;
     --grb-shadow-blur: {{ section.settings.shadow_blur }}px;
+    --grb-heading-size: {{ section.settings.heading_font_size }}px;
+    --grb-phrase-size: {{ section.settings.phrase_font_size }}px;
+    --grb-heading-color: {{ section.settings.heading_color }};
   "
 >
   <div class="google-rating-badge__inner google-rating-badge__inner--align-{{ section.settings.alignment }}">
+    {% if section.settings.show_heading and section.settings.heading_text != blank %}
+      <h2 class="google-rating-badge__heading google-rating-badge__heading--align-{{ section.settings.heading_alignment }}">
+        {{ section.settings.heading_text }}
+      </h2>
+    {% endif %}
+
     <div class="google-rating-badge__card" aria-label="{{ section.settings.prefix_text }} {{ section.settings.customer_count }} {{ section.settings.phrase_text }}">
       <div class="google-rating-badge__stars" aria-hidden="true">
         {% for i in (1..section.settings.star_count) %}
@@ -34,13 +43,13 @@
 
       <p class="google-rating-badge__text">
         {% if section.settings.prefix_text != blank %}
-          {{ section.settings.prefix_text }}
+          <span class="google-rating-badge__prefix">{{ section.settings.prefix_text }}</span>
         {% endif %}
         {% if section.settings.customer_count != blank %}
-          <strong>{{ section.settings.customer_count }}</strong>
+          <strong class="google-rating-badge__count">{{ section.settings.customer_count }}</strong>
         {% endif %}
         {% if section.settings.phrase_text != blank %}
-          {{ section.settings.phrase_text }}
+          <span class="google-rating-badge__phrase">{{ section.settings.phrase_text }}</span>
         {% endif %}
       </p>
     </div>
@@ -55,7 +64,59 @@
   "settings": [
     {
       "type": "header",
-      "content": "Contenido"
+      "content": "Titulo superior"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_heading",
+      "label": "Mostrar titulo",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "heading_text",
+      "label": "Titulo",
+      "default": "Nuestros clientes nos califican"
+    },
+    {
+      "type": "range",
+      "id": "heading_font_size",
+      "min": 14,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Tamano del titulo",
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Alineacion del titulo",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Izquierda"
+        },
+        {
+          "value": "center",
+          "label": "Centro"
+        },
+        {
+          "value": "right",
+          "label": "Derecha"
+        }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Color del titulo",
+      "default": "#202124"
+    },
+    {
+      "type": "header",
+      "content": "Contenido del recuadro"
     },
     {
       "type": "range",
@@ -84,6 +145,16 @@
       "id": "phrase_text",
       "label": "Frase despues del numero",
       "default": "clientes felices"
+    },
+    {
+      "type": "range",
+      "id": "phrase_font_size",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "Tamano de la frase (ej. clientes felices)",
+      "default": 16
     },
     {
       "type": "header",

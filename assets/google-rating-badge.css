@@ -8,6 +8,28 @@
 .google-rating-badge__inner {
   max-width: var(--grb-max-width, 520px);
   margin: 0 auto;
+  width: 100%;
+}
+
+.google-rating-badge__heading {
+  margin: 0 0 12px;
+  width: 100%;
+  font-size: var(--grb-heading-size, 24px);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--grb-heading-color, #202124);
+}
+
+.google-rating-badge__heading--align-left {
+  text-align: left;
+}
+
+.google-rating-badge__heading--align-center {
+  text-align: center;
+}
+
+.google-rating-badge__heading--align-right {
+  text-align: right;
 }
 
 .google-rating-badge__inner--align-left {
@@ -70,6 +92,15 @@
 .google-rating-badge__text strong {
   font-weight: 700;
   color: var(--grb-highlight-color, #1a73e8);
+}
+
+.google-rating-badge__phrase {
+  font-size: var(--grb-phrase-size, 16px);
+}
+
+.google-rating-badge__prefix + .google-rating-badge__count,
+.google-rating-badge__count + .google-rating-badge__phrase {
+  margin-left: 0.25em;
 }
 
 @keyframes google-rating-badge-float {
