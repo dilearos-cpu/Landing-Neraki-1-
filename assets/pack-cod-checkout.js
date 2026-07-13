@@ -281,6 +281,29 @@
       });
   };
 
+  function parseOrderResponse(response) {
+    return response.text().then(function (text) {
+      var data = null;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch (error) {
+          throw new Error(
+            "El servidor no respondio JSON (HTTP " +
+              response.status +
+              "). Revisa app proxy en Dev Dashboard."
+          );
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error((data && data.error) || "No se pudo crear el pedido (HTTP " + response.status + ").");
+      }
+
+      return data;
+    });
+  }
+
   PackCodCheckout.prototype.submit = function () {
     var self = this;
     if (!this.form || !this.pendingItems.length) {
@@ -332,14 +355,7 @@
       },
       body: JSON.stringify(payload)
     })
-      .then(function (response) {
-        return response.json().then(function (data) {
-          if (!response.ok) {
-            throw new Error((data && data.error) || "No se pudo crear el pedido.");
-          }
-          return data;
-        });
-      })
+      .then(parseOrderResponse)
       .then(function (data) {
         self.form.hidden = true;
         self.grid.hidden = true;

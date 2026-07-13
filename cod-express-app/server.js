@@ -82,6 +82,37 @@ function moneyFromCents(cents) {
   return (Number(cents || 0) / 100).toFixed(2);
 }
 
+function parseProxyBody(req) {
+  if (req.body && typeof req.body === "object" && Object.keys(req.body).length) {
+    return req.body;
+  }
+
+  return {};
+}
+
+async function handleProxyOrder(req, res) {
+  try {
+    if (!verifyProxySignature(req.query)) {
+      console.error("Proxy signature invalid", {
+        shop: req.query.shop,
+        path_prefix: req.query.path_prefix
+      });
+      return res.status(401).json({ error: "Firma de app proxy invalida." });
+    }
+
+    const body = parseProxyBody(req);
+    if (!body.lineItems || !body.lineItems.length) {
+      return res.status(400).json({ error: "No se recibieron productos. Revisa app proxy POST." });
+    }
+
+    const result = await createCodOrder(body);
+    return res.json(result);
+  } catch (error) {
+    console.error("Create order failed:", error.message);
+    return res.status(400).json({ error: error.message || "No se pudo crear el pedido." });
+  }
+}
+
 async function shopifyGraphql(query, variables) {
   const accessToken = await getAccessToken();
 
@@ -145,8 +176,8 @@ async function createCodOrder(body) {
       address1: shippingAddress.address1,
       city: shippingAddress.city,
       province: shippingAddress.province,
-      country: shippingAddress.country || "Colombia",
-      zip: shippingAddress.zip || "",
+      countryCode: "CO",
+      zip: shippingAddress.zip || "000000",
       phone: customer.phone || undefined
     },
     lineItems,
@@ -210,18 +241,7 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true, shop: SHOP_DOMAIN });
 });
 
-app.post("/proxy/order", async (req, res) => {
-  try {
-    if (!verifyProxySignature(req.query)) {
-      return res.status(401).json({ error: "Firma de app proxy invalida." });
-    }
-
-    const result = await createCodOrder(req.body);
-    return res.json(result);
-  } catch (error) {
-    return res.status(400).json({ error: error.message || "No se pudo crear el pedido." });
-  }
-});
+app.post(["/proxy/order", "/proxy/order/"], handleProxyOrder);
 
 app.post("/order", async (req, res) => {
   try {
