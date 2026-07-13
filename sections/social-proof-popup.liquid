@@ -32,11 +32,18 @@
     </span>
   </div>
 
+  {%- liquid
+    assign spp_message_template = section.settings.message_template
+    if spp_message_template == blank
+      assign spp_message_template = '{name} ha comprado un {pack} hace {time} en {city}'
+    endif
+  -%}
+
   <script type="application/json" data-social-proof-config>
     {
       "cities": {{ section.settings.cities | default: 'Bogotá,Medellín,Cali,Barranquilla,Cartagena,Bucaramanga,Pereira,Manizales,Santa Marta,Ibagué,Cúcuta,Villavicencio,Pasto,Montería,Armenia' | split: ',' | json }},
       "defaultNames": {{ section.settings.default_names | default: 'Juanito,María,Carlos,Laura,Andrés,Camila,Diego,Valentina,Santiago,Daniela,Felipe,Isabella,Nicolás,Paula,Sebastián' | split: ',' | json }},
-      "messageTemplate": {{ section.settings.message_template | default: '{name} ha comprado un {pack} hace {time} en {city}' | json }},
+      "messageTemplate": {{ spp_message_template | json }},
       "timePhrases": {{ section.settings.time_phrases | default: 'hace un momento,hace 1 minuto,hace 2 minutos,hace 5 minutos,hace 8 minutos,hace 12 minutos,hace 15 minutos' | split: ',' | json }},
       "campaigns": [
         {%- assign campaign_blocks = section.blocks | where: 'type', 'popup_campaign' -%}

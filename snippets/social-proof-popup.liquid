@@ -32,7 +32,11 @@ Renderiza un popup de prueba social en páginas específicas (equivalente a shor
   assign interval_max_value = interval_max | default: 25
   assign display_duration_value = display_duration | default: 6
   assign position_value = position | default: 'bottom-left'
-  assign message_template_value = message_template | default: '{name} ha comprado un {pack} hace {time} en {city}'
+  if message_template != blank
+    assign message_template_value = message_template
+  else
+    assign message_template_value = '{name} ha comprado un {pack} hace {time} en {city}'
+  endif
   assign cities_value = cities | default: 'Bogotá,Medellín,Cali,Barranquilla,Cartagena,Bucaramanga,Pereira,Manizales,Santa Marta,Ibagué,Cúcuta,Villavicencio,Pasto,Montería,Armenia'
   assign default_names_value = default_names | default: 'Juanito,María,Carlos,Laura,Andrés,Camila,Diego,Valentina,Santiago,Daniela,Felipe,Isabella,Nicolás,Paula,Sebastián'
   assign time_phrases_value = time_phrases | default: 'hace un momento,hace 1 minuto,hace 2 minutos,hace 5 minutos,hace 8 minutos,hace 12 minutos,hace 15 minutos'
