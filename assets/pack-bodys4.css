@@ -186,21 +186,32 @@
 
 .variant-picker__media {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
 }
 
-.variant-picker__image {
+.variant-picker__media .variant-picker__image {
+  flex: 1 1 50%;
+  width: 50%;
+  max-width: 50%;
+  height: auto;
   max-height: 320px;
+  object-fit: contain;
+  border: none;
 }
 
 .variant-picker__second {
-  flex: 0 0 200px;
-  width: 200px;
-  height: 200px;
-  background: #fff;
-  border: 1px solid #eee;
+  flex: 1 1 50%;
+  width: 50%;
+  max-width: 50%;
+  min-width: 0;
+  height: auto;
+  background: transparent;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,8 +224,10 @@
 
 .variant-picker__second-image {
   width: 100%;
-  height: 100%;
+  height: auto;
+  max-height: 320px;
   object-fit: contain;
+  border: none;
 }
 
 .variant-picker__label {
@@ -238,13 +251,12 @@
   }
 
   .variant-picker__media {
-    justify-content: center;
+    gap: 6px;
   }
 
-  .variant-picker__second {
-    flex: 0 0 160px;
-    width: 160px;
-    height: 160px;
+  .variant-picker__media .variant-picker__image,
+  .variant-picker__second-image {
+    max-height: 220px;
   }
 
   .slot {
