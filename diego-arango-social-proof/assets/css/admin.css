@@ -1,0 +1,117 @@
+/**
+ * Estilos del panel de administración.
+ */
+
+.dasp-admin-wrap .dasp-author {
+	font-size: 14px;
+	font-weight: 400;
+	color: #646970;
+	margin-left: 8px;
+}
+
+.dasp-description {
+	font-size: 14px;
+	color: #50575e;
+	max-width: 800px;
+}
+
+.dasp-admin-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 24px;
+	margin-top: 20px;
+}
+
+@media (max-width: 1200px) {
+	.dasp-admin-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.dasp-admin-card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 20px 24px;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.dasp-admin-card h2 {
+	margin-top: 0;
+	padding-bottom: 12px;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.dasp-preview {
+	background: #f6f7f7;
+	border: 1px dashed #c3c4c7;
+	border-radius: 6px;
+	padding: 14px 16px;
+	font-size: 14px;
+}
+
+.dasp-shortcode-box {
+	margin-top: 24px;
+	padding-top: 20px;
+	border-top: 1px solid #f0f0f1;
+}
+
+.dasp-shortcode-box code {
+	display: block;
+	background: #f0f0f1;
+	padding: 10px 14px;
+	border-radius: 4px;
+	margin: 10px 0;
+	font-size: 13px;
+	word-break: break-all;
+}
+
+.dasp-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 12px;
+	font-weight: 500;
+}
+
+.dasp-badge--active {
+	background: #d1fae5;
+	color: #065f46;
+}
+
+.dasp-badge--inactive {
+	background: #f3f4f6;
+	color: #6b7280;
+}
+
+.dasp-table code {
+	font-size: 11px;
+}
+
+.dasp-actions a {
+	text-decoration: none;
+}
+
+.dasp-delete {
+	color: #b32d2e !important;
+}
+
+.dasp-info-box {
+	margin-top: 24px;
+	padding: 16px;
+	background: #f0f6fc;
+	border-left: 4px solid #2271b1;
+	border-radius: 0 4px 4px 0;
+}
+
+.dasp-info-box h3 {
+	margin-top: 0;
+}
+
+.dasp-info-box ol {
+	margin-left: 18px;
+}
+
+.dasp-info-box li {
+	margin-bottom: 6px;
+}
