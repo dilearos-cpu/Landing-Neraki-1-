@@ -7,6 +7,12 @@ Proyecto local para editar el tema de [caletzza.myshopify.com](https://caletzza.
 - Node.js 22+
 - Acceso de administrador o permisos de **Temas** en la tienda
 
+## Tema actual
+
+- **Nombre:** Copy of Dawn
+- **ID:** `142036828310`
+- **Estado:** Live (publicado)
+
 ## Comandos
 
 ```bash
