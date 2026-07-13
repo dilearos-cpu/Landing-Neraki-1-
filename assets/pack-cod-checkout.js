@@ -285,13 +285,14 @@
     }
 
     var taxAmount = Math.round(subtotal * taxRate);
+    var displayTotal = subtotal + shipping;
 
     this.pendingSummary = {
       subtotal: subtotal,
       taxAmount: taxAmount,
       taxRate: taxRate,
       shipping: shipping,
-      total: subtotal + taxAmount + shipping
+      total: displayTotal
     };
 
     this.subtotalNode.textContent = formatMoney(subtotal, this.config.currency);
@@ -301,8 +302,14 @@
     if (this.taxRow) {
       this.taxRow.hidden = taxRate <= 0;
     }
-    this.shippingNode.textContent = shipping > 0 ? formatMoney(shipping, this.config.currency) : "Gratis";
-    this.totalNode.textContent = formatMoney(subtotal + taxAmount + shipping, this.config.currency);
+    if (this.shippingNode) {
+      var isFreeShipping = shipping <= 0;
+      this.shippingNode.textContent = isFreeShipping
+        ? "Te obsequiamos el envío"
+        : formatMoney(shipping, this.config.currency);
+      this.shippingNode.classList.toggle("pack-cod__shipping-gift", isFreeShipping);
+    }
+    this.totalNode.textContent = formatMoney(displayTotal, this.config.currency);
   };
 
   PackCodCheckout.prototype.buildLineItems = function (cartItems, products) {
@@ -765,8 +772,6 @@
       }),
       note: customer.note,
       shippingPrice: this.pendingSummary ? this.pendingSummary.shipping : 0,
-      taxRate: this.pendingSummary ? this.pendingSummary.taxRate : this.getTaxRate(),
-      taxAmount: this.pendingSummary ? this.pendingSummary.taxAmount : 0,
       packLabel: this.config.packLabel || "Pack Bodys"
     };
 

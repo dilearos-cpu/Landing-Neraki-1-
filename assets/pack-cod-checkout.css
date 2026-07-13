@@ -173,6 +173,30 @@
   margin: 0;
 }
 
+.pack-cod__total-row--tax dd {
+  color: var(--pack-cod-muted);
+}
+
+.pack-cod__total-row--tax dt::after {
+  content: " (incluido)";
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--pack-cod-muted);
+}
+
+.pack-cod__shipping-gift {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--pack-cod-accent);
+  text-align: right;
+}
+
+.pack-cod__total-row--shipping dd {
+  max-width: 58%;
+}
+
 .pack-cod__total-row--grand {
   font-size: 1.12rem;
   font-weight: 800;
