@@ -241,6 +241,28 @@
         "reset_button_label": "Borrar todo"
       }
     },
+    "pack_cta_button_main": {
+      "type": "pack-cta-button",
+      "name": "Boton CTA pack",
+      "settings": {
+        "button_label": "Quiero mi pack",
+        "button_background_color": "#ffc800",
+        "button_text_color": "#111111",
+        "section_background_color": "#00000000",
+        "show_icon": true,
+        "icon_preset": "bag",
+        "button_action": "trigger_buy",
+        "position_mode": "fixed_floating",
+        "float_bottom_offset": 16,
+        "float_z_index": 90,
+        "alignment": "center",
+        "button_max_width": 680,
+        "padding_top": 16,
+        "padding_bottom": 16,
+        "padding_left": 16,
+        "padding_right": 16
+      }
+    },
     "responsive_banner_8NXxGA": {
       "type": "responsive-banner",
       "name": "Banner responsive",
@@ -329,6 +351,7 @@
     "photo_carousel_77yLXE",
     "promo_countdown_tiyRGW",
     "pack_bodys4_VPrYwf",
+    "pack_cta_button_main",
     "responsive_banner_8NXxGA",
     "responsive_banner_jk7jNV",
     "responsive_banner_RQME36",

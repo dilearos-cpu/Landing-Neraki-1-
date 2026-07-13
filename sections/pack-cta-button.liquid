@@ -1,0 +1,313 @@
+{{ 'pack-cta-button.css' | asset_url | stylesheet_tag }}
+
+{% liquid
+  assign button_action = section.settings.button_action
+  assign is_link = false
+  if button_action == 'link' and section.settings.button_link != blank
+    assign is_link = true
+  endif
+%}
+
+<section
+  class="pack-cta pack-cta--align-{{ section.settings.alignment }}"
+  id="pack-cta-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  data-position-mode="{{ section.settings.position_mode }}"
+  style="
+    --pack-cta-bg: {{ section.settings.section_background_color }};
+    --pack-cta-pt: {{ section.settings.padding_top }}px;
+    --pack-cta-pr: {{ section.settings.padding_right }}px;
+    --pack-cta-pb: {{ section.settings.padding_bottom }}px;
+    --pack-cta-pl: {{ section.settings.padding_left }}px;
+    --pack-cta-button-bg: {{ section.settings.button_background_color }};
+    --pack-cta-button-color: {{ section.settings.button_text_color }};
+    --pack-cta-max-width: {{ section.settings.button_max_width }}px;
+    --pack-cta-float-offset: {{ section.settings.float_bottom_offset }}px;
+    --pack-cta-z-index: {{ section.settings.float_z_index }};
+  "
+>
+  <div class="pack-cta__inner pack-cta__inner--align-{{ section.settings.alignment }}">
+    <div class="pack-cta__anchor" data-cta-anchor>
+      {% if is_link %}
+        <a
+          href="{{ section.settings.button_link }}"
+          class="pack-cta__button"
+          data-cta-button
+          data-cta-action="link"
+          {% if section.settings.open_in_new_tab %}
+            target="_blank"
+            rel="noopener noreferrer"
+          {% endif %}
+        >
+      {% else %}
+        <button
+          type="button"
+          class="pack-cta__button"
+          data-cta-button
+          data-cta-action="{{ button_action }}"
+        >
+      {% endif %}
+        {% if section.settings.show_icon %}
+          <span class="pack-cta__icon" aria-hidden="true">
+            {% if section.settings.icon_image != blank %}
+              {{
+                section.settings.icon_image
+                | image_url: width: 96
+                | image_tag: loading: 'lazy', alt: ''
+              }}
+            {% elsif section.settings.icon_preset == 'cart' %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="9" cy="20" r="1"></circle>
+                <circle cx="17" cy="20" r="1"></circle>
+                <path d="M3 3h2l1.2 12.4a1 1 0 0 0 1 .9h9.2a1 1 0 0 0 1-.9L20 7H7"></path>
+              </svg>
+            {% else %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M7 9h10l-1.2 9H8.2L7 9z"></path>
+                <path d="M9 9V7a3 3 0 0 1 6 0v2"></path>
+              </svg>
+            {% endif %}
+          </span>
+        {% endif %}
+        <span class="pack-cta__label">{{ section.settings.button_label }}</span>
+      {% if is_link %}
+        </a>
+      {% else %}
+        </button>
+      {% endif %}
+      <div class="pack-cta__placeholder" data-cta-placeholder aria-hidden="true"></div>
+    </div>
+  </div>
+</section>
+
+<script src="{{ 'pack-cta-button.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Boton CTA pack",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Texto y colores"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texto del boton",
+      "default": "Quiero mi pack"
+    },
+    {
+      "type": "color",
+      "id": "button_background_color",
+      "label": "Color de fondo del boton",
+      "default": "#FFC800"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Color de letra del boton",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "section_background_color",
+      "label": "Color de fondo de la seccion",
+      "default": "#00000000"
+    },
+    {
+      "type": "header",
+      "content": "Icono"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon",
+      "label": "Mostrar icono",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_image",
+      "label": "Icono personalizado (imagen)",
+      "info": "Si subes una imagen, reemplaza el icono predeterminado."
+    },
+    {
+      "type": "select",
+      "id": "icon_preset",
+      "label": "Icono predeterminado",
+      "default": "bag",
+      "options": [
+        {
+          "value": "bag",
+          "label": "Bolsa de compras"
+        },
+        {
+          "value": "cart",
+          "label": "Carrito"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Accion del boton"
+    },
+    {
+      "type": "select",
+      "id": "button_action",
+      "label": "Que hace al pulsar",
+      "default": "trigger_buy",
+      "options": [
+        {
+          "value": "trigger_buy",
+          "label": "Comprar ahora (igual que el pack)"
+        },
+        {
+          "value": "scroll_pack",
+          "label": "Ir al pack en la pagina"
+        },
+        {
+          "value": "link",
+          "label": "Abrir enlace"
+        }
+      ]
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Enlace",
+      "info": "Solo aplica si la accion es Abrir enlace."
+    },
+    {
+      "type": "checkbox",
+      "id": "open_in_new_tab",
+      "label": "Abrir enlace en nueva pestana",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Posicion"
+    },
+    {
+      "type": "select",
+      "id": "position_mode",
+      "label": "Modo de posicion",
+      "default": "fixed_floating",
+      "options": [
+        {
+          "value": "fixed",
+          "label": "Fijo"
+        },
+        {
+          "value": "fixed_floating",
+          "label": "Fijo + flotante"
+        }
+      ],
+      "info": "Fijo: queda donde lo coloques. Fijo + flotante: al bajar y pasar el boton, flota abajo; al subir y volver a su sitio, deja de flotar."
+    },
+    {
+      "type": "range",
+      "id": "float_bottom_offset",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Separacion inferior cuando flota",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "float_z_index",
+      "min": 10,
+      "max": 200,
+      "step": 5,
+      "label": "Capa (z-index) cuando flota",
+      "default": 90
+    },
+    {
+      "type": "header",
+      "content": "Diseno"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alineacion",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Izquierda"
+        },
+        {
+          "value": "center",
+          "label": "Centro"
+        },
+        {
+          "value": "right",
+          "label": "Derecha"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "button_max_width",
+      "min": 280,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "label": "Ancho maximo del boton",
+      "default": 680
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding superior",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding inferior",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_left",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding izquierdo",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_right",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding derecho",
+      "default": 16
+    }
+  ],
+  "presets": [
+    {
+      "name": "Boton CTA pack",
+      "settings": {
+        "button_label": "Quiero mi pack",
+        "button_background_color": "#FFC800",
+        "button_text_color": "#111111",
+        "position_mode": "fixed_floating",
+        "button_action": "trigger_buy"
+      }
+    }
+  ]
+}
+{% endschema %}
