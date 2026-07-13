@@ -1,0 +1,270 @@
+{% liquid
+  assign pack_collection = collections[section.settings.collection]
+  assign slot_count = section.settings.slot_count | default: 4
+  assign products_limit = section.settings.products_limit | default: 24
+
+  if slot_count <= 4
+    assign pack_rows = 1
+  elsif slot_count <= 12
+    assign pack_rows = 2
+  else
+    assign pack_rows = 3
+  endif
+
+  assign pack_cols = slot_count | plus: pack_rows | minus: 1 | divided_by: pack_rows
+
+  if slot_count == 4
+    assign pack_rows_mobile = 2
+    assign pack_cols_mobile = 2
+  elsif slot_count <= 10
+    assign pack_rows_mobile = 2
+    assign pack_cols_mobile = slot_count | plus: 1 | divided_by: 2
+  else
+    assign pack_rows_mobile = 3
+    assign pack_cols_mobile = slot_count | plus: 2 | divided_by: 3
+  endif
+
+  assign liquid_products_limit = products_limit
+  if liquid_products_limit > 50
+    assign liquid_products_limit = 50
+  endif
+%}
+{{ 'pack-bodys4.css' | asset_url | stylesheet_tag }}
+<section
+  class="pack-ui"
+  id="pack-ui-{{ section.id }}"
+  data-pack-mode="simple"
+  data-section-id="{{ section.id }}"
+  data-slot-count="{{ slot_count }}"
+  data-collection-handle="{{ pack_collection.handle }}"
+  data-products-limit="{{ products_limit }}"
+  data-cart-url="{{ routes.cart_add_url }}"
+  data-checkout-url="{{ routes.checkout_url }}"
+  data-button-default-text="{{ section.settings.buy_button_label | escape }}"
+  data-button-loading-text="{{ section.settings.loading_button_label | escape }}"
+  style="
+    --pack-bg: {{ section.settings.background_color }};
+    --pack-pt: {{ section.settings.padding_top }}px;
+    --pack-pr: {{ section.settings.padding_right }}px;
+    --pack-pb: {{ section.settings.padding_bottom }}px;
+    --pack-pl: {{ section.settings.padding_left }}px;
+    --pack-mt: {{ section.settings.margin_top }}px;
+    --pack-mb: {{ section.settings.margin_bottom }}px;
+    --pack-cols: {{ pack_cols }};
+    --pack-cols-mobile: {{ pack_cols_mobile }};
+    --pack-rows: {{ pack_rows }};
+    --pack-rows-mobile: {{ pack_rows_mobile }};
+  "
+  {% if pack_collection == blank %}
+    data-empty="true"
+  {% endif %}
+>
+  {% if section.settings.heading != blank %}
+    <h2 class="pack-ui__heading">{{ section.settings.heading }}</h2>
+  {% endif %}
+
+  {% if pack_collection == blank %}
+    <p class="pack-ui__empty">
+      Selecciona una coleccion en la configuracion de la seccion para mostrar productos.
+    </p>
+  {% else %}
+    <div class="pack-slots" data-slot-count="{{ slot_count }}">
+      {% for index in (1..slot_count) %}
+        <button
+          type="button"
+          class="slot"
+          data-slot="{{ index }}"
+          aria-label="Seleccionar producto {{ index }}"
+        >
+          <span class="slot__plus">+</span>
+        </button>
+      {% endfor %}
+    </div>
+
+    <div class="pack-actions">
+      <button type="button" id="pack-buy-{{ section.id }}" class="pack-button pack-button--buy">
+        {{ section.settings.buy_button_label }}
+      </button>
+      <button type="button" id="pack-reset-{{ section.id }}" class="pack-button pack-button--reset">
+        {{ section.settings.reset_button_label }}
+      </button>
+    </div>
+
+    <p class="pack-ui__message" data-pack-message hidden></p>
+
+    <div class="pack-modal" data-pack-modal hidden>
+      <div class="modal-content" role="dialog" aria-modal="true" aria-label="Seleccionar producto">
+        <button type="button" class="modal-close" data-close-products aria-label="Cerrar">x</button>
+        <div class="products" data-products-grid></div>
+        <div class="pack-pagination" data-pagination></div>
+      </div>
+    </div>
+
+    <script type="application/json" data-pack-products>
+      [
+        {% assign first_simple_product = true %}
+        {% for product in pack_collection.products limit: liquid_products_limit %}
+          {% unless product.has_only_default_variant %}
+            {% continue %}
+          {% endunless %}
+          {% if product.featured_media %}
+            {% assign featured = product.featured_media | image_url: width: 600 %}
+          {% else %}
+            {% assign featured = '' %}
+          {% endif %}
+          {% unless first_simple_product %},{% endunless %}
+          {% assign first_simple_product = false %}
+          {
+            "id": {{ product.id | json }},
+            "handle": {{ product.handle | json }},
+            "name": {{ product.title | json }},
+            "img": {{ featured | json }},
+            "available": {{ product.available | json }},
+            "default_variant_id": {{ product.selected_or_first_available_variant.id | json }}
+          }
+        {% endfor %}
+      ]
+    </script>
+  {% endif %}
+</section>
+<script src="{{ 'pack-basicas.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Pack Basicas",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titulo",
+      "default": "Arma tu pack de basicas"
+    },
+    {
+      "type": "paragraph",
+      "content": "Solo muestra productos simples (sin variantes). Usa una coleccion con productos de una sola variante."
+    },
+    {
+      "type": "header",
+      "content": "Espaciado y fondo"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Color de fondo",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding superior",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding inferior",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_left",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding izquierdo",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_right",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding derecho",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Margin superior",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Margin inferior",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Pack builder"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Coleccion de productos simples"
+    },
+    {
+      "type": "range",
+      "id": "slot_count",
+      "min": 1,
+      "max": 15,
+      "step": 1,
+      "label": "Cantidad de espacios",
+      "info": "4 = 1 fila, 6 a 12 = 2 filas, 13 a 15 = 3 filas",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "products_limit",
+      "min": 4,
+      "max": 150,
+      "step": 2,
+      "label": "Productos a cargar",
+      "info": "Hasta 50 se cargan directo; de 52 a 150 se cargan por Ajax",
+      "default": 24
+    },
+    {
+      "type": "text",
+      "id": "buy_button_label",
+      "label": "Texto del boton comprar",
+      "default": "Comprar ahora"
+    },
+    {
+      "type": "text",
+      "id": "loading_button_label",
+      "label": "Texto del boton cargando",
+      "default": "Procesando..."
+    },
+    {
+      "type": "text",
+      "id": "reset_button_label",
+      "label": "Texto del boton reset",
+      "default": "Borrar todo"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Pack Basicas"
+    }
+  ]
+}
+{% endschema %}
