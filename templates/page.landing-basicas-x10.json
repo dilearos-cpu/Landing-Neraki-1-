@@ -199,7 +199,6 @@
         ".promo-countdown__unit {background: #fff; padding: 20px;}",
         ".promo-countdown__timer-box {background: #ffffff00;}",
         ".promo-countdown__bar-text {font-size: 22px !important;}",
-        ".promo-countdown__value {font-size: 43px !important;}",
         ".promo-countdown__instruction {font-size: 28px !important;}"
       ],
       "name": "Contador promo 24h",
