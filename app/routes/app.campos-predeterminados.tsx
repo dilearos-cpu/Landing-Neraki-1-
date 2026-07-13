@@ -12,8 +12,10 @@ import { loadCheckoutConfig } from "../models/checkout-config.server";
 import { persistConfigAction } from "../utils/checkout-config-actions.server";
 import {
   DEFAULT_FIELD_OPTIONS,
+  createDefaultPostalCodeWorkaround,
   type DefaultFieldAction,
   type DefaultFieldSetting,
+  type PostalCodeWorkaround,
 } from "../types/checkout-config";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -49,6 +51,10 @@ export default function DefaultFieldsPage() {
           enabled: false,
         })),
   );
+  const [postalCodeWorkaround, setPostalCodeWorkaround] =
+    useState<PostalCodeWorkaround>(
+      config.postalCodeWorkaround ?? createDefaultPostalCodeWorkaround(),
+    );
   const fetcher = useFetcher<typeof action>();
   const shopify = useAppBridge();
 
@@ -75,6 +81,7 @@ export default function DefaultFieldsPage() {
         config: JSON.stringify({
           ...config,
           defaultFieldSettings: settings,
+          postalCodeWorkaround,
         }),
       },
       { method: "POST" },
@@ -92,7 +99,73 @@ export default function DefaultFieldsPage() {
         </s-banner>
       </s-section>
 
-      {DEFAULT_FIELD_OPTIONS.map((option) => {
+      <s-section heading="Código postal">
+        <s-banner tone="warning" heading="No se puede eliminar">
+          Shopify exige el campo de código postal en el checkout para validar
+          pagos. Ninguna app puede quitarlo. La alternativa más práctica es
+          autocompletarlo con un valor genérico.
+        </s-banner>
+        <s-stack direction="block" gap="base">
+          <s-switch
+            label="Activar alternativa para código postal"
+            checked={postalCodeWorkaround.enabled}
+            onChange={(event: Event) => {
+              const target = event.currentTarget as HTMLInputElement;
+              setPostalCodeWorkaround((current) => ({
+                ...current,
+                enabled: target.checked,
+              }));
+            }}
+          />
+          <s-switch
+            label="Autocompletar con valor genérico"
+            checked={postalCodeWorkaround.autoFill}
+            onChange={(event: Event) => {
+              const target = event.currentTarget as HTMLInputElement;
+              setPostalCodeWorkaround((current) => ({
+                ...current,
+                autoFill: target.checked,
+              }));
+            }}
+          />
+          <s-text-field
+            label="Valor por defecto (ej. 00000)"
+            value={postalCodeWorkaround.defaultValue}
+            onInput={(event: Event) => {
+              const target = event.currentTarget as HTMLInputElement;
+              setPostalCodeWorkaround((current) => ({
+                ...current,
+                defaultValue: target.value,
+              }));
+            }}
+          />
+          <s-switch
+            label="Mostrar aviso al cliente"
+            checked={postalCodeWorkaround.showBanner}
+            onChange={(event: Event) => {
+              const target = event.currentTarget as HTMLInputElement;
+              setPostalCodeWorkaround((current) => ({
+                ...current,
+                showBanner: target.checked,
+              }));
+            }}
+          />
+          <s-text-area
+            label="Mensaje del aviso"
+            rows={3}
+            value={postalCodeWorkaround.bannerMessage}
+            onInput={(event: Event) => {
+              const target = event.currentTarget as HTMLTextAreaElement;
+              setPostalCodeWorkaround((current) => ({
+                ...current,
+                bannerMessage: target.value,
+              }));
+            }}
+          />
+        </s-stack>
+      </s-section>
+
+      {DEFAULT_FIELD_OPTIONS.filter((option) => option.field !== "zip").map((option) => {
         const setting = settings.find((item) => item.field === option.field);
         if (!setting) {
           return null;

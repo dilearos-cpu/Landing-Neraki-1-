@@ -64,16 +64,37 @@ export interface CheckoutCustomizerConfig {
   banners: BannerConfig[];
   customFields: CustomFieldConfig[];
   defaultFieldSettings: DefaultFieldSetting[];
+  postalCodeWorkaround: PostalCodeWorkaround;
+}
+
+export interface PostalCodeWorkaround {
+  enabled: boolean;
+  autoFill: boolean;
+  defaultValue: string;
+  showBanner: boolean;
+  bannerMessage: string;
 }
 
 export const METAFIELD_NAMESPACE = "$app:checkout_customizer";
 export const METAFIELD_KEY = "config";
+
+export function createDefaultPostalCodeWorkaround(): PostalCodeWorkaround {
+  return {
+    enabled: false,
+    autoFill: true,
+    defaultValue: "00000",
+    showBanner: true,
+    bannerMessage:
+      "Si tu zona no usa código postal, puedes dejar el valor que aparece o escribir 00000.",
+  };
+}
 
 export function createDefaultConfig(): CheckoutCustomizerConfig {
   return {
     banners: [],
     customFields: [],
     defaultFieldSettings: [],
+    postalCodeWorkaround: createDefaultPostalCodeWorkaround(),
   };
 }
 
@@ -88,6 +109,8 @@ export function parseConfig(raw: string | null | undefined): CheckoutCustomizerC
       banners: parsed.banners ?? [],
       customFields: parsed.customFields ?? [],
       defaultFieldSettings: parsed.defaultFieldSettings ?? [],
+      postalCodeWorkaround:
+        parsed.postalCodeWorkaround ?? createDefaultPostalCodeWorkaround(),
     };
   } catch {
     return createDefaultConfig();

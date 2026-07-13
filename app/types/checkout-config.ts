@@ -64,6 +64,15 @@ export interface CheckoutCustomizerConfig {
   banners: BannerConfig[];
   customFields: CustomFieldConfig[];
   defaultFieldSettings: DefaultFieldSetting[];
+  postalCodeWorkaround: PostalCodeWorkaround;
+}
+
+export interface PostalCodeWorkaround {
+  enabled: boolean;
+  autoFill: boolean;
+  defaultValue: string;
+  showBanner: boolean;
+  bannerMessage: string;
 }
 
 export const METAFIELD_NAMESPACE = "$app:checkout_customizer";
@@ -123,8 +132,9 @@ export const DEFAULT_FIELD_OPTIONS: Array<{
   {
     field: "zip",
     label: "Código postal",
-    adminPath: "Configuración > Checkout",
-    limitation: "Campo nativo obligatorio de Shopify. No se puede deshabilitar.",
+    adminPath: "No disponible — campo bloqueado por Shopify",
+    limitation:
+      "Shopify no permite ocultar ni eliminar el código postal del checkout. Es obligatorio para procesar pagos. Usa la alternativa de autocompletado en esta app.",
   },
   {
     field: "country",
@@ -133,6 +143,17 @@ export const DEFAULT_FIELD_OPTIONS: Array<{
     limitation: "Campo nativo obligatorio de Shopify. No se puede deshabilitar.",
   },
 ];
+
+export function createDefaultPostalCodeWorkaround(): PostalCodeWorkaround {
+  return {
+    enabled: false,
+    autoFill: true,
+    defaultValue: "00000",
+    showBanner: true,
+    bannerMessage:
+      "Si tu zona no usa código postal, puedes dejar el valor que aparece o escribir 00000.",
+  };
+}
 
 export function createDefaultConfig(): CheckoutCustomizerConfig {
   return {
@@ -147,6 +168,7 @@ export function createDefaultConfig(): CheckoutCustomizerConfig {
           : "show",
       enabled: false,
     })),
+    postalCodeWorkaround: createDefaultPostalCodeWorkaround(),
   };
 }
 
@@ -162,6 +184,8 @@ export function parseConfig(raw: string | null | undefined): CheckoutCustomizerC
       customFields: parsed.customFields ?? [],
       defaultFieldSettings:
         parsed.defaultFieldSettings ?? createDefaultConfig().defaultFieldSettings,
+      postalCodeWorkaround:
+        parsed.postalCodeWorkaround ?? createDefaultPostalCodeWorkaround(),
     };
   } catch {
     return createDefaultConfig();
