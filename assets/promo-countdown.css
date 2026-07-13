@@ -52,6 +52,29 @@
 
 .promo-countdown__promos strong {
   font-weight: 700;
+  transition: color 0.25s ease;
+}
+
+.promo-countdown--slots-updated .promo-countdown__promos strong {
+  color: var(--promo-bar-fill, #e53935);
+}
+
+.promo-countdown__promos-bump {
+  animation: promo-countdown-bump 0.45s ease;
+}
+
+@keyframes promo-countdown-bump {
+  0% {
+    transform: scale(1);
+  }
+
+  35% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .promo-countdown__bar {

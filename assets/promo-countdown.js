@@ -1,4 +1,6 @@
-(function () {
+(function (global) {
+  var instances = [];
+
   function pad(value) {
     return String(value).padStart(2, "0");
   }
@@ -57,16 +59,20 @@
     var minutesNode = section.querySelector("[data-minutes]");
     var secondsNode = section.querySelector("[data-seconds]");
     var promosCountNode = section.querySelector("[data-promos-count]");
+    var promosTextNode = section.querySelector(".promo-countdown__promos");
     var barFillNode = section.querySelector("[data-bar-fill]");
     var barLabelNode = section.querySelector("[data-bar-label]");
     var settings = readSettings(section);
+    var baseAvailable = Math.max(Number(settings.promosAvailable) || 0, 0);
     var durationHours = Number(section.dataset.durationHours || 24);
     var storageKey = section.dataset.storageKey || "promo-countdown-default";
     var timerId = null;
+    var filledSlots = 0;
+    var lastDisplayed = baseAvailable;
 
     function updateBar() {
       var total = Math.max(Number(settings.promosTotal) || 1, 1);
-      var available = Math.max(Number(settings.promosAvailable) || 0, 0);
+      var available = Math.max(baseAvailable - filledSlots, 0);
       var percent = Math.min((available / total) * 100, 100);
 
       if (promosCountNode) {
@@ -80,6 +86,20 @@
       if (barLabelNode) {
         barLabelNode.textContent = available + " " + (settings.unitsLabel || "unds");
       }
+
+      if (available < lastDisplayed) {
+        section.classList.add("promo-countdown--slots-updated");
+        if (promosTextNode) {
+          promosTextNode.classList.remove("promo-countdown__promos-bump");
+          void promosTextNode.offsetWidth;
+          promosTextNode.classList.add("promo-countdown__promos-bump");
+        }
+        window.setTimeout(function () {
+          section.classList.remove("promo-countdown--slots-updated");
+        }, 500);
+      }
+
+      lastDisplayed = available;
     }
 
     function renderTime() {
@@ -105,6 +125,20 @@
       }
     }
 
+    var instance = {
+      section: section,
+      setFilledSlots: function (count) {
+        filledSlots = Math.max(0, Number(count) || 0);
+        updateBar();
+      },
+      resetSlots: function () {
+        filledSlots = 0;
+        lastDisplayed = baseAvailable;
+        updateBar();
+      }
+    };
+
+    instances.push(instance);
     updateBar();
     renderTime();
     timerId = setInterval(renderTime, 1000);
@@ -113,12 +147,28 @@
       if (timerId) {
         clearInterval(timerId);
       }
+      instances = instances.filter(function (item) {
+        return item.section !== section;
+      });
     });
   }
 
   function initAllCountdowns() {
     document.querySelectorAll(".promo-countdown").forEach(initCountdown);
   }
+
+  global.PromoCountdown = {
+    setSlotsFilled: function (count) {
+      instances.forEach(function (instance) {
+        instance.setFilledSlots(count);
+      });
+    },
+    resetSlots: function () {
+      instances.forEach(function (instance) {
+        instance.resetSlots();
+      });
+    }
+  };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initAllCountdowns);
@@ -129,4 +179,4 @@
   document.addEventListener("shopify:section:load", function (event) {
     initCountdown(event.target.querySelector(".promo-countdown"));
   });
-})();
+})(window);

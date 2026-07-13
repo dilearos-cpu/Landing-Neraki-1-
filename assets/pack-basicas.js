@@ -234,12 +234,23 @@
         slotNode.classList.toggle("slot--filled", Boolean(image));
       }
 
+      function syncPromoSlots() {
+        if (!window.PromoCountdown) {
+          return;
+        }
+
+        window.PromoCountdown.setSlotsFilled(Object.keys(currentState.selected).length);
+      }
+
       function resetSelections() {
         currentState.selected = {};
         slots.forEach(function (slot) {
           fillSlot(slot, null);
         });
         showMessage("", false);
+        if (window.PromoCountdown) {
+          window.PromoCountdown.resetSlots();
+        }
       }
 
       function chooseProduct(product) {
@@ -260,6 +271,7 @@
 
         fillSlot(currentState.currentSlot, product.img, product.name);
         currentState.selected[currentState.currentSlot.dataset.slot] = product.default_variant_id;
+        syncPromoSlots();
         closeModal();
         showMessage("", false);
       }
