@@ -285,7 +285,7 @@
     }
 
     var taxAmount = Math.round(subtotal * taxRate);
-    var displayTotal = subtotal + shipping;
+    var displayTotal = subtotal + shipping + taxAmount;
 
     this.pendingSummary = {
       subtotal: subtotal,
