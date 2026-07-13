@@ -8,10 +8,52 @@ const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const SHOP_DOMAIN = process.env.SHOPIFY_SHOP_DOMAIN || "caletzza.myshopify.com";
 const ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_API_TOKEN || "";
-const API_SECRET = process.env.SHOPIFY_API_SECRET || "";
+const CLIENT_ID = process.env.SHOPIFY_CLIENT_ID || "";
+const CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET || process.env.SHOPIFY_API_SECRET || "";
+const API_SECRET = process.env.SHOPIFY_API_SECRET || CLIENT_SECRET;
 const API_VERSION = process.env.SHOPIFY_API_VERSION || "2025-01";
 
+let cachedAccessToken = ADMIN_TOKEN || "";
+let tokenExpiresAt = 0;
+
 app.use(express.json({ limit: "1mb" }));
+
+async function getAccessToken() {
+  if (ADMIN_TOKEN) {
+    return ADMIN_TOKEN;
+  }
+
+  if (!CLIENT_ID || !CLIENT_SECRET) {
+    throw new Error("Configura SHOPIFY_CLIENT_ID y SHOPIFY_CLIENT_SECRET (Dev Dashboard) o SHOPIFY_ADMIN_API_TOKEN.");
+  }
+
+  const now = Date.now();
+  if (cachedAccessToken && now < tokenExpiresAt - 60000) {
+    return cachedAccessToken;
+  }
+
+  const response = await fetch(`https://${SHOP_DOMAIN}/admin/oauth/access_token`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: new URLSearchParams({
+      grant_type: "client_credentials",
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET
+    })
+  });
+
+  const payload = await response.json();
+
+  if (!response.ok) {
+    throw new Error(payload.error_description || payload.error || "No se pudo obtener el access token.");
+  }
+
+  cachedAccessToken = payload.access_token;
+  tokenExpiresAt = now + Number(payload.expires_in || 86399) * 1000;
+  return cachedAccessToken;
+}
 
 function verifyProxySignature(query) {
   if (!API_SECRET) {
@@ -41,15 +83,13 @@ function moneyFromCents(cents) {
 }
 
 async function shopifyGraphql(query, variables) {
-  if (!ADMIN_TOKEN) {
-    throw new Error("SHOPIFY_ADMIN_API_TOKEN no configurado en el servidor.");
-  }
+  const accessToken = await getAccessToken();
 
   const response = await fetch(`https://${SHOP_DOMAIN}/admin/api/${API_VERSION}/graphql.json`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Shopify-Access-Token": ADMIN_TOKEN
+      "X-Shopify-Access-Token": accessToken
     },
     body: JSON.stringify({ query, variables })
   });
