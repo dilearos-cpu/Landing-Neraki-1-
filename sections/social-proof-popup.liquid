@@ -66,6 +66,14 @@
 
 <script src="{{ 'social-proof-popup.js' | asset_url }}" defer></script>
 
+{% style %}
+  #social-proof-popup-{{ section.id }} {
+    --spp-bg: {{ section.settings.background_color }};
+    --spp-text: {{ section.settings.text_color }};
+    --spp-accent: {{ section.settings.accent_color }};
+  }
+{% endstyle %}
+
 {% schema %}
 {
   "name": "Popup prueba social",
@@ -205,7 +213,7 @@
           "type": "text",
           "id": "shortcode_id",
           "label": "ID del shortcode",
-          "info": "Identificador único. Úsalo con {% render 'social-proof-popup', campaign_id: 'tu-id' %}"
+          "info": "Identificador unico. Usalo en el snippet con el parametro campaign_id."
         },
         {
           "type": "text",
@@ -278,11 +286,3 @@
   ]
 }
 {% endschema %}
-
-{% style %}
-  #social-proof-popup-{{ section.id }} {
-    --spp-bg: {{ section.settings.background_color }};
-    --spp-text: {{ section.settings.text_color }};
-    --spp-accent: {{ section.settings.accent_color }};
-  }
-{% endstyle %}

@@ -212,8 +212,8 @@ Notificaciones emergentes tipo *"Juanito ha comprado un pack de bodys x4 hace 1 
 
 ### Archivos
 
-- `sections/social-proof-popup.liquid` → seccion con panel de admin y bloques (shortcodes)
-- `snippets/social-proof-popup.liquid` → equivalente a shortcode para paginas puntuales
+- `sections/social-proof-popup.liquid` → seccion con panel de admin y bloques (shortcodes). **Debe ir solo en la carpeta `sections/`**
+- `snippets/social-proof-popup.liquid` → equivalente a shortcode para paginas puntuales. **Debe ir solo en `snippets/` (sin bloque schema)**
 - `assets/social-proof-popup.js`
 - `assets/social-proof-popup.css`
 
