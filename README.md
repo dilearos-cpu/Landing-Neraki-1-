@@ -26,7 +26,8 @@ Se agrego una implementacion para Shopify que replica la idea del shortcode/ajax
 2. En el editor del tema, agrega la seccion **Pack Bodys 4** o **Pack Basicas** segun tu landing.
 3. Selecciona la coleccion que quieres usar.
 4. Ajusta cantidad de slots, textos, limite de productos y el panel de espaciado/fondo.
-5. Guarda y publica.
+5. En **Contenedor → ID del contenedor** puedes personalizar el `id` HTML (por defecto `pack-bodys` o `pack-basicas`) para enlazar con `#tu-id` desde botones o banners.
+6. Guarda y publica.
 
 **Pack Bodys 4:** productos variables (abre modal de talla/color).  
 **Pack Basicas:** solo productos simples (un clic y listo).
