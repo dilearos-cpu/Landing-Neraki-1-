@@ -90,6 +90,14 @@
   background: #5fae5f;
 }
 
+.pack-button--buy.pack-button--sold-out,
+.pack-button--buy.pack-button--sold-out:disabled {
+  background: #dc2626;
+  color: #fff;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
 .pack-button--reset {
   color: #fff;
   background: #e74c3c;

@@ -566,6 +566,8 @@
       if (!variant) {
         if (button) {
           button.disabled = true;
+          button.textContent = "Seleccionar";
+          button.classList.remove("pack-button--sold-out");
         }
         updateSecondPreview(currentState.currentProduct, null, chosenValues);
         return;
@@ -580,6 +582,7 @@
       if (button) {
         button.disabled = !variant.available;
         button.textContent = variant.available ? "Seleccionar" : "Agotado";
+        button.classList.toggle("pack-button--sold-out", !variant.available);
       }
     }
 
