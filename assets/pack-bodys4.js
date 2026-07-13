@@ -297,21 +297,25 @@
     var paginationNode = section.querySelector("[data-pagination]");
     var variantContent = section.querySelector("[data-variant-content]");
     var codEnabled = section.dataset.codEnabled !== "false";
-    var codCheckout =
-      codEnabled && global.PackCodCheckout
-        ? global.PackCodCheckout.create(section, {
-            orderEndpoint: section.dataset.codEndpoint || "/apps/cod-express/order",
-            shippingFlat: Number(section.dataset.codShippingFlat || 0),
-            freeShippingThreshold: Number(section.dataset.codFreeShippingThreshold || 0),
-            currency: section.dataset.codCurrency || "COP",
-            packLabel: section.dataset.codPackLabel || "Pack Bodys",
-            submitLabel: section.dataset.codSubmitLabel || "Confirmar pedido COD",
-            loadingLabel: section.dataset.codLoadingLabel || "Procesando...",
-            showCheckoutFallback: section.dataset.codFallback !== "false",
-            cartUrl: cartUrl,
-            checkoutUrl: checkoutUrl
-          })
-        : null;
+    var codCheckout = null;
+    if (codEnabled && window.PackCodCheckout) {
+      try {
+        codCheckout = window.PackCodCheckout.create(section, {
+          orderEndpoint: section.dataset.codEndpoint || "/apps/cod-express/order",
+          shippingFlat: Number(section.dataset.codShippingFlat || 0),
+          freeShippingThreshold: Number(section.dataset.codFreeShippingThreshold || 0),
+          currency: section.dataset.codCurrency || "COP",
+          packLabel: section.dataset.codPackLabel || "Pack Bodys",
+          submitLabel: section.dataset.codSubmitLabel || "Confirmar pedido COD",
+          loadingLabel: section.dataset.codLoadingLabel || "Procesando...",
+          showCheckoutFallback: section.dataset.codFallback !== "false",
+          cartUrl: cartUrl,
+          checkoutUrl: checkoutUrl
+        });
+      } catch (error) {
+        console.error("Pack Bodys 4: no se pudo iniciar checkout COD.", error);
+      }
+    }
 
     var currentState = {
       currentSlot: null,
