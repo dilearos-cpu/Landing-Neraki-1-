@@ -1,0 +1,67 @@
+{% liquid
+  assign ns = namespace | default: 'custom'
+  assign key = metafield_key | default: 'second_image'
+  assign color_option_index = 0
+
+  for option in product.options_with_values
+    assign option_name = option.name | downcase
+    if option_name contains 'talla' or option_name contains 'size'
+      continue
+    endif
+    assign color_option_index = forloop.index0
+    break
+  endfor
+
+  assign color_option_name = product.options_with_values[color_option_index].name | default: 'Color'
+%}
+{
+  "id": {{ product.id | json }},
+  "color_option_index": {{ color_option_index | json }},
+  "color_option_name": {{ color_option_name | json }},
+  "second_by_color": {
+    {% assign first_color = true %}
+    {% for variant in product.variants %}
+      {% assign second_image = '' %}
+      {% assign second_meta = variant.metafields[ns][key] %}
+      {% if second_meta != blank %}
+        {% if second_meta.value.url %}
+          {% assign second_image = second_meta.value | image_url: width: 600 %}
+        {% elsif second_meta.type == 'file_reference' %}
+          {% assign second_image = second_meta | image_url: width: 600 %}
+        {% elsif second_meta.value contains 'http' or second_meta.value contains '//' %}
+          {% assign second_image = second_meta.value %}
+        {% else %}
+          {% assign second_image = second_meta | image_url: width: 600 %}
+        {% endif %}
+      {% endif %}
+      {% if second_image != blank %}
+        {% assign color_value = variant.options[color_option_index] %}
+        {% unless first_color %},{% endunless %}
+        {% assign first_color = false %}
+        {{ color_value | json }}: {{ second_image | json }}
+      {% endif %}
+    {% endfor %}
+  },
+  "variants": [
+    {% for variant in product.variants %}
+      {% assign second_image = '' %}
+      {% assign second_meta = variant.metafields[ns][key] %}
+      {% if second_meta != blank %}
+        {% if second_meta.value.url %}
+          {% assign second_image = second_meta.value | image_url: width: 600 %}
+        {% elsif second_meta.type == 'file_reference' %}
+          {% assign second_image = second_meta | image_url: width: 600 %}
+        {% elsif second_meta.value contains 'http' or second_meta.value contains '//' %}
+          {% assign second_image = second_meta.value %}
+        {% else %}
+          {% assign second_image = second_meta | image_url: width: 600 %}
+        {% endif %}
+      {% endif %}
+      {
+        "id": {{ variant.id | json }},
+        "second_image": {{ second_image | json }},
+        "options": {{ variant.options | json }}
+      }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]
+}

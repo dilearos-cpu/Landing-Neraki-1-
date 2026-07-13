@@ -57,4 +57,19 @@ La tienda está configurada en `shopify.theme.toml`:
 ```toml
 [environments.default]
 store = "caletzza.myshopify.com"
+theme = "142036828310"
 ```
+
+## Segunda imagen de variaciones (Pack Bodys)
+
+Equivalente al plugin WooCommerce **Segunda Imagen**. Muestra una segunda foto al elegir color/talla en el modal del pack.
+
+### Configurar en Shopify Admin
+
+1. **Configuración → Datos personalizados → Variantes → Agregar definición**
+2. Nombre: `Segunda imagen`
+3. Namespace y clave: `custom.second_image`
+4. Tipo: **Archivo** → una imagen
+5. En cada variante (o una por color), sube la segunda imagen
+
+Una imagen por **color** aplica a todas las tallas de ese color (igual que en WooCommerce).

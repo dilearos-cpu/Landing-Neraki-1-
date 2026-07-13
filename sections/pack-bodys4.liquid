@@ -42,6 +42,8 @@
   data-checkout-url="{{ routes.checkout_url }}"
   data-button-default-text="{{ section.settings.buy_button_label | escape }}"
   data-button-loading-text="{{ section.settings.loading_button_label | escape }}"
+  data-metafield-namespace="{{ section.settings.metafield_namespace | escape }}"
+  data-metafield-key="{{ section.settings.metafield_key | escape }}"
   style="
     --pack-bg: {{ section.settings.background_color }};
     --pack-pt: {{ section.settings.padding_top }}px;
@@ -110,6 +112,17 @@
     <script type="application/json" data-pack-products>
       [
         {% for product in pack_collection.products limit: liquid_products_limit %}
+          {% liquid
+            assign color_option_index = 0
+            for option in product.options_with_values
+              assign option_name = option.name | downcase
+              if option_name contains 'talla' or option_name contains 'size'
+                continue
+              endif
+              assign color_option_index = forloop.index0
+              break
+            endfor
+          %}
           {% if product.featured_media %}
             {% assign featured = product.featured_media | image_url: width: 600 %}
           {% else %}
@@ -122,6 +135,31 @@
             "img": {{ featured | json }},
             "available": {{ product.available | json }},
             "is_variable": {% if product.has_only_default_variant %}false{% else %}true{% endif %},
+            "color_option_index": {{ color_option_index | json }},
+            "second_by_color": {
+              {% assign first_color_entry = true %}
+              {% for variant in product.variants %}
+                {% assign second_image = '' %}
+                {% assign second_meta = variant.metafields[section.settings.metafield_namespace][section.settings.metafield_key] %}
+                {% if second_meta != blank %}
+                  {% if second_meta.value.url %}
+                    {% assign second_image = second_meta.value | image_url: width: 600 %}
+                  {% elsif second_meta.type == 'file_reference' %}
+                    {% assign second_image = second_meta | image_url: width: 600 %}
+                  {% elsif second_meta.value contains 'http' or second_meta.value contains '//' %}
+                    {% assign second_image = second_meta.value %}
+                  {% else %}
+                    {% assign second_image = second_meta | image_url: width: 600 %}
+                  {% endif %}
+                {% endif %}
+                {% if second_image != blank %}
+                  {% assign color_value = variant.options[color_option_index] %}
+                  {% unless first_color_entry %},{% endunless %}
+                  {% assign first_color_entry = false %}
+                  {{ color_value | json }}: {{ second_image | json }}
+                {% endif %}
+              {% endfor %}
+            },
             "default_variant_id": {{ product.selected_or_first_available_variant.id | json }},
             "variants": [
               {% for variant in product.variants %}
@@ -132,11 +170,25 @@
                 {% else %}
                   {% assign variant_image = '' %}
                 {% endif %}
+                {% assign second_image = '' %}
+                {% assign second_meta = variant.metafields[section.settings.metafield_namespace][section.settings.metafield_key] %}
+                {% if second_meta != blank %}
+                  {% if second_meta.value.url %}
+                    {% assign second_image = second_meta.value | image_url: width: 600 %}
+                  {% elsif second_meta.type == 'file_reference' %}
+                    {% assign second_image = second_meta | image_url: width: 600 %}
+                  {% elsif second_meta.value contains 'http' or second_meta.value contains '//' %}
+                    {% assign second_image = second_meta.value %}
+                  {% else %}
+                    {% assign second_image = second_meta | image_url: width: 600 %}
+                  {% endif %}
+                {% endif %}
                 {
                   "id": {{ variant.id | json }},
                   "title": {{ variant.title | json }},
                   "available": {{ variant.available | json }},
                   "image": {{ variant_image | json }},
+                  "second_image": {{ second_image | json }},
                   "options": {{ variant.options | json }}
                 }{% unless forloop.last %},{% endunless %}
               {% endfor %}
@@ -236,6 +288,23 @@
       "unit": "px",
       "label": "Margin inferior",
       "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Segunda imagen de variante"
+    },
+    {
+      "type": "text",
+      "id": "metafield_namespace",
+      "label": "Namespace del metafield",
+      "default": "custom",
+      "info": "Crea en Shopify Admin un metafield de variante: custom.second_image (tipo archivo/imagen). Una imagen por color aplica a todas las tallas."
+    },
+    {
+      "type": "text",
+      "id": "metafield_key",
+      "label": "Key del metafield",
+      "default": "second_image"
     },
     {
       "type": "header",
