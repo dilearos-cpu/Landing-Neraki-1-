@@ -2,14 +2,31 @@
 
 {% liquid
   assign button_action = section.settings.button_action
+  assign link_url = section.settings.button_link
+  if link_url == blank and section.settings.button_link_url != blank
+    assign link_url = section.settings.button_link_url
+  endif
+
   assign is_link = false
-  if button_action == 'link' and section.settings.button_link != blank
+  if button_action == 'link' and link_url != blank
     assign is_link = true
   endif
 
   assign shake_class = ''
   if section.settings.enable_shake_animation
     assign shake_class = 'pack-cta__button--shake'
+  endif
+
+  if section.settings.section_background_transparent
+    assign section_bg = 'transparent'
+  else
+    assign section_bg = section.settings.section_background_color
+  endif
+
+  if section.settings.floating_background_transparent
+    assign float_bg = 'transparent'
+  else
+    assign float_bg = section.settings.floating_background_color
   endif
 %}
 
@@ -20,7 +37,8 @@
   data-position-mode="{{ section.settings.position_mode }}"
   data-float-trigger="{{ section.settings.float_trigger }}"
   style="
-    --pack-cta-bg: {% if section.settings.section_background_transparent %}transparent{% else %}{{ section.settings.section_background_color }}{% endif %};
+    --pack-cta-bg: {{ section_bg }};
+    --pack-cta-float-bg: {{ float_bg }};
     --pack-cta-pt: {{ section.settings.padding_top }}px;
     --pack-cta-pr: {{ section.settings.padding_right }}px;
     --pack-cta-pb: {{ section.settings.padding_bottom }}px;
@@ -42,7 +60,7 @@
       {% render 'pack-cta-button-control',
         is_link: is_link,
         button_action: button_action,
-        button_link: section.settings.button_link,
+        button_link: link_url,
         open_in_new_tab: section.settings.open_in_new_tab,
         button_label: section.settings.button_label,
         show_icon: section.settings.show_icon,
@@ -65,7 +83,7 @@
         {% render 'pack-cta-button-control',
           is_link: is_link,
           button_action: button_action,
-          button_link: section.settings.button_link,
+          button_link: link_url,
           open_in_new_tab: section.settings.open_in_new_tab,
           button_label: section.settings.button_label,
           show_icon: section.settings.show_icon,
@@ -83,11 +101,72 @@
 
 {% schema %}
 {
-  "name": "Boton CTA pack",
+  "name": "Boton compra flotante",
+  "tag": "section",
+  "class": "section-pack-cta",
   "settings": [
     {
       "type": "header",
-      "content": "Texto y colores"
+      "content": "Fondo de la seccion"
+    },
+    {
+      "type": "checkbox",
+      "id": "section_background_transparent",
+      "label": "Fondo de seccion transparente",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "section_background_color",
+      "label": "Color de fondo de la seccion",
+      "default": "#D2B49B"
+    },
+    {
+      "type": "header",
+      "content": "Enlace del boton"
+    },
+    {
+      "type": "select",
+      "id": "button_action",
+      "label": "Que hace al pulsar",
+      "default": "link",
+      "options": [
+        {
+          "value": "link",
+          "label": "Abrir enlace personalizado"
+        },
+        {
+          "value": "scroll_pack",
+          "label": "Ir al pack en la pagina"
+        },
+        {
+          "value": "trigger_buy",
+          "label": "Comprar ahora (igual que el pack)"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "button_link_url",
+      "label": "Enlace (URL)",
+      "default": "/",
+      "info": "Pega aqui la URL que quieras. Ej: /pages/mi-landing o https://tusitio.com"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Enlace (selector Shopify)",
+      "info": "Opcional. Si lo llenas, tiene prioridad sobre el campo de texto."
+    },
+    {
+      "type": "checkbox",
+      "id": "open_in_new_tab",
+      "label": "Abrir enlace en nueva pestana",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Texto y colores del boton"
     },
     {
       "type": "text",
@@ -110,7 +189,7 @@
     {
       "type": "color",
       "id": "button_border_color",
-      "label": "Color del borde",
+      "label": "Color del borde del boton",
       "default": "#000000"
     },
     {
@@ -144,18 +223,6 @@
       "default": 16
     },
     {
-      "type": "checkbox",
-      "id": "section_background_transparent",
-      "label": "Fondo de seccion transparente",
-      "default": true
-    },
-    {
-      "type": "color",
-      "id": "section_background_color",
-      "label": "Color de fondo de la seccion",
-      "default": "#D2B49B"
-    },
-    {
       "type": "header",
       "content": "Icono"
     },
@@ -168,8 +235,7 @@
     {
       "type": "image_picker",
       "id": "icon_image",
-      "label": "Icono personalizado (imagen)",
-      "info": "Si subes una imagen, reemplaza el icono predeterminado."
+      "label": "Icono personalizado (imagen)"
     },
     {
       "type": "select",
@@ -189,43 +255,19 @@
     },
     {
       "type": "header",
-      "content": "Accion del boton"
-    },
-    {
-      "type": "select",
-      "id": "button_action",
-      "label": "Que hace al pulsar",
-      "default": "trigger_buy",
-      "options": [
-        {
-          "value": "trigger_buy",
-          "label": "Comprar ahora (igual que el pack)"
-        },
-        {
-          "value": "scroll_pack",
-          "label": "Ir al pack en la pagina"
-        },
-        {
-          "value": "link",
-          "label": "Abrir enlace"
-        }
-      ]
-    },
-    {
-      "type": "url",
-      "id": "button_link",
-      "label": "Enlace",
-      "info": "Solo aplica si la accion es Abrir enlace."
+      "content": "Barra flotante (modo fijo + flotante)"
     },
     {
       "type": "checkbox",
-      "id": "open_in_new_tab",
-      "label": "Abrir enlace en nueva pestana",
-      "default": false
+      "id": "floating_background_transparent",
+      "label": "Fondo de barra flotante transparente",
+      "default": true
     },
     {
-      "type": "header",
-      "content": "Posicion flotante"
+      "type": "color",
+      "id": "floating_background_color",
+      "label": "Color de fondo de la barra flotante",
+      "default": "#FFFFFF"
     },
     {
       "type": "select",
@@ -241,8 +283,7 @@
           "value": "fixed_floating",
           "label": "Fijo + flotante"
         }
-      ],
-      "info": "Fijo + flotante: como RSI, flota abajo al pasar el punto de referencia y desaparece al volver."
+      ]
     },
     {
       "type": "select",
@@ -326,7 +367,7 @@
       "max": 80,
       "step": 4,
       "unit": "px",
-      "label": "Padding superior",
+      "label": "Padding superior de la seccion",
       "default": 16
     },
     {
@@ -336,7 +377,7 @@
       "max": 80,
       "step": 4,
       "unit": "px",
-      "label": "Padding inferior",
+      "label": "Padding inferior de la seccion",
       "default": 16
     },
     {
@@ -346,7 +387,7 @@
       "max": 80,
       "step": 4,
       "unit": "px",
-      "label": "Padding izquierdo",
+      "label": "Padding izquierdo de la seccion",
       "default": 16
     },
     {
@@ -356,15 +397,20 @@
       "max": 80,
       "step": 4,
       "unit": "px",
-      "label": "Padding derecho",
+      "label": "Padding derecho de la seccion",
       "default": 16
     }
   ],
   "presets": [
     {
-      "name": "Boton CTA pack",
+      "name": "Boton compra flotante",
+      "category": "Botones",
       "settings": {
         "button_label": "Compra aqui | Paga en casa",
+        "button_action": "link",
+        "button_link_url": "/",
+        "section_background_transparent": false,
+        "section_background_color": "#D2B49B",
         "button_background_color": "#FFDE21",
         "button_text_color": "#010101",
         "button_border_color": "#000000",
@@ -372,8 +418,7 @@
         "icon_preset": "cart",
         "position_mode": "fixed_floating",
         "float_trigger": "pack_buy",
-        "enable_shake_animation": true,
-        "button_action": "trigger_buy"
+        "enable_shake_animation": true
       }
     }
   ]
