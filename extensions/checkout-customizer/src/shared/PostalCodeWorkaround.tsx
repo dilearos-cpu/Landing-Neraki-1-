@@ -20,7 +20,7 @@ export function PostalCodeWorkaroundSection({
   const [manualZip, setManualZip] = useState("");
 
   const currentZip =
-    shippingAddress?.zip?.trim() || settings.defaultValue || "00000";
+    shippingAddress?.zip?.trim() || settings.defaultValue || "000000";
 
   useEffect(() => {
     setManualZip(currentZip);

@@ -122,6 +122,11 @@ export default function DefaultFieldsPage() {
       </s-section>
 
       <s-section heading="Código postal">
+        <s-banner tone="info" heading="Configuración para Colombia">
+          En Colombia el código postal tiene 6 dígitos. Muchos clientes no lo
+          conocen, por eso se recomienda autocompletar con 000000 y dejar que
+          quien lo sepa lo cambie al expandir el aviso.
+        </s-banner>
         <s-banner tone="warning" heading="El campo nativo no se puede ocultar">
           Shopify no permite ocultar el campo de código postal del formulario
           de dirección. Lo que sí hace esta app: autocompletarlo y mostrar un
@@ -152,7 +157,7 @@ export default function DefaultFieldsPage() {
             }}
           />
           <s-text-field
-            label="Valor por defecto (ej. 00000)"
+            label="Valor por defecto (Colombia: 000000)"
             value={postalCodeWorkaround.defaultValue}
             onInput={(event: Event) => {
               const target = event.currentTarget as HTMLInputElement;

@@ -88,15 +88,15 @@ export function createDefaultPostalCodeWorkaround(): PostalCodeWorkaround {
   return {
     enabled: false,
     autoFill: true,
-    defaultValue: "00000",
+    defaultValue: "000000",
     showBanner: true,
     bannerMessage:
-      "Si tu zona no usa código postal, puedes dejar el valor que aparece o escribir 00000.",
+      "En Colombia el código postal tiene 6 dígitos. Si no conoces el tuyo, puedes usar 000000.",
     displayMode: "collapsed",
     collapsedSummary:
-      "Código postal completado automáticamente. Toca aquí si deseas cambiarlo.",
+      "Código postal completado ({zip}). Toca aquí si deseas cambiarlo.",
     expandedMessage:
-      "Hemos rellenado el código postal por ti para agilizar tu compra. Si conoces el tuyo, puedes editarlo abajo.",
+      "En Colombia el código postal tiene 6 dígitos. Lo hemos completado por ti para agilizar tu compra. Si conoces el de tu barrio o ciudad, edítalo abajo.",
     allowManualEdit: true,
   };
 }
