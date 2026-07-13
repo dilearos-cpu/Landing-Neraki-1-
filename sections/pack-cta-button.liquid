@@ -6,6 +6,11 @@
   if button_action == 'link' and section.settings.button_link != blank
     assign is_link = true
   endif
+
+  assign shake_class = ''
+  if section.settings.enable_shake_animation
+    assign shake_class = 'pack-cta__button--shake'
+  endif
 %}
 
 <section
@@ -13,6 +18,7 @@
   id="pack-cta-{{ section.id }}"
   data-section-id="{{ section.id }}"
   data-position-mode="{{ section.settings.position_mode }}"
+  data-float-trigger="{{ section.settings.float_trigger }}"
   style="
     --pack-cta-bg: {% if section.settings.section_background_transparent %}transparent{% else %}{{ section.settings.section_background_color }}{% endif %};
     --pack-cta-pt: {{ section.settings.padding_top }}px;
@@ -21,6 +27,11 @@
     --pack-cta-pl: {{ section.settings.padding_left }}px;
     --pack-cta-button-bg: {{ section.settings.button_background_color }};
     --pack-cta-button-color: {{ section.settings.button_text_color }};
+    --pack-cta-border-color: {{ section.settings.button_border_color }};
+    --pack-cta-border-width: {{ section.settings.button_border_width }}px;
+    --pack-cta-radius: {{ section.settings.button_border_radius }}px;
+    --pack-cta-font-size: {{ section.settings.button_font_size }}px;
+    --pack-cta-shadow: 0 2px 7px rgba(0, 0, 0, 0.3);
     --pack-cta-max-width: {{ section.settings.button_max_width }}px;
     --pack-cta-float-offset: {{ section.settings.float_bottom_offset }}px;
     --pack-cta-z-index: {{ section.settings.float_z_index }};
@@ -28,56 +39,44 @@
 >
   <div class="pack-cta__inner pack-cta__inner--align-{{ section.settings.alignment }}">
     <div class="pack-cta__anchor" data-cta-anchor>
-      {% if is_link %}
-        <a
-          href="{{ section.settings.button_link }}"
-          class="pack-cta__button"
-          data-cta-button
-          data-cta-action="link"
-          {% if section.settings.open_in_new_tab %}
-            target="_blank"
-            rel="noopener noreferrer"
-          {% endif %}
-        >
-      {% else %}
-        <button
-          type="button"
-          class="pack-cta__button"
-          data-cta-button
-          data-cta-action="{{ button_action }}"
-        >
-      {% endif %}
-        {% if section.settings.show_icon %}
-          <span class="pack-cta__icon" aria-hidden="true">
-            {% if section.settings.icon_image != blank %}
-              {{
-                section.settings.icon_image
-                | image_url: width: 96
-                | image_tag: loading: 'lazy', alt: ''
-              }}
-            {% elsif section.settings.icon_preset == 'cart' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <circle cx="9" cy="20" r="1"></circle>
-                <circle cx="17" cy="20" r="1"></circle>
-                <path d="M3 3h2l1.2 12.4a1 1 0 0 0 1 .9h9.2a1 1 0 0 0 1-.9L20 7H7"></path>
-              </svg>
-            {% else %}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M7 9h10l-1.2 9H8.2L7 9z"></path>
-                <path d="M9 9V7a3 3 0 0 1 6 0v2"></path>
-              </svg>
-            {% endif %}
-          </span>
-        {% endif %}
-        <span class="pack-cta__label">{{ section.settings.button_label }}</span>
-      {% if is_link %}
-        </a>
-      {% else %}
-        </button>
-      {% endif %}
-      <div class="pack-cta__placeholder" data-cta-placeholder aria-hidden="true"></div>
+      {% render 'pack-cta-button-control',
+        is_link: is_link,
+        button_action: button_action,
+        button_link: section.settings.button_link,
+        open_in_new_tab: section.settings.open_in_new_tab,
+        button_label: section.settings.button_label,
+        show_icon: section.settings.show_icon,
+        icon_image: section.settings.icon_image,
+        icon_preset: section.settings.icon_preset,
+        extra_class: '',
+        extra_attributes: 'data-cta-button-inline'
+      %}
     </div>
   </div>
+
+  {% if section.settings.position_mode == 'fixed_floating' %}
+    <div
+      class="pack-cta__floating"
+      data-cta-floating
+      data-position="bottom"
+      aria-hidden="true"
+    >
+      <div class="pack-cta__floating-inner">
+        {% render 'pack-cta-button-control',
+          is_link: is_link,
+          button_action: button_action,
+          button_link: section.settings.button_link,
+          open_in_new_tab: section.settings.open_in_new_tab,
+          button_label: section.settings.button_label,
+          show_icon: section.settings.show_icon,
+          icon_image: section.settings.icon_image,
+          icon_preset: section.settings.icon_preset,
+          extra_class: shake_class,
+          extra_attributes: 'data-cta-button-floating'
+        %}
+      </div>
+    </div>
+  {% endif %}
 </section>
 
 <script src="{{ 'pack-cta-button.js' | asset_url }}" defer></script>
@@ -94,19 +93,55 @@
       "type": "text",
       "id": "button_label",
       "label": "Texto del boton",
-      "default": "Quiero mi pack"
+      "default": "Compra aqui | Paga en casa"
     },
     {
       "type": "color",
       "id": "button_background_color",
       "label": "Color de fondo del boton",
-      "default": "#FFC800"
+      "default": "#FFDE21"
     },
     {
       "type": "color",
       "id": "button_text_color",
       "label": "Color de letra del boton",
-      "default": "#111111"
+      "default": "#010101"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Color del borde",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "button_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Grosor del borde",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Redondeo del boton",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "button_font_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Tamano de letra",
+      "default": 16
     },
     {
       "type": "checkbox",
@@ -140,15 +175,15 @@
       "type": "select",
       "id": "icon_preset",
       "label": "Icono predeterminado",
-      "default": "bag",
+      "default": "cart",
       "options": [
-        {
-          "value": "bag",
-          "label": "Bolsa de compras"
-        },
         {
           "value": "cart",
           "label": "Carrito"
+        },
+        {
+          "value": "bag",
+          "label": "Bolsa de compras"
         }
       ]
     },
@@ -190,7 +225,7 @@
     },
     {
       "type": "header",
-      "content": "Posicion"
+      "content": "Posicion flotante"
     },
     {
       "type": "select",
@@ -207,7 +242,29 @@
           "label": "Fijo + flotante"
         }
       ],
-      "info": "Fijo: queda donde lo coloques. Fijo + flotante: al bajar y pasar el boton, flota abajo; al subir y volver a su sitio, deja de flotar."
+      "info": "Fijo + flotante: como RSI, flota abajo al pasar el punto de referencia y desaparece al volver."
+    },
+    {
+      "type": "select",
+      "id": "float_trigger",
+      "label": "Cuando aparece el flotante",
+      "default": "pack_buy",
+      "options": [
+        {
+          "value": "pack_buy",
+          "label": "Al pasar el boton Comprar ahora del pack"
+        },
+        {
+          "value": "cta_section",
+          "label": "Al pasar este boton en la pagina"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_shake_animation",
+      "label": "Animacion shake en el boton flotante",
+      "default": true
     },
     {
       "type": "range",
@@ -217,7 +274,7 @@
       "step": 2,
       "unit": "px",
       "label": "Separacion inferior cuando flota",
-      "default": 16
+      "default": 0
     },
     {
       "type": "range",
@@ -307,10 +364,15 @@
     {
       "name": "Boton CTA pack",
       "settings": {
-        "button_label": "Quiero mi pack",
-        "button_background_color": "#FFC800",
-        "button_text_color": "#111111",
+        "button_label": "Compra aqui | Paga en casa",
+        "button_background_color": "#FFDE21",
+        "button_text_color": "#010101",
+        "button_border_color": "#000000",
+        "button_border_radius": 20,
+        "icon_preset": "cart",
         "position_mode": "fixed_floating",
+        "float_trigger": "pack_buy",
+        "enable_shake_animation": true,
         "button_action": "trigger_buy"
       }
     }

@@ -1,60 +1,18 @@
 (function () {
-  function initPackCta(section) {
-    if (!section || section.dataset.initialized === "true") {
+  function bindButtonAction(buttonNode) {
+    if (!buttonNode || buttonNode.dataset.bound === "true") {
       return;
     }
 
-    section.dataset.initialized = "true";
+    buttonNode.dataset.bound = "true";
 
-    var mode = section.dataset.positionMode || "fixed";
-    var anchorNode = section.querySelector("[data-cta-anchor]");
-    var buttonNode = section.querySelector("[data-cta-button]");
-    var placeholderNode = section.querySelector("[data-cta-placeholder]");
-
-    if (!anchorNode || !buttonNode) {
+    if (buttonNode.dataset.ctaAction === "link") {
       return;
     }
 
-    function getAnchorTop() {
-      return anchorNode.getBoundingClientRect().top + window.scrollY;
-    }
-
-    function setFloating(active) {
-      var isFloating = Boolean(active);
-
-      section.classList.toggle("pack-cta--floating-active", isFloating);
-      buttonNode.classList.toggle("pack-cta__button--floating", isFloating);
-
-      if (placeholderNode) {
-        placeholderNode.style.height = isFloating ? buttonNode.offsetHeight + "px" : "0px";
-      }
-    }
-
-    function updateFloatingState() {
-      if (mode !== "fixed_floating") {
-        setFloating(false);
-        return;
-      }
-
-      var anchorRect = anchorNode.getBoundingClientRect();
-      var viewportHeight = window.innerHeight;
-
-      if (anchorRect.top >= viewportHeight) {
-        setFloating(false);
-        return;
-      }
-
-      if (anchorRect.bottom <= 0) {
-        setFloating(true);
-        return;
-      }
-
-      setFloating(false);
-    }
-
-    function handleButtonAction(event) {
+    buttonNode.addEventListener("click", function (event) {
       var action = buttonNode.dataset.ctaAction;
-      if (!action || action === "link") {
+      if (!action) {
         return;
       }
 
@@ -79,13 +37,76 @@
           packSection.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }
+    });
+  }
+
+  function initPackCta(section) {
+    if (!section || section.dataset.initialized === "true") {
+      return;
     }
 
-    if (buttonNode.tagName === "BUTTON") {
-      buttonNode.addEventListener("click", handleButtonAction);
+    section.dataset.initialized = "true";
+
+    var mode = section.dataset.positionMode || "fixed";
+    var triggerMode = section.dataset.floatTrigger || "pack_buy";
+    var anchorNode = section.querySelector("[data-cta-anchor]");
+    var floatingNode = section.querySelector("[data-cta-floating]");
+    var inlineButton = section.querySelector("[data-cta-button-inline]");
+    var floatingButton = section.querySelector("[data-cta-button-floating]");
+
+    if (!anchorNode) {
+      return;
     }
 
-    if (mode === "fixed_floating") {
+    bindButtonAction(inlineButton);
+    bindButtonAction(floatingButton);
+
+    function getTriggerNode() {
+      if (triggerMode === "pack_buy") {
+        return document.querySelector(".pack-button--buy");
+      }
+
+      return anchorNode;
+    }
+
+    function setFloatingVisible(visible) {
+      if (!floatingNode) {
+        return;
+      }
+
+      floatingNode.classList.toggle("pack-cta__floating--visible", Boolean(visible));
+      floatingNode.setAttribute("aria-hidden", visible ? "false" : "true");
+    }
+
+    function updateFloatingState() {
+      if (mode !== "fixed_floating") {
+        setFloatingVisible(false);
+        return;
+      }
+
+      var triggerNode = getTriggerNode();
+      if (!triggerNode) {
+        setFloatingVisible(false);
+        return;
+      }
+
+      var triggerRect = triggerNode.getBoundingClientRect();
+      var viewportHeight = window.innerHeight;
+
+      if (triggerRect.top >= viewportHeight) {
+        setFloatingVisible(false);
+        return;
+      }
+
+      if (triggerRect.bottom <= 0) {
+        setFloatingVisible(true);
+        return;
+      }
+
+      setFloatingVisible(false);
+    }
+
+    if (mode === "fixed_floating" && floatingNode) {
       updateFloatingState();
       window.addEventListener("scroll", updateFloatingState, { passive: true });
       window.addEventListener("resize", updateFloatingState);
