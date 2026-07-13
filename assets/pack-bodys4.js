@@ -757,6 +757,11 @@
 
     resetButton.addEventListener("click", resetSelections);
     buyButton.addEventListener("click", addPackToCart);
+
+    window.PackCheckout = window.PackCheckout || {};
+    window.PackCheckout.triggerBuy = function () {
+      buyButton.click();
+    };
     }
 
     if (collectionHandle && productsLimit > products.length) {

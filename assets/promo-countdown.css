@@ -117,6 +117,19 @@
 
 .promo-countdown--complete .promo-countdown__bar-track {
   background: var(--promo-fill-color, #2e7d32);
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.promo-countdown--complete .promo-countdown__bar-track:hover,
+.promo-countdown--complete .promo-countdown__bar-track:focus-visible {
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55), inset 0 1px 3px rgba(0, 0, 0, 0.08);
+  outline: none;
+}
+
+.promo-countdown--complete .promo-countdown__bar-track:active {
+  transform: scale(0.99);
 }
 
 .promo-countdown--complete .promo-countdown__bar-fill {

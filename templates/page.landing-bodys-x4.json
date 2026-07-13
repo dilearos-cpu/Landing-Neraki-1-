@@ -211,7 +211,7 @@
         "units_to_complete": 4,
         "progress_prefix": "Llevas",
         "progress_suffix": "completado",
-        "completion_message": "¡Pack completo! Ya puedes darle en Comprar ahora.",
+        "completion_message": "¡Pack completo! Toca aquí para Comprar ahora.",
         "progress_color_low": "#E53935",
         "progress_color_mid": "#F9A825",
         "progress_color_high": "#2E7D32",

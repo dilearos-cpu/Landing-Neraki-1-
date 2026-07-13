@@ -11,7 +11,7 @@
       unitsToComplete: 4,
       progressPrefix: "Llevas",
       progressSuffix: "completado",
-      completionMessage: "¡Pack completo! Ya puedes darle en Comprar ahora.",
+      completionMessage: "¡Pack completo! Toca aquí para Comprar ahora.",
       colorLow: "#E53935",
       colorMid: "#F9A825",
       colorHigh: "#2E7D32"
@@ -58,6 +58,18 @@
       return settings.colorMid;
     }
     return settings.colorLow;
+  }
+
+  function triggerPackBuy() {
+    if (global.PackCheckout && typeof global.PackCheckout.triggerBuy === "function") {
+      global.PackCheckout.triggerBuy();
+      return;
+    }
+
+    var buyButton = document.querySelector(".pack-button--buy");
+    if (buyButton) {
+      buyButton.click();
+    }
   }
 
   function initCountdown(section) {
@@ -118,6 +130,21 @@
       section.classList.toggle("promo-countdown--complete", isComplete);
       section.classList.toggle("promo-countdown--started", percent > 0);
 
+      if (barTrackNode) {
+        if (isComplete) {
+          barTrackNode.setAttribute("role", "button");
+          barTrackNode.setAttribute("tabindex", "0");
+          barTrackNode.setAttribute(
+            "aria-label",
+            settings.completionMessage || "Pack completo. Comprar ahora."
+          );
+        } else {
+          barTrackNode.removeAttribute("role");
+          barTrackNode.setAttribute("tabindex", "-1");
+          barTrackNode.removeAttribute("aria-label");
+        }
+      }
+
       if (percent > lastPercent) {
         if (progressWrapNode) {
           progressWrapNode.classList.remove("promo-countdown__progress-bump");
@@ -169,6 +196,27 @@
     updateProgress();
     renderTime();
     timerId = setInterval(renderTime, 1000);
+
+    if (barTrackNode) {
+      barTrackNode.addEventListener("click", function () {
+        if (!section.classList.contains("promo-countdown--complete")) {
+          return;
+        }
+
+        triggerPackBuy();
+      });
+
+      barTrackNode.addEventListener("keydown", function (event) {
+        if (!section.classList.contains("promo-countdown--complete")) {
+          return;
+        }
+
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          triggerPackBuy();
+        }
+      });
+    }
 
     section.addEventListener("shopify:section:unload", function () {
       if (timerId) {
