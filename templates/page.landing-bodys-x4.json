@@ -204,16 +204,17 @@
       "settings": {
         "background_color": "#d2b49b",
         "number_color": "#d2b49b",
-        "bar_fill_color": "#e53935",
         "duration_hours": 24,
         "hours_label": "horas",
         "minutes_label": "minutos",
         "seconds_label": "segundos",
-        "promos_prefix": "Solo",
-        "promos_available": 5,
-        "promos_suffix": "promos disponibles",
-        "promos_total": 25,
-        "units_label": "unds",
+        "units_to_complete": 4,
+        "progress_prefix": "Llevas",
+        "progress_suffix": "completado",
+        "completion_message": "¡Pack completo! Ya puedes darle en Comprar ahora.",
+        "progress_color_low": "#E53935",
+        "progress_color_mid": "#F9A825",
+        "progress_color_high": "#2E7D32",
         "instruction_bold": "Dale click a los recuadros en blanco",
         "instruction_regular": "para escoger 4 diseños a tu gusto."
       }

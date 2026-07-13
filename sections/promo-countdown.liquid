@@ -9,7 +9,9 @@
   style="
     --promo-bg: {{ section.settings.background_color }};
     --promo-number-color: {{ section.settings.number_color }};
-    --promo-bar-fill: {{ section.settings.bar_fill_color }};
+    --promo-color-low: {{ section.settings.progress_color_low }};
+    --promo-color-mid: {{ section.settings.progress_color_mid }};
+    --promo-color-high: {{ section.settings.progress_color_high }};
   "
 >
   <div class="promo-countdown__inner">
@@ -30,19 +32,19 @@
       </div>
     </div>
 
-    <div class="promo-countdown__promos-bar" data-promos-bar aria-live="polite">
+    <div class="promo-countdown__progress-wrap" data-progress-wrap aria-live="polite">
       <div class="promo-countdown__bar-track">
-        <div
-          class="promo-countdown__bar-fill"
-          data-bar-fill
-          style="width: 100%;"
-        >
-          <p class="promo-countdown__bar-text" data-bar-label>
-            <span data-promos-prefix>{{ section.settings.promos_prefix }}</span>
-            <strong data-promos-count>{{ section.settings.promos_available }}</strong>
-            <span data-promos-suffix>{{ section.settings.promos_suffix }}</span>
-          </p>
-        </div>
+        <div class="promo-countdown__bar-fill" data-bar-fill style="width: 0%;"></div>
+        <p class="promo-countdown__bar-text" data-bar-label>
+          <span class="promo-countdown__progress-copy" data-progress-copy>
+            <span data-progress-prefix>{{ section.settings.progress_prefix }}</span>
+            <strong data-progress-percent>0%</strong>
+            <span data-progress-suffix>{{ section.settings.progress_suffix }}</span>
+          </span>
+          <span class="promo-countdown__complete-copy" data-complete-copy hidden>
+            {{ section.settings.completion_message }}
+          </span>
+        </p>
       </div>
     </div>
 
@@ -54,9 +56,13 @@
 
   <script type="application/json" data-promo-settings>
     {
-      "promosAvailable": {{ section.settings.promos_available | json }},
-      "promosTotal": {{ section.settings.promos_total | json }},
-      "unitsLabel": {{ section.settings.units_label | json }}
+      "unitsToComplete": {{ section.settings.units_to_complete | json }},
+      "progressPrefix": {{ section.settings.progress_prefix | json }},
+      "progressSuffix": {{ section.settings.progress_suffix | json }},
+      "completionMessage": {{ section.settings.completion_message | json }},
+      "colorLow": {{ section.settings.progress_color_low | json }},
+      "colorMid": {{ section.settings.progress_color_mid | json }},
+      "colorHigh": {{ section.settings.progress_color_high | json }}
     }
   </script>
 </section>
@@ -76,14 +82,8 @@
     {
       "type": "color",
       "id": "number_color",
-      "label": "Color de numeros",
+      "label": "Color de numeros del contador",
       "default": "#D2B49B"
-    },
-    {
-      "type": "color",
-      "id": "bar_fill_color",
-      "label": "Color barra de progreso",
-      "default": "#E53935"
     },
     {
       "type": "range",
@@ -113,35 +113,51 @@
       "default": "segundos"
     },
     {
-      "type": "text",
-      "id": "promos_prefix",
-      "label": "Texto antes del numero de promos",
-      "default": "Solo"
+      "type": "header",
+      "content": "Barra de progreso del pack"
     },
     {
       "type": "number",
-      "id": "promos_available",
-      "label": "Promos disponibles (inicial)",
-      "default": 5,
-      "info": "Baja 1 por cada slot llenado en el pack de la misma pagina."
+      "id": "units_to_complete",
+      "label": "Unidades para completar el 100%",
+      "default": 4,
+      "info": "Debe coincidir con la cantidad de slots del pack (ej. 4 bodys)."
     },
     {
       "type": "text",
-      "id": "promos_suffix",
-      "label": "Texto despues del numero de promos",
-      "default": "promos disponibles"
-    },
-    {
-      "type": "number",
-      "id": "promos_total",
-      "label": "Total de promos (para la barra)",
-      "default": 25
+      "id": "progress_prefix",
+      "label": "Texto antes del porcentaje",
+      "default": "Llevas"
     },
     {
       "type": "text",
-      "id": "units_label",
-      "label": "Texto dentro de la barra",
-      "default": "unds"
+      "id": "progress_suffix",
+      "label": "Texto despues del porcentaje",
+      "default": "completado"
+    },
+    {
+      "type": "textarea",
+      "id": "completion_message",
+      "label": "Mensaje al llegar al 100%",
+      "default": "¡Pack completo! Ya puedes darle en Comprar ahora."
+    },
+    {
+      "type": "color",
+      "id": "progress_color_low",
+      "label": "Color barra (inicio / poco progreso)",
+      "default": "#E53935"
+    },
+    {
+      "type": "color",
+      "id": "progress_color_mid",
+      "label": "Color barra (progreso medio)",
+      "default": "#F9A825"
+    },
+    {
+      "type": "color",
+      "id": "progress_color_high",
+      "label": "Color barra (100% completado)",
+      "default": "#2E7D32"
     },
     {
       "type": "text",
