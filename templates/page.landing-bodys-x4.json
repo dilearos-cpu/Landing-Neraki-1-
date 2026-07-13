@@ -219,6 +219,19 @@
         "instruction_regular": "para escoger 4 diseños a tu gusto."
       }
     },
+    "google_rating_badge_main": {
+      "type": "google-rating-badge",
+      "name": "Recuadro estrellas Google",
+      "settings": {
+        "star_count": 5,
+        "prefix_text": "mas de",
+        "customer_count": "5.000",
+        "phrase_text": "clientes felices",
+        "enable_animation": true,
+        "section_background_transparent": true,
+        "alignment": "center"
+      }
+    },
     "pack_bodys4_VPrYwf": {
       "type": "pack-bodys4",
       "name": "Pack Bodys 4",
@@ -360,6 +373,7 @@
     "responsive_banner_i9LJGW",
     "photo_carousel_77yLXE",
     "promo_countdown_tiyRGW",
+    "google_rating_badge_main",
     "pack_bodys4_VPrYwf",
     "pack_cta_button_main",
     "responsive_banner_8NXxGA",
