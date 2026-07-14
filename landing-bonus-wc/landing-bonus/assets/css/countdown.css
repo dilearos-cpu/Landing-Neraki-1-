@@ -35,3 +35,7 @@
   width: 0;
   transition: width 0.3s ease, background-color 0.3s ease;
 }
+
+.landing-bonus-countdown--complete .landing-bonus-countdown__progress-bar {
+  cursor: pointer;
+}
