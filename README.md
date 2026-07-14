@@ -1,17 +1,41 @@
-# Caletzza — Shopify Theme
+# Caletzza Theme
 
-Proyecto local para editar el tema de [caletzza.myshopify.com](https://caletzza.myshopify.com) desde Cursor.
+Sub-repositorio del theme de Shopify para [caletzza.myshopify.com](https://caletzza.myshopify.com). Fusiona la interfaz y experiencia de [Pauly Lingerie](https://www.paulylingerie.com/) con las funcionalidades personalizadas ya existentes de Caletzza.
+
+## Inspiración visual (Pauly Lingerie)
+
+- Paleta cálida: marrón `#502f1d`, rosa `#d3aba9`, grises suaves
+- Tipografías Poppins (cuerpo) y Rubik (títulos)
+- Barra marquee superior, beneficios de envío, grid de categorías
+- Colecciones con tabs, banners divididos, barra móvil inferior
+- Tarjetas de producto con ratio vertical e imagen hover
+
+## Funcionalidades Caletzza conservadas
+
+| Funcionalidad | Archivos principales |
+|---|---|
+| Pack Básicas (10 diseños) | `sections/pack-basicas.liquid` |
+| Pack Bodys x4 | `sections/pack-bodys4.liquid` |
+| Checkout express COD | `snippets/pack-cod-modal.liquid`, `cod-express-app/` |
+| Segunda imagen por variante | `snippets/variant-second-image-url.liquid` |
+| Popup prueba social | `sections/social-proof-popup.liquid` |
+| Countdown promocional | `sections/promo-countdown.liquid`, `sections/progress-bar.liquid` |
+| Testimonios | `sections/testimonials-section.liquid` |
+| Landings pack | `templates/index.json`, `templates/page.landing-*.json` |
+
+## Templates
+
+| Template | Uso |
+|---|---|
+| `index.caletzza-store.json` | Homepage tienda estilo Pauly (borrador) |
+| `index.json` | Landing Pack Básicas (funcionalidad actual) |
+| `page.landing-basicas-x10.json` | Landing pack básicas |
+| `page.landing-bodys-x4.json` | Landing pack bodys |
 
 ## Requisitos
 
 - Node.js 22+
 - Acceso de administrador o permisos de **Temas** en la tienda
-
-## Tema actual
-
-- **Nombre:** Copy of Dawn
-- **ID:** `142036828310`
-- **Estado:** Live (publicado)
 
 ## Comandos
 
@@ -19,16 +43,13 @@ Proyecto local para editar el tema de [caletzza.myshopify.com](https://caletzza.
 # Listar temas de la tienda
 npm run theme:list
 
-# Descargar el tema activo
-npm run theme:pull
-
 # Vista previa en vivo (hot reload)
 npm run theme:dev
 
-# Subir cambios a un tema no publicado
-npm run theme:push
+# Subir como BORRADOR (no publica)
+npm run theme:push:draft
 
-# Validar el tema
+# Validar el theme
 npm run theme:check
 ```
 
@@ -36,19 +57,20 @@ npm run theme:check
 
 La primera vez que ejecutes un comando, Shopify te pedirá iniciar sesión:
 
-1. Ejecuta `npm run theme:list` en la terminal de Cursor
+1. Ejecuta `npm run theme:list` en la terminal
 2. Se mostrará un **código de verificación** y un enlace
-3. Abre el enlace en tu navegador e inicia sesión con la cuenta de Caletzza
+3. Abre el enlace e inicia sesión con la cuenta de Caletzza
 4. Introduce el código cuando te lo pida
-5. Vuelve a la terminal — la conexión quedará guardada
 
-## Flujo de trabajo
+## Flujo de trabajo recomendado
 
-1. `npm run theme:pull` — descarga el tema actual
-2. Edita archivos en `sections/`, `templates/`, `assets/`, etc.
-3. `npm run theme:dev` — previsualiza cambios en tiempo real
-4. `npm run theme:push` — sube a un tema de prueba (no publicado)
-5. Cuando estés conforme, publica desde el admin de Shopify o con `shopify theme publish`
+1. Edita archivos en `sections/`, `templates/`, `assets/`, etc.
+2. `npm run theme:dev` — previsualiza cambios en tiempo real
+3. `npm run theme:push:draft` — sube a un tema **no publicado** (borrador)
+4. Revisa en Admin → Temas → Caletzza Theme (borrador)
+5. Publica manualmente solo cuando estés conforme
+
+> **Importante:** Este theme se sube como borrador. No se publica automáticamente.
 
 ## Configuración
 
@@ -57,42 +79,24 @@ La tienda está configurada en `shopify.theme.toml`:
 ```toml
 [environments.default]
 store = "caletzza.myshopify.com"
-theme = "142036828310"
+# theme = ""  # Dejar vacío para crear/subir como borrador
 ```
 
-## Segunda imagen de variaciones (Pack Bodys)
+## Secciones Pauly nuevas
 
-Equivalente al plugin WooCommerce **Segunda Imagen**. Muestra una segunda foto al elegir color/talla en el modal del pack.
+- `pauly-marquee-bar` — Barra de anuncios con scroll continuo
+- `pauly-shipping-bar` — Beneficios (envío, pago, cambios)
+- `pauly-category-grid` — Grid visual de categorías
+- `pauly-tabs-collection` — Productos destacados con tabs
+- `pauly-split-banner` — Banners divididos 50/50
+- `pauly-mobile-toolbar` — Navegación inferior móvil
 
-### Configurar en Shopify Admin
+## Checkout express COD
+
+Ver [cod-express-app/README.md](cod-express-app/README.md) para la app de pedidos COD.
+
+## Segunda imagen de variaciones
 
 1. **Configuración → Datos personalizados → Variantes → Agregar definición**
-2. Nombre: `Segunda imagen`
-3. Namespace: `custom`, clave: la que muestre Admin (ej. `custom_second_image` si el nombre fue `custom.second_image`)
-4. Tipo: **Archivo** → una imagen
-5. En cada variante (o una por color), sube la segunda imagen
-
-Una imagen por **color** aplica a todas las tallas de ese color (igual que en WooCommerce).
-
-## Checkout express COD (Pack Bodys)
-
-Formulario estilo **EasySell COD Form** integrado en el theme. Al pulsar **Comprar ahora** con el pack completo, se abre un modal de pago contra entrega sin salir de la landing.
-
-### Theme
-
-- Modal: `snippets/pack-cod-modal.liquid`
-- JS/CSS: `assets/pack-cod-checkout.js`, `assets/pack-cod-checkout.css`
-- Seccion Pack Bodys 4 → **Checkout express COD**
-
-### App (requerida para crear pedidos)
-
-La app vive en `cod-express-app/`. Sin ella el formulario se muestra pero no puede crear pedidos en Shopify.
-
-Ver instrucciones completas en [cod-express-app/README.md](cod-express-app/README.md).
-
-### Mantener Render despierto (cron-job.org)
-
-En plan Free, Render se apaga tras ~15 min sin tráfico. Hay un cron job configurado en **cron-job.org** (cuenta `dilearos@hotmail.com`) que hace GET cada 10 min a `https://landing-neraki-1.onrender.com/health`. No crea pedidos en Shopify.
-
-Detalle paso a paso: [cod-express-app/SETUP-DEV-DASHBOARD.md](cod-express-app/SETUP-DEV-DASHBOARD.md#mantener-render-despierto-sin-pedidos-ficticios-en-shopify).
-
+2. Nombre: `Segunda imagen`, namespace `custom`, tipo **Archivo** (imagen)
+3. Asignar imagen por color/talla en cada variante

@@ -1,23 +1,23 @@
 {
-  "name": "workspace",
+  "name": "caletzza-theme",
   "version": "1.0.0",
-  "description": "",
+  "description": "Caletzza Theme — Shopify theme inspirado en Pauly Lingerie con funcionalidades pack/COD",
   "main": "index.js",
   "scripts": {
     "shopify": "shopify",
     "theme:list": "shopify theme list -e default",
     "theme:pull": "shopify theme pull -e default",
     "theme:dev": "shopify theme dev -e default",
-    "theme:push": "shopify theme push -e default --allow-live",
-    "theme:push:draft": "shopify theme push -e default --unpublished",
+    "theme:push": "shopify theme push -e default --unpublished --json",
+    "theme:push:draft": "shopify theme push -e default --unpublished --json",
     "theme:check": "shopify theme check"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dilearos-cpu/landing-neraki-1-.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["shopify", "theme", "caletzza", "lingerie"],
+  "author": "Caletzza",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/dilearos-cpu/landing-neraki-1-/issues"

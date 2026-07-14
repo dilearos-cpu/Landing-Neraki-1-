@@ -1,3 +1,11 @@
+# Caletzza Theme — configuración Shopify CLI
+# Subir siempre como borrador: npm run theme:push:draft
+
 [environments.default]
 store = "caletzza.myshopify.com"
-theme = "148127416470"
+# No vincular a tema publicado. Dejar sin theme ID para crear borrador al hacer push.
+# theme = ""
+
+[environments.draft]
+store = "caletzza.myshopify.com"
+# Usar con: shopify theme push -e draft --unpublished

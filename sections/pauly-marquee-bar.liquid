@@ -1,0 +1,65 @@
+{{ 'caletzza-pauly.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+{%- endstyle -%}
+
+{%- if section.blocks.size > 0 -%}
+  <div class="cz-marquee-bar section-{{ section.id }}-padding" role="region" aria-label="Anuncios">
+    <div class="cz-marquee-bar__track">
+      {%- for i in (1..2) -%}
+        {%- for block in section.blocks -%}
+          <div class="cz-marquee-bar__item" {{ block.shopify_attributes }}>
+            {%- if block.settings.link != blank -%}
+              <a href="{{ block.settings.link }}">{{ block.settings.text | escape }}</a>
+            {%- else -%}
+              {{ block.settings.text | escape }}
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Barra marquee (Pauly)",
+  "tag": "section",
+  "class": "section-pauly-marquee",
+  "max_blocks": 6,
+  "settings": [],
+  "blocks": [
+    {
+      "type": "message",
+      "name": "Mensaje",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Texto",
+          "default": "Envío gratis en compras superiores a $150.000"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Enlace (opcional)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Barra marquee (Pauly)",
+      "blocks": [
+        { "type": "message", "settings": { "text": "COMPRA HOY, PAGA DESPUÉS" } },
+        { "type": "message", "settings": { "text": "HECHO POR MANOS COLOMBIANAS" } },
+        { "type": "message", "settings": { "text": "ENVÍO GRATIS EN COMPRAS +$150.000" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

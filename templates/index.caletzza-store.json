@@ -1,0 +1,253 @@
+{
+  "sections": {
+    "pauly_marquee": {
+      "type": "pauly-marquee-bar",
+      "blocks": {
+        "msg_1": {
+          "type": "message",
+          "settings": {
+            "text": "COMPRA HOY, PAGA DESPUÉS — Pago contra entrega disponible"
+          }
+        },
+        "msg_2": {
+          "type": "message",
+          "settings": {
+            "text": "HECHO POR MANOS COLOMBIANAS — Calidad y diseño local"
+          }
+        },
+        "msg_3": {
+          "type": "message",
+          "settings": {
+            "text": "ENVÍO GRATIS en compras superiores a $150.000"
+          }
+        }
+      },
+      "block_order": ["msg_1", "msg_2", "msg_3"],
+      "settings": {}
+    },
+    "slideshow_hero": {
+      "type": "slideshow",
+      "blocks": {
+        "slide_1": {
+          "type": "slide",
+          "settings": {
+            "heading": "Nueva colección",
+            "heading_size": "h0",
+            "subheading": "Ropa interior femenina que empodera",
+            "button_label": "Shop now",
+            "link": "shopify://collections/all",
+            "button_style_secondary": false,
+            "show_text_box": true,
+            "box_align": "middle-center",
+            "text_alignment": "center",
+            "image_overlay_opacity": 20,
+            "color_scheme": "scheme-3"
+          }
+        }
+      },
+      "block_order": ["slide_1"],
+      "settings": {
+        "layout": "full_bleed",
+        "slide_height": "large",
+        "slider_visual": "dots",
+        "auto_rotate": true,
+        "change_slides_speed": 5,
+        "image_behavior": "ambient",
+        "show_text_below": false,
+        "accessibility_info": "Carrusel de banners"
+      }
+    },
+    "shipping_bar": {
+      "type": "pauly-shipping-bar",
+      "blocks": {
+        "b1": {
+          "type": "benefit",
+          "settings": {
+            "icon": "card",
+            "title": "COMPRA HOY, PAGA DESPUÉS",
+            "text": "Paga al recibir tu pedido"
+          }
+        },
+        "b2": {
+          "type": "benefit",
+          "settings": {
+            "icon": "heart",
+            "title": "HECHO EN COLOMBIA",
+            "text": "Diseño y confección local"
+          }
+        },
+        "b3": {
+          "type": "benefit",
+          "settings": {
+            "icon": "truck",
+            "title": "ENVÍO GRATIS",
+            "text": "En compras superiores a $150.000"
+          }
+        },
+        "b4": {
+          "type": "benefit",
+          "settings": {
+            "icon": "check",
+            "title": "CAMBIOS FÁCILES",
+            "text": "30 días para cambiar tu talla"
+          }
+        }
+      },
+      "block_order": ["b1", "b2", "b3", "b4"],
+      "settings": {
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "category_grid": {
+      "type": "pauly-category-grid",
+      "blocks": {
+        "c1": { "type": "category", "settings": { "title": "Lo nuevo" } },
+        "c2": { "type": "category", "settings": { "title": "Bodys" } },
+        "c3": { "type": "category", "settings": { "title": "Ropa interior" } },
+        "c4": { "type": "category", "settings": { "title": "Rebajas" } }
+      },
+      "block_order": ["c1", "c2", "c3", "c4"],
+      "settings": {
+        "heading": "Comprar por categoría",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "tabs_collection": {
+      "type": "pauly-tabs-collection",
+      "blocks": {
+        "t1": { "type": "tab", "settings": { "tab_title": "Lo nuevo" } },
+        "t2": { "type": "tab", "settings": { "tab_title": "Lo más vendido" } },
+        "t3": { "type": "tab", "settings": { "tab_title": "Rebajas" } }
+      },
+      "block_order": ["t1", "t2", "t3"],
+      "settings": {
+        "heading": "Destacados",
+        "products_to_show": 8,
+        "columns_desktop": 4,
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "split_banner": {
+      "type": "pauly-split-banner",
+      "blocks": {
+        "sb1": {
+          "type": "banner",
+          "settings": {
+            "title": "Beachwear",
+            "button_label": "Ver colección"
+          }
+        },
+        "sb2": {
+          "type": "banner",
+          "settings": {
+            "title": "Complementos",
+            "button_label": "Descubrir"
+          }
+        }
+      },
+      "block_order": ["sb1", "sb2"],
+      "settings": {
+        "padding_top": 0,
+        "padding_bottom": 36
+      }
+    },
+    "featured_collection": {
+      "type": "featured-collection",
+      "settings": {
+        "title": "Novedades",
+        "heading_size": "h1",
+        "description": "",
+        "show_description": false,
+        "description_style": "body",
+        "collection": "all",
+        "products_to_show": 8,
+        "columns_desktop": 4,
+        "show_view_all": true,
+        "view_all_style": "solid",
+        "enable_desktop_slider": false,
+        "full_width": false,
+        "show_rating": false,
+        "enable_quick_add": false,
+        "columns_mobile": "2",
+        "swipe_on_mobile": true,
+        "padding_top": 36,
+        "padding_bottom": 36,
+        "color_scheme": "scheme-1",
+        "image_ratio": "portrait",
+        "image_shape": "default",
+        "quick_add": "none"
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Únete a nuestra comunidad",
+            "heading_size": "h1"
+          }
+        },
+        "paragraph": {
+          "type": "paragraph",
+          "settings": {
+            "text": "<p>Recibe novedades, promociones y contenido exclusivo.</p>"
+          }
+        },
+        "email_form": {
+          "type": "email_form",
+          "settings": {}
+        }
+      },
+      "block_order": ["heading", "paragraph", "email_form"],
+      "settings": {
+        "color_scheme": "scheme-2",
+        "full_width": true,
+        "padding_top": 52,
+        "padding_bottom": 52
+      }
+    },
+    "testimonials": {
+      "type": "testimonials-section",
+      "blocks": {
+        "t1": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "Hermosas, yo las recomiendo. Una tela super espectacular.",
+            "author": "Cliente verificada",
+            "rating": 5
+          }
+        },
+        "t2": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "Super espectacular, las recomiendo 100%.",
+            "author": "Cliente verificada",
+            "rating": 5
+          }
+        }
+      },
+      "block_order": ["t1", "t2"],
+      "settings": {}
+    },
+    "social_proof": {
+      "type": "social-proof-popup",
+      "settings": {}
+    }
+  },
+  "order": [
+    "pauly_marquee",
+    "slideshow_hero",
+    "shipping_bar",
+    "category_grid",
+    "tabs_collection",
+    "split_banner",
+    "featured_collection",
+    "testimonials",
+    "newsletter",
+    "social_proof"
+  ]
+}
