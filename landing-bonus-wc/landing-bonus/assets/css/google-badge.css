@@ -1,0 +1,36 @@
+.landing-bonus-google-badge {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.landing-bonus-google-badge__stars {
+  color: #f4b400;
+  display: flex;
+  gap: 0.15rem;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.landing-bonus-google-badge--animated {
+  animation: landing-bonus-float 4s ease-in-out infinite;
+}
+
+@keyframes landing-bonus-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-bonus-google-badge--animated {
+    animation: none;
+  }
+}

@@ -1,0 +1,36 @@
+.landing-bonus-social-proof-toast {
+  position: fixed;
+  z-index: 9997;
+  max-width: 320px;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  padding: 0.85rem 2rem 0.85rem 0.85rem;
+  font-size: 0.9rem;
+}
+
+.landing-bonus-social-proof-toast--bottom-left {
+  left: 1rem;
+  bottom: 1rem;
+}
+
+.landing-bonus-social-proof-toast--bottom-right {
+  right: 1rem;
+  bottom: 1rem;
+}
+
+.landing-bonus-social-proof-toast__close {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.landing-bonus-social-proof-toast[hidden] {
+  display: none !important;
+}

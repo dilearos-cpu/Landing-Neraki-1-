@@ -1,0 +1,13 @@
+/* Landing Bonus — estilos base */
+.landing-bonus-pack {
+  margin: 1.5rem 0;
+}
+
+.landing-bonus-pack__notice {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.landing-bonus-pack-buy {
+  cursor: pointer;
+}

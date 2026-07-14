@@ -1,0 +1,6 @@
+# WordPress
+landing-bonus-wc/landing-bonus/languages/*.mo
+
+# OS
+.DS_Store
+Thumbs.db

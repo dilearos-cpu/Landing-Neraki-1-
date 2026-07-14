@@ -1,0 +1,85 @@
+.landing-bonus-cod-modal[hidden] {
+  display: none !important;
+}
+
+.landing-bonus-cod-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+}
+
+.landing-bonus-cod-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.landing-bonus-cod-modal__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(960px, calc(100% - 2rem));
+  max-height: calc(100vh - 2rem);
+  margin: 1rem auto;
+  overflow: auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.landing-bonus-cod-modal__body {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr 280px;
+}
+
+.landing-bonus-cod-modal__form label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.landing-bonus-cod-modal__form input,
+.landing-bonus-cod-modal__form textarea {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.landing-bonus-cod-modal__submit {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.landing-bonus-cod-modal__summary {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.landing-bonus-cod-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  border: 0;
+  background: transparent;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.landing-bonus-cod-modal__free-shipping {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.landing-bonus-cod-modal__success {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+@media (max-width: 768px) {
+  .landing-bonus-cod-modal__body {
+    grid-template-columns: 1fr;
+  }
+}
