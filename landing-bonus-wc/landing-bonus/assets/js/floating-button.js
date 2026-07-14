@@ -1,0 +1,1 @@
+    return document.querySelector('#pack-buy, .pack-buy, [data-landing-bonus-pack-buy], .landing-bonus-pack-buy');

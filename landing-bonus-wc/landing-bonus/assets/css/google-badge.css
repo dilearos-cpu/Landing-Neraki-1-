@@ -1,0 +1,73 @@
+.landing-bonus-google-badge {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.landing-bonus-google-badge__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  flex-wrap: nowrap;
+}
+
+.landing-bonus-google-badge__stars {
+  color: #f4b400;
+  display: flex;
+  gap: 0.1rem;
+  flex-shrink: 0;
+}
+
+.landing-bonus-google-badge__star {
+  width: 20px;
+  height: 20px;
+}
+
+.landing-bonus-google-badge__phrase {
+  margin: 0;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.landing-bonus-google-badge__heading {
+  margin: 0 0 0.75rem;
+}
+
+.landing-bonus-google-badge--animated {
+  animation: landing-bonus-float 4s ease-in-out infinite;
+}
+
+@keyframes landing-bonus-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-bonus-google-badge__content {
+    gap: 0.5rem;
+  }
+
+  .landing-bonus-google-badge__star {
+    width: 16px;
+    height: 16px;
+  }
+
+  .landing-bonus-google-badge__phrase {
+    font-size: 0.875rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-bonus-google-badge--animated {
+    animation: none;
+  }
+}

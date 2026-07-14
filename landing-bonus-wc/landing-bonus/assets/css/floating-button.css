@@ -1,0 +1,56 @@
+.landing-bonus-floating-button {
+  padding: 1rem 0;
+}
+
+.landing-bonus-floating-button__inline,
+.landing-bonus-floating-button__floating {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 420px;
+  padding: 0.9rem 1.25rem;
+  border: 2px solid;
+  font-weight: 700;
+  text-decoration: none;
+  text-align: center;
+}
+
+.landing-bonus-floating-button__dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9998;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.landing-bonus-floating-button__dock[hidden] {
+  display: none !important;
+}
+
+.landing-bonus-floating-button__dock .landing-bonus-floating-button__floating {
+  animation: landing-bonus-shake 2.5s ease-in-out infinite;
+}
+
+@keyframes landing-bonus-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-2px);
+  }
+  40%,
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-bonus-floating-button__dock .landing-bonus-floating-button__floating {
+    animation: none;
+  }
+}

@@ -1,0 +1,15 @@
+.landing-bonus-admin__panel {
+  background: #fff;
+  border: 1px solid #ccd0d4;
+  margin-top: 1rem;
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+.landing-bonus-admin__form label {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.landing-bonus-admin code {
+  user-select: all;
+}
