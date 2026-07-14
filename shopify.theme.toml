@@ -1,11 +1,9 @@
-# Caletzza Theme — configuración Shopify CLI
-# Subir siempre como borrador: npm run theme:push:draft
+# Caletzza Theme — Shopify CLI
+# Reemplaza TU-TIENDA-DEV con tu development store de Partner
 
 [environments.default]
-store = "caletzza.myshopify.com"
-# No vincular a tema publicado. Dejar sin theme ID para crear borrador al hacer push.
-# theme = ""
+store = "TU-TIENDA-DEV.myshopify.com"
+# theme = ""  # Vacío = crea/sube como borrador
 
 [environments.draft]
-store = "caletzza.myshopify.com"
-# Usar con: shopify theme push -e draft --unpublished
+store = "TU-TIENDA-DEV.myshopify.com"

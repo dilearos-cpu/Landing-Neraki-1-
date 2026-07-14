@@ -1,8 +1,8 @@
 {
   "name": "caletzza-theme",
   "version": "1.0.0",
-  "description": "Caletzza Theme — Shopify theme Caletzza Theme con funcionalidades pack/COD",
-  "main": "index.js",
+  "description": "Caletzza Theme — Shopify theme con pack builder, COD UI, prueba social y diseño tienda lencería",
+  "private": true,
   "scripts": {
     "shopify": "shopify",
     "theme:list": "shopify theme list -e default",
@@ -12,17 +12,12 @@
     "theme:push:draft": "shopify theme push -e default --unpublished --json",
     "theme:check": "shopify theme check"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dilearos-cpu/landing-neraki-1-.git"
-  },
   "keywords": ["shopify", "theme", "caletzza", "lingerie"],
   "author": "Caletzza",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/dilearos-cpu/landing-neraki-1-/issues"
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22"
   },
-  "homepage": "https://github.com/dilearos-cpu/landing-neraki-1-#readme",
   "dependencies": {
     "@shopify/cli": "^4.4.0",
     "@shopify/theme": "^3.58.2"

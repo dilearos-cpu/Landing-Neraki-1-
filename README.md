@@ -1,134 +1,116 @@
 # Caletzza Theme
 
-Sub-repositorio del theme de Shopify para [caletzza.myshopify.com](https://caletzza.myshopify.com). Fusiona una interfaz de tienda de lencería con las funcionalidades personalizadas de Caletzza (pack builder, COD, prueba social).
+Repositorio **solo del theme** de Shopify para Caletzza. Basado en Dawn con extensiones custom: pack builder, checkout COD (UI), prueba social, banners de colección, tabla de precios por unidades, etc.
 
-## Inspiración visual
+## Estructura del repo
 
-- Paleta cálida: marrón `#502f1d`, rosa `#d3aba9`, grises suaves
-- Tipografías Poppins (cuerpo) y Rubik (títulos)
-- Barra marquee superior, beneficios de envío, grid de categorías
-- Colecciones con tabs, banners divididos, barra móvil inferior
-- Tarjetas de producto con ratio vertical e imagen hover
+```
+assets/          CSS, JS, imágenes del theme
+config/          settings_schema.json, settings_data.json
+layout/          theme.liquid
+locales/         Traducciones
+sections/        Secciones Liquid (incl. caletzza-* y pack-*)
+snippets/        Fragmentos reutilizables
+templates/       JSON templates por página
+shopify.theme.toml
+package.json     Shopify CLI
+```
 
-## Funcionalidades Caletzza conservadas
+No incluye (viven en otros repos):
 
-| Funcionalidad | Archivos principales |
-|---|---|
-| Pack Básicas (10 diseños) | `sections/pack-basicas.liquid` |
-| Pack Bodys x4 | `sections/pack-bodys4.liquid` |
-| Checkout express COD | `snippets/pack-cod-modal.liquid`, `cod-express-app/` |
-| Segunda imagen por variante | `snippets/variant-second-image-url.liquid` |
-| Popup prueba social | `sections/social-proof-popup.liquid` |
-| Countdown promocional | `sections/promo-countdown.liquid`, `sections/progress-bar.liquid` |
-| Testimonios | `sections/testimonials-section.liquid` |
-| Landings pack | `templates/index.json`, `templates/page.landing-*.json` |
-
-## Templates
-
-| Template | Uso |
-|---|---|
-| `index.caletzza-store.json` | Homepage tienda estilo Caletzza (borrador) |
-| `index.json` | Landing Pack Básicas (funcionalidad actual) |
-| `page.landing-basicas-x10.json` | Landing pack básicas |
-| `page.landing-bodys-x4.json` | Landing pack bodys |
+- App backend COD (`cod-express-app`) — necesaria para crear pedidos COD en Shopify
+- Plugin WooCommerce (`landing-bonus-wc`)
 
 ## Requisitos
 
 - Node.js 22+
-- Acceso de administrador o permisos de **Temas** en la tienda
+- Cuenta **Shopify Partners** + **Development Store** (gratis)
+- Permisos de **Temas** en la tienda
+
+## Configuración inicial (Partner)
+
+1. En [partners.shopify.com](https://partners.shopify.com) → **Dev stores** → **Add dev store**
+2. Activa **Generate test data** (productos/colecciones de prueba)
+3. Edita `shopify.theme.toml` y pon tu tienda:
+
+```toml
+[environments.default]
+store = "tu-tienda-dev.myshopify.com"
+```
+
+4. Instala dependencias y conecta:
+
+```bash
+npm install
+npm run theme:list
+```
+
+5. Autenticación (primera vez): el CLI muestra un **código** y un **enlace** → ábrelo en el navegador (móvil vale), inicia sesión con Partner, pega el código.
 
 ## Comandos
 
 ```bash
-# Listar temas de la tienda
-npm run theme:list
-
-# Vista previa en vivo (hot reload)
-npm run theme:dev
-
-# Subir como BORRADOR (no publica)
-npm run theme:push:draft
-
-# Validar el theme
-npm run theme:check
+npm run theme:dev          # Preview local + hot reload (link preview para móvil)
+npm run theme:push:draft   # Subir como BORRADOR (no publica)
+npm run theme:check        # Validar theme
 ```
 
-## Autenticación (primer paso obligatorio)
+## Preview en móvil
 
-La primera vez que ejecutes un comando, Shopify te pedirá iniciar sesión:
+Tras `npm run theme:dev` o `theme:push:draft`, abre en el teléfono el link que da Shopify:
 
-1. Ejecuta `npm run theme:list` en la terminal
-2. Se mostrará un **código de verificación** y un enlace
-3. Abre el enlace e inicia sesión con la cuenta de Caletzza
-4. Introduce el código cuando te lo pida
+`https://tu-tienda-dev.myshopify.com/?preview_theme_id=XXXXX`
 
-## Flujo de trabajo recomendado
+No hace falta abrir `127.0.0.1` en el móvil.
 
-1. Edita archivos en `sections/`, `templates/`, `assets/`, etc.
-2. `npm run theme:dev` — previsualiza cambios en tiempo real
-3. `npm run theme:push:draft` — sube a un tema **no publicado** (borrador)
-4. Revisa en Admin → Temas → Caletzza Theme (borrador)
-5. Publica manualmente solo cuando estés conforme
+## Templates principales
 
-> **Importante:** Este theme se sube como borrador. No se publica automáticamente.
+| Template | Uso |
+|---|---|
+| `index.caletzza-store.json` | Homepage tienda |
+| `index.json` | Landing Pack Básicas |
+| `page.landing-basicas-x10.json` | Landing pack básicas |
+| `page.landing-bodys-x4.json` | Landing pack bodys |
+| `collection.json` | Colecciones con banner + tabla precios |
+| `collection.bodys.json` | Template dedicado Bodys |
 
-## Configuración
+## Secciones Caletzza
 
-La tienda está configurada en `shopify.theme.toml`:
+| Sección | Descripción |
+|---|---|
+| `caletzza-marquee-bar` | Barra anuncios marquee |
+| `caletzza-shipping-bar` | Beneficios envío/pago |
+| `caletzza-category-grid` | Grid categorías |
+| `caletzza-tabs-collection` | Colecciones con tabs |
+| `caletzza-split-banner` | Banner dividido 50/50 |
+| `caletzza-mobile-toolbar` | Nav inferior móvil |
+| `caletzza-collection-banner` | Banner colección (desktop + móvil, bajo) |
+| `caletzza-unit-price-table` | Tabla precios por unidades |
 
-```toml
-[environments.default]
-store = "caletzza.myshopify.com"
-# theme = ""  # Dejar vacío para crear/subir como borrador
-```
+## Pack builder y COD
 
-## Secciones Caletzza nuevas
+- **Pack Básicas / Pack Bodys:** `sections/pack-basicas.liquid`, `sections/pack-bodys4.liquid`
+- **Modal COD (UI del theme):** `snippets/pack-cod-modal.liquid`
+- **Backend pedidos COD:** requiere app separada (no incluida en este repo)
 
-- `caletzza-marquee-bar` — Barra de anuncios con scroll continuo
-- `caletzza-shipping-bar` — Beneficios (envío, pago, cambios)
-- `caletzza-category-grid` — Grid visual de categorías
-- `caletzza-tabs-collection` — Productos destacados con tabs
-- `caletzza-split-banner` — Banners divididos 50/50
-- `caletzza-mobile-toolbar` — Navegación inferior móvil
-- `caletzza-collection-banner` — Banner superior compacto por colección (escritorio + móvil)
-- `caletzza-unit-price-table` — Tabla de precios por unidades
+## Segunda imagen por variante
 
-## Colecciones (banner + tabla de precios)
-
-### Banner superior compacto
-
-En **Personalizar tema → Colecciones → Banner colección (Caletzza)**:
-
-1. Ajusta altura: ~140px escritorio / ~100px móvil (banner bajo, estilo Caletzza)
-2. Agrega un **bloque por colección** (ej. Bodys):
-   - Colección: `bodys` / `bodies`
-   - Imagen escritorio y móvil (formato panorámico, ratio ~4:1)
-   - Título opcional sobre la imagen
-
-Template dedicado: `collection.bodys.json` (asignable en Admin → Colecciones → Bodys).
-
-### Tabla de precios por unidades
-
-Referencia de ingeniería inversa: usan precios por volumen de Shopify (`quantity_price_breaks`) en productos pack; en colección se muestra tabla promocional manual.
-
-Configurar en **Tabla precios por unidades**:
-
-| Unidades | Precio c/u | Total |
-|----------|-----------|-------|
-| 1 | $72.900 | $72.900 |
-| 3 | $69.900 | $209.700 |
-| … | … | … |
-
-- Cada fila puede asignarse a una colección específica
-- Etiquetas: «Ahorra», «Mejor precio»
-- En página de producto: activar «Usar precios por volumen del producto» para leer breaks de Shopify Admin automáticamente
-
-## Checkout express COD
-
-Ver [cod-express-app/README.md](cod-express-app/README.md) para la app de pedidos COD.
-
-## Segunda imagen de variaciones
-
-1. **Configuración → Datos personalizados → Variantes → Agregar definición**
+1. Admin → **Datos personalizados → Variantes → Agregar definición**
 2. Nombre: `Segunda imagen`, namespace `custom`, tipo **Archivo** (imagen)
-3. Asignar imagen por color/talla en cada variante
+3. Asignar por variante/color
+
+## Migrar a un repo nuevo
+
+Si clonas este repo en GitHub/GitLab vacío:
+
+```bash
+git clone https://github.com/TU-USUARIO/caletzza-theme.git
+cd caletzza-theme
+npm install
+# Editar shopify.theme.toml con tu dev store
+npm run theme:push:draft
+```
+
+## Publicación
+
+Siempre usar `theme:push:draft` hasta estar conforme. Publicar manualmente desde Admin → Temas.
