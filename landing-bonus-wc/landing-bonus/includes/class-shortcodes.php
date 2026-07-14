@@ -26,6 +26,5 @@ class Landing_Bonus_Shortcodes {
 		add_shortcode( 'landing_bonus_countdown', array( 'Landing_Bonus_Module_Countdown', 'render_shortcode' ) );
 		add_shortcode( 'landing_bonus_google_badge', array( 'Landing_Bonus_Module_Google_Badge', 'render_shortcode' ) );
 		add_shortcode( 'landing_bonus_floating_button', array( 'Landing_Bonus_Module_Floating_Button', 'render_shortcode' ) );
-		add_shortcode( 'landing_bonus_social_proof', array( 'Landing_Bonus_Module_Social_Proof', 'render_shortcode' ) );
 	}
 }

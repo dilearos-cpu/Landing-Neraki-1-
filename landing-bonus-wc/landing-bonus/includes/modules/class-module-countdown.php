@@ -31,9 +31,11 @@ class Landing_Bonus_Module_Countdown {
 
 		$atts = shortcode_atts(
 			array(
-				'id'     => 'promo1',
-				'units'  => (string) ( $defaults['default_units'] ?? 4 ),
-				'hours'  => (string) ( $defaults['default_hours'] ?? 24 ),
+				'id'            => 'promo1',
+				'units'         => (string) ( $defaults['default_units'] ?? 4 ),
+				'hours'         => (string) ( $defaults['default_hours'] ?? 24 ),
+				'pack_selector' => $defaults['pack_selector'] ?? '.pack-ui',
+				'slot_selector' => $defaults['slot_selector'] ?? '.slot',
 			),
 			$atts,
 			'landing_bonus_countdown'
@@ -43,6 +45,8 @@ class Landing_Bonus_Module_Countdown {
 			'id'                => sanitize_key( $atts['id'] ),
 			'unitsToComplete'   => absint( $atts['units'] ),
 			'durationHours'     => absint( $atts['hours'] ),
+			'packSelector'      => sanitize_text_field( $atts['pack_selector'] ),
+			'slotSelector'      => sanitize_text_field( $atts['slot_selector'] ),
 			'progressPrefix'    => $defaults['progress_prefix'] ?? 'Llevas',
 			'progressSuffix'    => $defaults['progress_suffix'] ?? 'completado',
 			'completionMessage' => $defaults['completion_message'] ?? '',

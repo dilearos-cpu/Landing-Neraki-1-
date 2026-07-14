@@ -19,12 +19,9 @@ class Landing_Bonus_Admin_Settings {
 	 */
 	private static array $tabs = array(
 		'general'         => 'General',
-		'packs'           => 'Packs',
-		'cod_modal'       => 'COD Modal',
 		'countdown'       => 'Contador',
 		'google_badge'    => 'Google Badge',
 		'floating_button' => 'Botón flotante',
-		'social_proof'    => 'Prueba social',
 		'shortcodes'      => 'Shortcodes',
 	);
 
@@ -34,8 +31,6 @@ class Landing_Bonus_Admin_Settings {
 	public static function init(): void {
 		add_action( 'admin_menu', array( __CLASS__, 'register_menu' ) );
 		add_action( 'admin_post_landing_bonus_save_settings', array( __CLASS__, 'handle_save' ) );
-		add_action( 'admin_post_landing_bonus_save_pack', array( __CLASS__, 'handle_save_pack' ) );
-		add_action( 'admin_post_landing_bonus_delete_pack', array( __CLASS__, 'handle_delete_pack' ) );
 	}
 
 	/**
@@ -86,27 +81,9 @@ class Landing_Bonus_Admin_Settings {
 		switch ( $tab ) {
 			case 'general':
 				$settings['modules'] = array(
-					'cod_modal'       => isset( $_POST['module_cod_modal'] ),
-					'pack'            => isset( $_POST['module_pack'] ),
 					'countdown'       => isset( $_POST['module_countdown'] ),
 					'google_badge'    => isset( $_POST['module_google_badge'] ),
 					'floating_button' => isset( $_POST['module_floating_button'] ),
-					'social_proof'    => isset( $_POST['module_social_proof'] ),
-				);
-				break;
-
-			case 'cod_modal':
-				$settings['cod_modal'] = array(
-					'title'                   => sanitize_text_field( wp_unslash( $_POST['cod_title'] ?? '' ) ),
-					'subtitle'                => sanitize_text_field( wp_unslash( $_POST['cod_subtitle'] ?? '' ) ),
-					'iva_percent'             => absint( $_POST['cod_iva_percent'] ?? 19 ),
-					'shipping_cost'         => absint( $_POST['cod_shipping_cost'] ?? 0 ),
-					'free_shipping_threshold' => absint( $_POST['cod_free_shipping_threshold'] ?? 0 ),
-					'accent_color'            => sanitize_hex_color( wp_unslash( $_POST['cod_accent_color'] ?? '#FFDE21' ) ) ?: '#FFDE21',
-					'require_email'           => isset( $_POST['cod_require_email'] ),
-					'require_phone'           => isset( $_POST['cod_require_phone'] ),
-					'require_address'         => isset( $_POST['cod_require_address'] ),
-					'notification_email'      => sanitize_email( wp_unslash( $_POST['cod_notification_email'] ?? '' ) ),
 				);
 				break;
 
@@ -122,6 +99,8 @@ class Landing_Bonus_Admin_Settings {
 					'color_high'         => sanitize_hex_color( wp_unslash( $_POST['countdown_color_high'] ?? '#2E7D32' ) ) ?: '#2E7D32',
 					'timer_number_size'  => sanitize_text_field( wp_unslash( $_POST['countdown_timer_number_size'] ?? '32px' ) ),
 					'timer_label_size'   => sanitize_text_field( wp_unslash( $_POST['countdown_timer_label_size'] ?? '12px' ) ),
+					'pack_selector'      => sanitize_text_field( wp_unslash( $_POST['countdown_pack_selector'] ?? '.pack-ui' ) ),
+					'slot_selector'      => sanitize_text_field( wp_unslash( $_POST['countdown_slot_selector'] ?? '.slot' ) ),
 				);
 				break;
 
@@ -151,21 +130,6 @@ class Landing_Bonus_Admin_Settings {
 					'floating_background_color' => sanitize_hex_color( wp_unslash( $_POST['float_floating_background_color'] ?? '#FFFFFF' ) ) ?: '#FFFFFF',
 				);
 				break;
-
-			case 'social_proof':
-				$settings['social_proof'] = array(
-					'initial_delay'    => absint( $_POST['social_initial_delay'] ?? 5 ),
-					'interval_min'     => absint( $_POST['social_interval_min'] ?? 8 ),
-					'interval_max'     => absint( $_POST['social_interval_max'] ?? 15 ),
-					'display_duration' => absint( $_POST['social_display_duration'] ?? 5 ),
-					'position'         => sanitize_text_field( wp_unslash( $_POST['social_position'] ?? 'bottom-left' ) ),
-					'enable_mobile'    => isset( $_POST['social_enable_mobile'] ),
-					'enable_desktop'   => isset( $_POST['social_enable_desktop'] ),
-					'cities'           => sanitize_textarea_field( wp_unslash( $_POST['social_cities'] ?? '' ) ),
-					'names'            => sanitize_textarea_field( wp_unslash( $_POST['social_names'] ?? '' ) ),
-					'time_phrases'     => sanitize_textarea_field( wp_unslash( $_POST['social_time_phrases'] ?? '' ) ),
-				);
-				break;
 		}
 
 		update_option( LANDING_BONUS_OPTION_KEY, $settings );
@@ -176,75 +140,6 @@ class Landing_Bonus_Admin_Settings {
 					'page'    => 'landing-bonus',
 					'tab'     => $tab,
 					'updated' => '1',
-				),
-				admin_url( 'admin.php' )
-			)
-		);
-		exit;
-	}
-
-	/**
-	 * Maneja guardado de un pack shortcode.
-	 */
-	public static function handle_save_pack(): void {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_die( esc_html__( 'No tienes permisos.', 'landing-bonus' ) );
-		}
-
-		check_admin_referer( 'landing_bonus_save_pack' );
-
-		$id = Landing_Bonus_Pack_Manager::save(
-			array(
-				'id'             => sanitize_key( wp_unslash( $_POST['pack_id'] ?? '' ) ),
-				'title'          => sanitize_text_field( wp_unslash( $_POST['pack_title'] ?? '' ) ),
-				'shortcode'      => sanitize_key( wp_unslash( $_POST['pack_shortcode'] ?? '' ) ),
-				'enabled'        => isset( $_POST['pack_enabled'] ),
-				'type'           => sanitize_text_field( wp_unslash( $_POST['pack_type'] ?? 'simple' ) ),
-				'cat_id'         => absint( $_POST['pack_cat_id'] ?? 0 ),
-				'slots'          => absint( $_POST['pack_slots'] ?? 4 ),
-				'slot_columns'   => absint( $_POST['pack_slot_columns'] ?? 4 ),
-				'per_page'       => absint( $_POST['pack_per_page'] ?? 20 ),
-				'checkout_mode'  => sanitize_text_field( wp_unslash( $_POST['pack_checkout_mode'] ?? 'cod_modal' ) ),
-				'checkout_url'   => esc_url_raw( wp_unslash( $_POST['pack_checkout_url'] ?? '' ) ),
-				'countdown_id'   => sanitize_key( wp_unslash( $_POST['pack_countdown_id'] ?? '' ) ),
-			)
-		);
-
-		wp_safe_redirect(
-			add_query_arg(
-				array(
-					'page'    => 'landing-bonus',
-					'tab'     => 'packs',
-					'updated' => '1',
-					'pack_id' => $id,
-				),
-				admin_url( 'admin.php' )
-			)
-		);
-		exit;
-	}
-
-	/**
-	 * Maneja eliminación de un pack.
-	 */
-	public static function handle_delete_pack(): void {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_die( esc_html__( 'No tienes permisos.', 'landing-bonus' ) );
-		}
-
-		check_admin_referer( 'landing_bonus_delete_pack' );
-
-		$pack_id = isset( $_GET['pack_id'] ) ? sanitize_key( wp_unslash( $_GET['pack_id'] ) ) : '';
-		if ( $pack_id ) {
-			Landing_Bonus_Pack_Manager::delete( $pack_id );
-		}
-
-		wp_safe_redirect(
-			add_query_arg(
-				array(
-					'page'    => 'landing-bonus',
-					'tab'     => 'packs',
-					'deleted' => '1',
 				),
 				admin_url( 'admin.php' )
 			)

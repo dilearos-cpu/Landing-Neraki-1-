@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       Landing Bonus
  * Plugin URI:        https://github.com/dilearos-cpu/landing-neraki-1-
- * Description:       Herramientas de conversión para landings de pack en WooCommerce: checkout COD modal, contador, badge Google, botón flotante y prueba social.
- * Version:           1.0.0
+ * Description:       Herramientas de conversión para landings WooCommerce: contador con barra de progreso, badge Google y botón flotante RSI.
+ * Version:           1.1.0
  * Author:            Diego Arango
  * Author URI:        https://github.com/dilearos-cpu
  * Text Domain:       landing-bonus
@@ -18,14 +18,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'LANDING_BONUS_VERSION', '1.0.0' );
+define( 'LANDING_BONUS_VERSION', '1.1.0' );
 define( 'LANDING_BONUS_PLUGIN_FILE', __FILE__ );
 define( 'LANDING_BONUS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LANDING_BONUS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'LANDING_BONUS_OPTION_KEY', 'landing_bonus_settings' );
-define( 'LANDING_BONUS_PACKS_OPTION_KEY', 'landing_bonus_packs' );
-
-require_once LANDING_BONUS_PLUGIN_DIR . 'includes/class-pack-manager.php';
 
 /**
  * Comprueba si WooCommerce está activo.
@@ -95,24 +92,9 @@ add_action( 'before_woocommerce_init', 'landing_bonus_declare_wc_compatibility' 
 function landing_bonus_default_settings(): array {
 	return array(
 		'modules' => array(
-			'cod_modal'        => true,
-			'pack'             => true,
-			'countdown'        => true,
-			'google_badge'     => true,
-			'floating_button'  => true,
-			'social_proof'     => true,
-		),
-		'cod_modal' => array(
-			'title'                  => __( 'Finaliza tu pedido', 'landing-bonus' ),
-			'subtitle'               => __( 'Paga en casa al recibir tu pack', 'landing-bonus' ),
-			'iva_percent'            => 19,
-			'shipping_cost'          => 12000,
-			'free_shipping_threshold'=> 150000,
-			'accent_color'           => '#FFDE21',
-			'require_email'          => true,
-			'require_phone'          => true,
-			'require_address'        => true,
-			'notification_email'     => get_option( 'admin_email' ),
+			'countdown'       => true,
+			'google_badge'    => true,
+			'floating_button' => true,
 		),
 		'countdown' => array(
 			'default_units'          => 4,
@@ -125,6 +107,8 @@ function landing_bonus_default_settings(): array {
 			'color_high'             => '#2E7D32',
 			'timer_number_size'      => '32px',
 			'timer_label_size'       => '12px',
+			'pack_selector'          => '.pack-ui',
+			'slot_selector'          => '.slot',
 		),
 		'google_badge' => array(
 			'prefix_text'        => 'mas de',
@@ -147,18 +131,6 @@ function landing_bonus_default_settings(): array {
 			'section_background_color'   => 'transparent',
 			'floating_background_color'  => '#FFFFFF',
 		),
-		'social_proof' => array(
-			'initial_delay'    => 5,
-			'interval_min'     => 8,
-			'interval_max'     => 15,
-			'display_duration' => 5,
-			'position'         => 'bottom-left',
-			'enable_mobile'    => true,
-			'enable_desktop'   => true,
-			'cities'           => "Bogotá\nMedellín\nCali\nBarranquilla\nCartagena",
-			'names'            => "María\nCarlos\nAna\nJuan\nLaura",
-			'time_phrases'     => "hace unos minutos\nhace 5 minutos\nhace 10 minutos\nhace media hora",
-		),
 	);
 }
 
@@ -175,7 +147,16 @@ function landing_bonus_get_settings(): array {
 		$stored = array();
 	}
 
-	return array_replace_recursive( $defaults, $stored );
+	$merged = array_replace_recursive( $defaults, $stored );
+
+	// Limpia módulos retirados en v1.1.
+	$merged['modules'] = array_intersect_key(
+		$merged['modules'] ?? array(),
+		$defaults['modules']
+	);
+	$merged['modules'] = array_replace( $defaults['modules'], $merged['modules'] );
+
+	return $merged;
 }
 
 /**
@@ -184,9 +165,6 @@ function landing_bonus_get_settings(): array {
 function landing_bonus_activate(): void {
 	if ( false === get_option( LANDING_BONUS_OPTION_KEY, false ) ) {
 		add_option( LANDING_BONUS_OPTION_KEY, landing_bonus_default_settings() );
-	}
-	if ( false === get_option( LANDING_BONUS_PACKS_OPTION_KEY, false ) ) {
-		add_option( LANDING_BONUS_PACKS_OPTION_KEY, Landing_Bonus_Pack_Manager::default_packs() );
 	}
 }
 register_activation_hook( LANDING_BONUS_PLUGIN_FILE, 'landing_bonus_activate' );

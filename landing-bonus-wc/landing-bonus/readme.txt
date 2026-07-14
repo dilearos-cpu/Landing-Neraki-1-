@@ -1,34 +1,30 @@
 === Landing Bonus ===
 Contributors: diegoarango
-Tags: woocommerce, landing page, conversion, cod, countdown, social proof
+Tags: woocommerce, landing page, conversion, countdown, google badge
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 8.0
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Herramientas de conversión para landings de pack en WooCommerce: checkout COD modal, contador, badge Google, botón flotante y prueba social.
+Herramientas de conversión para landings WooCommerce: contador con barra de progreso, badge Google y botón flotante RSI.
 
 == Description ==
 
-Landing Bonus replica en WordPress/WooCommerce las herramientas de conversión usadas en las landing pages Caletzza (Shopify).
+Landing Bonus replica en WordPress/WooCommerce herramientas de conversión de las landing Caletzza (Shopify).
 
 **Módulos incluidos:**
 
-* Checkout COD Modal — pedido contra entrega sin salir de la landing
-* Barra progreso + contador 24h — timer persistente y progreso del pack
+* Barra progreso + contador 24h — sincroniza con slots del pack existente (.pack-ui .slot)
 * Google Badge — recuadro de estrellas y clientes felices
 * Botón flotante estilo RSI — CTA fijo + copia flotante al hacer scroll
-* Popup prueba social — toast de compras recientes
 
 **Shortcodes:**
 
 * `[landing_bonus_countdown id="promo1" units="4" hours="24"]`
 * `[landing_bonus_google_badge]`
-* `[landing_bonus_floating_button url="/mi-pagina"]`
-* `[landing_bonus_social_proof pack_label="pack de básicas"]`
-* `[landing_bonus_pack collection="slug" slots="4"]`
+* `[landing_bonus_floating_button url="#pack"]`
 
 **Requisitos:** WooCommerce 8.0+
 
@@ -40,23 +36,14 @@ Landing Bonus replica en WordPress/WooCommerce las herramientas de conversión u
 2. Activa el plugin desde el menú Plugins
 3. Configura en WooCommerce → Landing Bonus
 4. Inserta los shortcodes en tus landings de Elementor
-
-== Frequently Asked Questions ==
-
-= ¿Necesito WooCommerce? =
-
-Sí. El plugin requiere WooCommerce activo para crear pedidos COD.
-
-= ¿Incluye pack builder completo? =
-
-La v1 incluye un shortcode placeholder `[landing_bonus_pack]`. Integra tu pack existente o reemplázalo en v2.
+5. Mantén tus snippets de pack (`pack_bodys4`, `pack_visual_rapido`) — la barra los detecta automáticamente
 
 == Changelog ==
 
-= 1.0.0 =
-* Scaffold inicial con 5 módulos, panel admin, shortcodes y hooks de extensibilidad.
+= 1.1.0 =
+* Enfoque en 3 módulos: contador, Google badge, botón flotante
+* Barra sincroniza slots de packs existentes vía DOM (como Shopify)
+* Retirados: COD modal, packs integrados, prueba social
 
-== Upgrade Notice ==
-
 = 1.0.0 =
-Versión inicial del plugin Landing Bonus.
+* Versión inicial

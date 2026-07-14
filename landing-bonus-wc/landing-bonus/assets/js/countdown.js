@@ -2,6 +2,7 @@
   'use strict';
 
   var instances = [];
+  var slotObservers = [];
 
   function pad(value) {
     return String(value).padStart(2, '0');
@@ -51,6 +52,38 @@
     return settings.colorLow;
   }
 
+  function isSlotFilled(slot) {
+    if (!slot) {
+      return false;
+    }
+    if (slot.querySelector('img')) {
+      return true;
+    }
+    var text = (slot.textContent || '').trim();
+    return text !== '' && text !== '+';
+  }
+
+  function countFilledSlots(settings) {
+    var packSelector = settings.packSelector || '.pack-ui';
+    var slotSelector = settings.slotSelector || '.slot';
+    var packs = document.querySelectorAll(packSelector);
+    var total = 0;
+
+    if (!packs.length) {
+      packs = document.querySelectorAll('.pack-slots');
+    }
+
+    packs.forEach(function (pack) {
+      pack.querySelectorAll(slotSelector).forEach(function (slot) {
+        if (isSlotFilled(slot)) {
+          total += 1;
+        }
+      });
+    });
+
+    return total;
+  }
+
   function CountdownInstance(section) {
     this.section = section;
     this.settings = readSettings(section);
@@ -67,6 +100,10 @@
 
   CountdownInstance.prototype.resetSlots = function () {
     this.setSlotsFilled(0);
+  };
+
+  CountdownInstance.prototype.syncFromDom = function () {
+    this.setSlotsFilled(countFilledSlots(this.settings));
   };
 
   CountdownInstance.prototype.getPercent = function () {
@@ -100,23 +137,49 @@
       fill.style.width = percent + '%';
       fill.style.backgroundColor = getProgressColor(percent, this.settings);
     }
+
+    if (percent >= 100) {
+      this.section.classList.add('landing-bonus-countdown--complete');
+    } else {
+      this.section.classList.remove('landing-bonus-countdown--complete');
+    }
   };
 
   CountdownInstance.prototype.bindProgressClick = function () {
     var bar = this.section.querySelector('[data-progress-bar]');
+    var section = this.section;
     if (!bar) {
       return;
     }
 
+    bar.setAttribute('tabindex', '0');
+    bar.setAttribute('role', 'button');
+
     bar.addEventListener('click', function () {
+      if (!section.classList.contains('landing-bonus-countdown--complete')) {
+        return;
+      }
       if (window.LandingBonus && typeof window.LandingBonus.triggerPackBuy === 'function') {
         window.LandingBonus.triggerPackBuy();
+      }
+    });
+
+    bar.addEventListener('keydown', function (event) {
+      if (!section.classList.contains('landing-bonus-countdown--complete')) {
+        return;
+      }
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        if (window.LandingBonus && typeof window.LandingBonus.triggerPackBuy === 'function') {
+          window.LandingBonus.triggerPackBuy();
+        }
       }
     });
   };
 
   CountdownInstance.prototype.start = function () {
     var self = this;
+    this.syncFromDom();
     this.renderTimer();
     this.renderProgress();
     this.bindProgressClick();
@@ -136,12 +199,110 @@
     }
   }
 
+  function getPackRoots(settings) {
+    var packSelector = settings.packSelector || '.pack-ui';
+    var roots = Array.prototype.slice.call(document.querySelectorAll(packSelector));
+    if (!roots.length) {
+      roots = Array.prototype.slice.call(document.querySelectorAll('.pack-slots'));
+    }
+    return roots;
+  }
+
+  function observePackSlots(settings) {
+    var slotSelector = settings.slotSelector || '.slot';
+    var roots = getPackRoots(settings);
+
+    roots.forEach(function (root) {
+      var observer = new MutationObserver(function () {
+        instances.forEach(function (instance) {
+          instance.syncFromDom();
+        });
+      });
+
+      observer.observe(root, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true
+      });
+
+      slotObservers.push(observer);
+
+      root.querySelectorAll(slotSelector).forEach(function (slot) {
+        slot.addEventListener('click', function () {
+          window.setTimeout(function () {
+            instances.forEach(function (instance) {
+              instance.syncFromDom();
+            });
+          }, 50);
+        });
+      });
+    });
+  }
+
+  function bindPackReset() {
+    var resetSelectors = ['#pack-reset', '.pack-reset', '[data-landing-bonus-pack-reset]'];
+    resetSelectors.forEach(function (selector) {
+      document.querySelectorAll(selector).forEach(function (button) {
+        button.addEventListener('click', function () {
+          window.setTimeout(function () {
+            instances.forEach(function (instance) {
+              instance.resetSlots();
+            });
+          }, 50);
+        });
+      });
+    });
+  }
+
+  function bindPackSelectionEvents() {
+    var selectors = [
+      '#select-variation',
+      '#landing-bonus-select-variation',
+      '#pack-modal .prod',
+      '.pack-modal .prod',
+      '#pack-variations-modal .botoncito'
+    ];
+
+    document.addEventListener('click', function (event) {
+      var target = event.target;
+      if (!target || !target.closest) {
+        return;
+      }
+
+      var matched = selectors.some(function (selector) {
+        return target.closest(selector);
+      });
+
+      if (matched) {
+        window.setTimeout(function () {
+          instances.forEach(function (instance) {
+            instance.syncFromDom();
+          });
+        }, 120);
+      }
+    });
+  }
+
   function initAll() {
     document.querySelectorAll('[data-landing-bonus-countdown]').forEach(function (section) {
       var instance = new CountdownInstance(section);
       instance.start();
       instances.push(instance);
     });
+
+    if (instances.length) {
+      var settings = instances[0].settings;
+      observePackSlots(settings);
+      bindPackReset();
+      bindPackSelectionEvents();
+
+      window.setInterval(function () {
+        instances.forEach(function (instance) {
+          instance.syncFromDom();
+        });
+      }, 2000);
+    }
   }
 
   window.LandingBonusCountdown = {
@@ -153,6 +314,11 @@
     resetSlots: function () {
       instances.forEach(function (instance) {
         instance.resetSlots();
+      });
+    },
+    syncFromDom: function () {
+      instances.forEach(function (instance) {
+        instance.syncFromDom();
       });
     }
   };

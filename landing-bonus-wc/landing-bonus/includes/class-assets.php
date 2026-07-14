@@ -46,29 +46,9 @@ class Landing_Bonus_Assets {
 			true
 		);
 
-		wp_localize_script(
-			'landing-bonus-frontend',
-			'landingBonusConfig',
-			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'landing_bonus_nonce' ),
-				'i18n'    => array(
-					'orderSuccess' => __( '¡Pedido creado con éxito!', 'landing-bonus' ),
-					'orderError'   => __( 'No se pudo crear el pedido. Intenta de nuevo.', 'landing-bonus' ),
-					'freeShipping' => __( 'Te obsequiamos el envío', 'landing-bonus' ),
-				),
-				'modules' => $modules,
-			)
-		);
-
 		if ( self::should_enqueue_frontend() ) {
 			wp_enqueue_style( 'landing-bonus-frontend' );
 			wp_enqueue_script( 'landing-bonus-frontend' );
-		}
-
-		if ( ! empty( $modules['cod_modal'] ) ) {
-			wp_enqueue_style( 'landing-bonus-cod-modal' );
-			wp_enqueue_script( 'landing-bonus-cod-modal' );
 		}
 
 		if ( ! empty( $modules['countdown'] ) ) {
@@ -85,16 +65,6 @@ class Landing_Bonus_Assets {
 			wp_enqueue_script( 'landing-bonus-floating-button' );
 		}
 
-		if ( ! empty( $modules['social_proof'] ) ) {
-			wp_enqueue_style( 'landing-bonus-social-proof' );
-			wp_enqueue_script( 'landing-bonus-social-proof' );
-		}
-
-		if ( ! empty( $modules['pack'] ) ) {
-			wp_enqueue_style( 'landing-bonus-pack' );
-			wp_enqueue_script( 'landing-bonus-pack' );
-		}
-
 		self::register_module_assets();
 	}
 
@@ -103,12 +73,9 @@ class Landing_Bonus_Assets {
 	 */
 	private static function register_module_assets(): void {
 		$assets = array(
-			'landing-bonus-cod-modal'        => array( 'css/cod-modal.css', 'js/cod-modal.js' ),
-			'landing-bonus-countdown'        => array( 'css/countdown.css', 'js/countdown.js' ),
-			'landing-bonus-google-badge'     => array( 'css/google-badge.css', null ),
-			'landing-bonus-floating-button'  => array( 'css/floating-button.css', 'js/floating-button.js' ),
-			'landing-bonus-social-proof'     => array( 'css/social-proof.css', 'js/social-proof.js' ),
-			'landing-bonus-pack'             => array( 'css/pack.css', 'js/pack.js' ),
+			'landing-bonus-countdown'       => array( 'css/countdown.css', 'js/countdown.js' ),
+			'landing-bonus-google-badge'    => array( 'css/google-badge.css', null ),
+			'landing-bonus-floating-button' => array( 'css/floating-button.css', 'js/floating-button.js' ),
 		);
 
 		foreach ( $assets as $handle => $files ) {
@@ -163,35 +130,28 @@ class Landing_Bonus_Assets {
 	 * Determina si se deben cargar los assets base del frontend.
 	 */
 	private static function should_enqueue_frontend(): bool {
-		if ( is_singular() ) {
-			global $post;
+		if ( ! is_singular() ) {
+			return false;
+		}
 
-			if ( ! $post instanceof WP_Post ) {
-				return false;
-			}
+		global $post;
 
-			$shortcodes = array(
-				'landing_bonus_countdown',
-				'landing_bonus_google_badge',
-				'landing_bonus_floating_button',
-				'landing_bonus_social_proof',
-				'landing_bonus_pack',
-			);
+		if ( ! $post instanceof WP_Post ) {
+			return false;
+		}
 
-			foreach ( $shortcodes as $shortcode ) {
-				if ( has_shortcode( $post->post_content, $shortcode ) ) {
-					return true;
-				}
-			}
+		$shortcodes = array(
+			'landing_bonus_countdown',
+			'landing_bonus_google_badge',
+			'landing_bonus_floating_button',
+		);
 
-			foreach ( Landing_Bonus_Pack_Manager::enabled() as $pack ) {
-				$tag = $pack['shortcode'] ?? '';
-				if ( $tag && has_shortcode( $post->post_content, $tag ) ) {
-					return true;
-				}
+		foreach ( $shortcodes as $shortcode ) {
+			if ( has_shortcode( $post->post_content, $shortcode ) ) {
+				return true;
 			}
 		}
 
-		return Landing_Bonus_Module_Cod_Modal::should_render_modal();
+		return false;
 	}
 }

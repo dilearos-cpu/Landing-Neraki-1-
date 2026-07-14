@@ -3,17 +3,20 @@
 
   window.LandingBonus = window.LandingBonus || {};
 
-  window.LandingBonus.formatMoney = function (amount) {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      maximumFractionDigits: 0
-    }).format(amount || 0);
-  };
-
   window.LandingBonus.triggerPackBuy = function () {
-    document.querySelectorAll('[data-landing-bonus-pack-buy]').forEach(function (button) {
-      button.click();
-    });
+    var selectors = [
+      '#pack-buy',
+      '.pack-buy',
+      '[data-landing-bonus-pack-buy]',
+      '.landing-bonus-pack-buy'
+    ];
+
+    for (var i = 0; i < selectors.length; i++) {
+      var button = document.querySelector(selectors[i]);
+      if (button) {
+        button.click();
+        return;
+      }
+    }
   };
 })();
