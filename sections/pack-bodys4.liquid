@@ -28,12 +28,19 @@
   if liquid_products_limit > 50
     assign liquid_products_limit = 50
   endif
+
+  if section.settings.anchor_id != blank
+    assign pack_anchor_id = section.settings.anchor_id | handleize
+  else
+    assign pack_anchor_id = 'pack-bodys'
+  endif
 %}
 {{ 'pack-bodys4.css' | asset_url | stylesheet_tag }}
 {{ 'pack-cod-checkout.css' | asset_url | stylesheet_tag }}
 <section
   class="pack-ui"
-  id="pack-bodys"
+  id="{{ pack_anchor_id }}"
+  data-pack-kind="bodys"
   data-pack-mode="variable"
   data-section-id="{{ section.id }}"
   data-slot-count="{{ slot_count }}"
@@ -210,6 +217,7 @@
   {% endif %}
 </section>
 <script src="{{ 'pack-cod-checkout.js' | asset_url }}" defer></script>
+<script src="{{ 'pack-page-utils.js' | asset_url }}" defer></script>
 <script src="{{ 'pack-bodys4.js' | asset_url }}" defer></script>
 
 {% schema %}
@@ -221,6 +229,13 @@
       "id": "heading",
       "label": "Titulo",
       "default": "Arma tu pack"
+    },
+    {
+      "type": "text",
+      "id": "anchor_id",
+      "label": "ID de ancla para enlaces",
+      "default": "pack-bodys",
+      "info": "Usa #pack-bodys en banners o botones para saltar a esta seccion. Si tienes varias en la misma pagina, cambia este valor en cada una."
     },
     {
       "type": "header",

@@ -36,6 +36,7 @@
   data-section-id="{{ section.id }}"
   data-position-mode="{{ section.settings.position_mode }}"
   data-float-trigger="{{ section.settings.float_trigger }}"
+  data-pack-target="{{ section.settings.pack_target }}"
   style="
     --pack-cta-bg: {{ section_bg }};
     --pack-cta-float-bg: {{ float_bg }};
@@ -130,7 +131,7 @@
       "type": "select",
       "id": "button_action",
       "label": "Que hace al pulsar",
-      "default": "link",
+      "default": "scroll_pack",
       "options": [
         {
           "value": "link",
@@ -251,6 +252,31 @@
         {
           "value": "bag",
           "label": "Bolsa de compras"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Pack vinculado"
+    },
+    {
+      "type": "select",
+      "id": "pack_target",
+      "label": "Que pack controla este boton",
+      "default": "auto",
+      "info": "Automatico busca el pack mas cercano en la pagina. Usa Pack basicas o Pack bodys si hay mas de uno.",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Automatico (el mas cercano)"
+        },
+        {
+          "value": "basicas",
+          "label": "Pack basicas (recuadros simples)"
+        },
+        {
+          "value": "bodys",
+          "label": "Pack bodys (con variantes)"
         }
       ]
     },
@@ -412,7 +438,7 @@
       "category": "Botones",
       "settings": {
         "button_label": "Compra aqui | Paga en casa",
-        "button_action": "link",
+        "button_action": "scroll_pack",
         "button_link_url": "/",
         "section_background_transparent": false,
         "section_background_color": "#D2B49B",

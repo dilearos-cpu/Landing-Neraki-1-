@@ -60,8 +60,13 @@
     return settings.colorLow;
   }
 
-  function triggerPackBuy() {
-    if (global.PackPage && typeof global.PackPage.triggerPackBuy === "function" && global.PackPage.triggerPackBuy()) {
+  function triggerPackBuy(section) {
+    var targetPack =
+      section && global.PackPage && typeof global.PackPage.getPackSectionForNode === "function"
+        ? global.PackPage.getPackSectionForNode(section)
+        : null;
+
+    if (global.PackPage && typeof global.PackPage.triggerPackBuy === "function" && global.PackPage.triggerPackBuy(targetPack)) {
       return;
     }
 
@@ -70,7 +75,10 @@
       return;
     }
 
-    var buyButton = document.querySelector(".pack-actions .pack-button--buy");
+    var buyButton = targetPack ? targetPack.querySelector(".pack-actions .pack-button--buy") : null;
+    if (!buyButton) {
+      buyButton = document.querySelector(".pack-actions .pack-button--buy");
+    }
     if (!buyButton) {
       buyButton = document.querySelector('.pack-button--buy:not([data-select-variant])');
     }
@@ -210,7 +218,7 @@
           return;
         }
 
-        triggerPackBuy();
+        triggerPackBuy(section);
       });
 
       progressWrapNode.addEventListener("keydown", function (event) {
@@ -220,7 +228,7 @@
 
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          triggerPackBuy();
+          triggerPackBuy(section);
         }
       });
     }

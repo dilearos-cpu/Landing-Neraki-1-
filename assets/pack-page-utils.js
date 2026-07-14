@@ -1,6 +1,121 @@
 (function (global) {
+  function getAllPackSections() {
+    return Array.prototype.slice.call(
+      document.querySelectorAll('.pack-ui:not([data-empty="true"])')
+    );
+  }
+
   function getPackSection() {
-    return document.querySelector('.pack-ui:not([data-empty="true"])');
+    var packs = getAllPackSections();
+    return packs.length ? packs[0] : null;
+  }
+
+  function findPackInSectionWrapper(wrapper) {
+    if (!wrapper) {
+      return null;
+    }
+
+    if (wrapper.classList && wrapper.classList.contains("pack-ui") && wrapper.dataset.empty !== "true") {
+      return wrapper;
+    }
+
+    return wrapper.querySelector('.pack-ui:not([data-empty="true"])');
+  }
+
+  function walkSectionSiblings(startWrapper, direction) {
+    var cursor = startWrapper;
+
+    while (cursor) {
+      cursor = direction === "next" ? cursor.nextElementSibling : cursor.previousElementSibling;
+      if (!cursor) {
+        break;
+      }
+
+      var pack = findPackInSectionWrapper(cursor);
+      if (pack) {
+        return pack;
+      }
+    }
+
+    return null;
+  }
+
+  function getPackSectionForNode(node, preferredMode) {
+    var packs = getAllPackSections();
+    if (!packs.length) {
+      return null;
+    }
+
+    if (preferredMode === "simple") {
+      var basicasPack = packs.find(function (pack) {
+        return pack.dataset.packMode === "simple";
+      });
+      if (basicasPack) {
+        return basicasPack;
+      }
+    }
+
+    if (preferredMode === "variable") {
+      var bodysPack = packs.find(function (pack) {
+        return pack.dataset.packMode === "variable";
+      });
+      if (bodysPack) {
+        return bodysPack;
+      }
+    }
+
+    var wrapper = node.closest(".shopify-section");
+    if (wrapper) {
+      var nextPack = walkSectionSiblings(wrapper, "next");
+      if (nextPack) {
+        return nextPack;
+      }
+
+      var previousPack = walkSectionSiblings(wrapper, "previous");
+      if (previousPack) {
+        return previousPack;
+      }
+    }
+
+    return packs[0];
+  }
+
+  function getPackSectionForCta(ctaElement, preferredMode) {
+    var packs = getAllPackSections();
+    if (!packs.length) {
+      return null;
+    }
+
+    if (preferredMode === "simple") {
+      return (
+        packs.find(function (pack) {
+          return pack.dataset.packMode === "simple";
+        }) || null
+      );
+    }
+
+    if (preferredMode === "variable") {
+      return (
+        packs.find(function (pack) {
+          return pack.dataset.packMode === "variable";
+        }) || null
+      );
+    }
+
+    var wrapper = ctaElement.closest(".shopify-section");
+    if (wrapper) {
+      var previousPack = walkSectionSiblings(wrapper, "previous");
+      if (previousPack) {
+        return previousPack;
+      }
+
+      var nextPack = walkSectionSiblings(wrapper, "next");
+      if (nextPack) {
+        return nextPack;
+      }
+    }
+
+    return packs[0];
   }
 
   function getPackBuyButton(packSection) {
@@ -22,25 +137,44 @@
     return pack ? pack.querySelector(".pack-slots") : null;
   }
 
-  function getPackTriggerNode(triggerMode) {
-    if (triggerMode === "pack_slots") {
-      return getPackSlots() || getPackBuyButton();
+  function resolveFloatTriggerMode(triggerMode, packSection) {
+    if (triggerMode === "pack_slots" || triggerMode === "cta_section") {
+      return triggerMode;
     }
 
-    if (triggerMode === "pack_buy") {
-      return getPackBuyButton() || getPackSlots();
+    var pack = packSection || getPackSection();
+    if (!pack) {
+      return triggerMode;
+    }
+
+    if (pack.dataset.packMode === "simple") {
+      return "pack_slots";
+    }
+
+    return triggerMode;
+  }
+
+  function getPackTriggerNode(triggerMode, packSection) {
+    var mode = resolveFloatTriggerMode(triggerMode, packSection);
+
+    if (mode === "pack_slots") {
+      return getPackSlots(packSection) || getPackBuyButton(packSection);
+    }
+
+    if (mode === "pack_buy") {
+      return getPackBuyButton(packSection) || getPackSlots(packSection);
     }
 
     return null;
   }
 
-  function triggerPackBuy() {
+  function triggerPackBuy(packSection) {
     if (global.PackCheckout && typeof global.PackCheckout.triggerBuy === "function") {
       global.PackCheckout.triggerBuy();
       return true;
     }
 
-    var buyButton = getPackBuyButton();
+    var buyButton = getPackBuyButton(packSection);
     if (buyButton) {
       buyButton.click();
       return true;
@@ -49,8 +183,8 @@
     return false;
   }
 
-  function scrollToPack() {
-    var pack = getPackSection();
+  function scrollToPack(packSection) {
+    var pack = packSection || getPackSection();
     if (!pack) {
       return false;
     }
@@ -60,9 +194,13 @@
   }
 
   global.PackPage = {
+    getAllPackSections: getAllPackSections,
     getPackSection: getPackSection,
+    getPackSectionForNode: getPackSectionForNode,
+    getPackSectionForCta: getPackSectionForCta,
     getPackBuyButton: getPackBuyButton,
     getPackSlots: getPackSlots,
+    resolveFloatTriggerMode: resolveFloatTriggerMode,
     getPackTriggerNode: getPackTriggerNode,
     triggerPackBuy: triggerPackBuy,
     scrollToPack: scrollToPack

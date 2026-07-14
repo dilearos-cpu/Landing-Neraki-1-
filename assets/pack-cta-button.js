@@ -1,5 +1,5 @@
 (function () {
-  function bindButtonAction(buttonNode) {
+  function bindButtonAction(buttonNode, targetPack) {
     if (!buttonNode || buttonNode.dataset.bound === "true") {
       return;
     }
@@ -19,7 +19,7 @@
       event.preventDefault();
 
       if (action === "trigger_buy") {
-        if (window.PackPage && window.PackPage.triggerPackBuy()) {
+        if (window.PackPage && window.PackPage.triggerPackBuy(targetPack)) {
           return;
         }
 
@@ -28,13 +28,7 @@
           return;
         }
 
-        var buyButton = window.PackPage ? window.PackPage.getPackBuyButton() : null;
-        if (!buyButton) {
-          buyButton = document.querySelector(".pack-actions .pack-button--buy");
-        }
-        if (!buyButton) {
-          buyButton = document.querySelector('.pack-button--buy:not([data-select-variant])');
-        }
+        var buyButton = window.PackPage ? window.PackPage.getPackBuyButton(targetPack) : null;
         if (buyButton) {
           buyButton.click();
         }
@@ -42,13 +36,12 @@
       }
 
       if (action === "scroll_pack") {
-        if (window.PackPage && window.PackPage.scrollToPack()) {
+        if (window.PackPage && window.PackPage.scrollToPack(targetPack)) {
           return;
         }
 
-        var packSection = document.querySelector(".pack-ui");
-        if (packSection) {
-          packSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (targetPack) {
+          targetPack.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }
     });
@@ -63,6 +56,12 @@
 
     var mode = section.dataset.positionMode || "fixed";
     var triggerMode = section.dataset.floatTrigger || "pack_buy";
+    var packTarget = section.dataset.packTarget || "auto";
+    var preferredMode = packTarget === "basicas" ? "simple" : packTarget === "bodys" ? "variable" : "";
+    var targetPack =
+      window.PackPage && typeof window.PackPage.getPackSectionForCta === "function"
+        ? window.PackPage.getPackSectionForCta(section, preferredMode)
+        : null;
     var anchorNode = section.querySelector("[data-cta-anchor]");
     var floatingNode = section.querySelector("[data-cta-floating]");
     var inlineButton = section.querySelector("[data-cta-button-inline]");
@@ -72,31 +71,14 @@
       return;
     }
 
-    bindButtonAction(inlineButton);
-    bindButtonAction(floatingButton);
+    bindButtonAction(inlineButton, targetPack);
+    bindButtonAction(floatingButton, targetPack);
 
     function getTriggerNode() {
       if (triggerMode === "pack_buy" || triggerMode === "pack_slots") {
         if (window.PackPage && typeof window.PackPage.getPackTriggerNode === "function") {
-          var packTrigger = window.PackPage.getPackTriggerNode(triggerMode);
-          if (packTrigger) {
-            return packTrigger;
-          }
+          return window.PackPage.getPackTriggerNode(triggerMode, targetPack);
         }
-
-        if (triggerMode === "pack_slots") {
-          var slotsNode = document.querySelector(".pack-ui .pack-slots");
-          if (slotsNode) {
-            return slotsNode;
-          }
-        }
-
-        var scopedBuy = document.querySelector(".pack-actions .pack-button--buy");
-        if (scopedBuy) {
-          return scopedBuy;
-        }
-
-        return document.querySelector('.pack-button--buy:not([data-select-variant])');
       }
 
       return anchorNode;
