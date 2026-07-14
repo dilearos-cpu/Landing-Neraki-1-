@@ -90,6 +90,38 @@ store = "caletzza.myshopify.com"
 - `pauly-tabs-collection` — Productos destacados con tabs
 - `pauly-split-banner` — Banners divididos 50/50
 - `pauly-mobile-toolbar` — Navegación inferior móvil
+- `pauly-collection-banner` — Banner superior compacto por colección (escritorio + móvil)
+- `pauly-unit-price-table` — Tabla de precios por unidades
+
+## Colecciones (banner + tabla de precios)
+
+### Banner superior compacto
+
+En **Personalizar tema → Colecciones → Banner colección (Pauly)**:
+
+1. Ajusta altura: ~140px escritorio / ~100px móvil (banner bajo, estilo Pauly)
+2. Agrega un **bloque por colección** (ej. Bodys):
+   - Colección: `bodys` / `bodies`
+   - Imagen escritorio y móvil (formato panorámico, ratio ~4:1)
+   - Título opcional sobre la imagen
+
+Template dedicado: `collection.bodys.json` (asignable en Admin → Colecciones → Bodys).
+
+### Tabla de precios por unidades
+
+Ingeniería inversa de Pauly: usan precios por volumen de Shopify (`quantity_price_breaks`) en productos pack; en colección se muestra tabla promocional manual.
+
+Configurar en **Tabla precios por unidades**:
+
+| Unidades | Precio c/u | Total |
+|----------|-----------|-------|
+| 1 | $72.900 | $72.900 |
+| 3 | $69.900 | $209.700 |
+| … | … | … |
+
+- Cada fila puede asignarse a una colección específica
+- Etiquetas: «Ahorra», «Mejor precio»
+- En página de producto: activar «Usar precios por volumen del producto» para leer breaks de Shopify Admin automáticamente
 
 ## Checkout express COD
 

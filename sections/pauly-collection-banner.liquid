@@ -1,0 +1,218 @@
+{{ 'caletzza-pauly.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign matched_block = nil
+  for block in section.blocks
+    if block.type == 'banner'
+      assign block_collection = block.settings.collection
+      if block_collection != blank and block_collection.handle == collection.handle
+        assign matched_block = block
+        break
+      endif
+    endif
+  endfor
+
+  if matched_block == nil and section.settings.image_desktop != blank
+    assign use_fallback = true
+  endif
+
+  assign show_banner = false
+  if matched_block != nil
+    assign show_banner = true
+    assign banner_desktop = matched_block.settings.image_desktop
+    assign banner_mobile = matched_block.settings.image_mobile
+    assign banner_link = matched_block.settings.link
+    assign banner_title = matched_block.settings.title
+    assign show_title = matched_block.settings.show_title
+  elsif use_fallback
+    assign show_banner = true
+    assign banner_desktop = section.settings.image_desktop
+    assign banner_mobile = section.settings.image_mobile
+    assign banner_link = section.settings.link
+    assign banner_title = collection.title
+    assign show_title = section.settings.show_title
+  endif
+
+  if banner_mobile == blank and banner_desktop != blank
+    assign banner_mobile = banner_desktop
+  endif
+-%}
+
+{%- if show_banner -%}
+  {%- style -%}
+    #CZCollectionBanner-{{ section.id }} {
+      --cz-col-banner-h-desktop: {{ section.settings.height_desktop }}px;
+      --cz-col-banner-h-mobile: {{ section.settings.height_mobile }}px;
+    }
+  {%- endstyle -%}
+
+  <div
+    id="CZCollectionBanner-{{ section.id }}"
+    class="cz-collection-banner{% if section.settings.full_width %} cz-collection-banner--full{% endif %}"
+  >
+    {%- if banner_link != blank -%}
+      <a href="{{ banner_link }}" class="cz-collection-banner__link" aria-label="{{ banner_title | escape }}">
+    {%- endif -%}
+
+    <picture class="cz-collection-banner__picture">
+      {%- if banner_mobile != blank -%}
+        <source
+          media="(max-width: 749px)"
+          srcset="
+            {{ banner_mobile | image_url: width: 750 }} 750w,
+            {{ banner_mobile | image_url: width: 1100 }} 1100w
+          "
+        >
+      {%- endif -%}
+      {%- if banner_desktop != blank -%}
+        {{
+          banner_desktop
+          | image_url: width: 2400
+          | image_tag:
+            class: 'cz-collection-banner__image',
+            loading: 'eager',
+            fetchpriority: 'high',
+            alt: banner_title,
+            widths: '750, 1100, 1500, 1800, 2400',
+            sizes: '100vw'
+        }}
+      {%- endif -%}
+    </picture>
+
+    {%- if show_title and banner_title != blank -%}
+      <div class="cz-collection-banner__overlay">
+        <h1 class="cz-collection-banner__title">{{ banner_title | escape }}</h1>
+      </div>
+    {%- endif -%}
+
+    {%- if banner_link != blank -%}
+      </a>
+    {%- endif -%}
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="cz-collection-banner cz-collection-banner--placeholder page-width">
+    <p class="cz-collection-banner__placeholder">
+      Banner de colección: agrega un bloque para «{{ collection.title | escape }}» o imágenes por defecto en la sección.
+    </p>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Banner colección (Pauly)",
+  "tag": "section",
+  "class": "section-pauly-collection-banner",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Banner compacto superior por colección. Crea un bloque por categoría (ej. Bodys) con imagen de escritorio y móvil."
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Ancho completo",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "height_desktop",
+      "min": 80,
+      "max": 280,
+      "step": 10,
+      "unit": "px",
+      "label": "Altura en escritorio",
+      "default": 140,
+      "info": "Banner bajo, estilo Pauly"
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "min": 60,
+      "max": 200,
+      "step": 10,
+      "unit": "px",
+      "label": "Altura en móvil",
+      "default": 100
+    },
+    {
+      "type": "header",
+      "content": "Imágenes por defecto (fallback)"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Imagen escritorio (fallback)"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Imagen móvil (fallback)"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Enlace (fallback)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Mostrar título sobre el banner (fallback)",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "banner",
+      "name": "Banner por colección",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Colección"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_desktop",
+          "label": "Imagen escritorio"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "Imagen móvil"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Título sobre banner",
+          "info": "Opcional. Si está vacío usa el nombre de la colección."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_title",
+          "label": "Mostrar título",
+          "default": false
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Enlace del banner"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner colección (Pauly)",
+      "blocks": [
+        {
+          "type": "banner",
+          "settings": {
+            "title": "Bodys",
+            "show_title": false
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

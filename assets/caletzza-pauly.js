@@ -37,13 +37,29 @@
     });
   }
 
+  function initUnitPriceTable() {
+    document.querySelectorAll('[data-cz-unit-table]').forEach(function (root) {
+      var rows = root.querySelectorAll('.cz-unit-price-table__row');
+      rows.forEach(function (row) {
+        row.addEventListener('click', function () {
+          rows.forEach(function (r) {
+            r.classList.remove('is-active');
+          });
+          row.classList.add('is-active');
+        });
+      });
+    });
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       initTabs();
       initMobileToolbar();
+      initUnitPriceTable();
     });
   } else {
     initTabs();
     initMobileToolbar();
+    initUnitPriceTable();
   }
 })();

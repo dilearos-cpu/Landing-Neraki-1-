@@ -1,11 +1,6 @@
 /*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
+ * Template alternativo para la colección Bodys.
+ * Asignar en Admin → Productos → Colecciones → Bodys → Theme template.
  */
 {
   "sections": {
@@ -31,14 +26,14 @@
     "pauly_unit_price_table": {
       "type": "pauly-unit-price-table",
       "blocks": {
-        "tier_1": {
+        "tier_bodys_1": {
           "type": "tier",
           "settings": {
             "quantity": 1,
             "unit_price": 72900
           }
         },
-        "tier_3": {
+        "tier_bodys_3": {
           "type": "tier",
           "settings": {
             "quantity": 3,
@@ -46,14 +41,14 @@
             "badge": "Ahorra"
           }
         },
-        "tier_6": {
+        "tier_bodys_6": {
           "type": "tier",
           "settings": {
             "quantity": 6,
             "unit_price": 65900
           }
         },
-        "tier_10": {
+        "tier_bodys_10": {
           "type": "tier",
           "settings": {
             "quantity": 10,
@@ -63,22 +58,12 @@
           }
         }
       },
-      "block_order": ["tier_1", "tier_3", "tier_6", "tier_10"],
+      "block_order": ["tier_bodys_1", "tier_bodys_3", "tier_bodys_6", "tier_bodys_10"],
       "settings": {
-        "heading": "Precios por cantidad",
+        "heading": "Precios por cantidad — Bodys",
         "show_total_column": true,
-        "note": "Precios en COP. Los descuentos se aplican al agregar al carrito.",
         "padding_top": 12,
         "padding_bottom": 12
-      }
-    },
-    "banner": {
-      "type": "main-collection-banner",
-      "disabled": true,
-      "settings": {
-        "show_collection_description": false,
-        "show_collection_image": false,
-        "color_scheme": "scheme-1"
       }
     },
     "product-grid": {
@@ -105,7 +90,6 @@
   "order": [
     "pauly_collection_banner",
     "pauly_unit_price_table",
-    "banner",
     "product-grid"
   ]
 }
