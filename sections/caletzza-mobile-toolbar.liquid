@@ -1,4 +1,4 @@
-{{ 'caletzza-pauly.css' | asset_url | stylesheet_tag }}
+{{ 'caletzza-theme.css' | asset_url | stylesheet_tag }}
 
 <nav class="cz-mobile-toolbar" aria-label="Navegación móvil">
   <ul class="cz-mobile-toolbar__list">
@@ -38,17 +38,17 @@
   </ul>
 </nav>
 
-<script src="{{ 'caletzza-pauly.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'caletzza-theme.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {
-  "name": "Barra móvil inferior (Pauly)",
+  "name": "Barra móvil inferior (Caletzza)",
   "tag": "section",
-  "class": "section-pauly-mobile-toolbar",
+  "class": "section-caletzza-mobile-toolbar",
   "settings": [],
   "presets": [
     {
-      "name": "Barra móvil inferior (Pauly)"
+      "name": "Barra móvil inferior (Caletzza)"
     }
   ]
 }

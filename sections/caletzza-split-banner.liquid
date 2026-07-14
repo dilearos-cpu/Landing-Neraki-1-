@@ -1,4 +1,4 @@
-{{ 'caletzza-pauly.css' | asset_url | stylesheet_tag }}
+{{ 'caletzza-theme.css' | asset_url | stylesheet_tag }}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -45,9 +45,9 @@
 
 {% schema %}
 {
-  "name": "Banner dividido (Pauly)",
+  "name": "Banner dividido (Caletzza)",
   "tag": "section",
-  "class": "section-pauly-split-banner",
+  "class": "section-caletzza-split-banner",
   "max_blocks": 2,
   "settings": [
     {
@@ -103,7 +103,7 @@
   ],
   "presets": [
     {
-      "name": "Banner dividido (Pauly)",
+      "name": "Banner dividido (Caletzza)",
       "blocks": [
         { "type": "banner", "settings": { "title": "Lo nuevo", "button_label": "Ver colección" } },
         { "type": "banner", "settings": { "title": "Rebajas", "button_label": "Comprar ahora" } }

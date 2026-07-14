@@ -1,4 +1,4 @@
-{{ 'caletzza-pauly.css' | asset_url | stylesheet_tag }}
+{{ 'caletzza-theme.css' | asset_url | stylesheet_tag }}
 
 {%- liquid
   assign matched_block = nil
@@ -99,9 +99,9 @@
 
 {% schema %}
 {
-  "name": "Banner colección (Pauly)",
+  "name": "Banner colección (Caletzza)",
   "tag": "section",
-  "class": "section-pauly-collection-banner",
+  "class": "section-caletzza-collection-banner",
   "settings": [
     {
       "type": "paragraph",
@@ -122,7 +122,7 @@
       "unit": "px",
       "label": "Altura en escritorio",
       "default": 140,
-      "info": "Banner bajo, estilo Pauly"
+      "info": "Banner bajo, estilo Caletzza"
     },
     {
       "type": "range",
@@ -202,7 +202,7 @@
   ],
   "presets": [
     {
-      "name": "Banner colección (Pauly)",
+      "name": "Banner colección (Caletzza)",
       "blocks": [
         {
           "type": "banner",

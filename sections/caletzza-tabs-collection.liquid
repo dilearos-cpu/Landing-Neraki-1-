@@ -1,4 +1,4 @@
-{{ 'caletzza-pauly.css' | asset_url | stylesheet_tag }}
+{{ 'caletzza-theme.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 {{ 'component-slider.css' | asset_url | stylesheet_tag }}
@@ -88,13 +88,13 @@
   </div>
 </div>
 
-<script src="{{ 'caletzza-pauly.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'caletzza-theme.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {
-  "name": "Colecciones con tabs (Pauly)",
+  "name": "Colecciones con tabs (Caletzza)",
   "tag": "section",
-  "class": "section-pauly-tabs-collection",
+  "class": "section-caletzza-tabs-collection",
   "max_blocks": 6,
   "settings": [
     {
@@ -175,7 +175,7 @@
   ],
   "presets": [
     {
-      "name": "Colecciones con tabs (Pauly)",
+      "name": "Colecciones con tabs (Caletzza)",
       "blocks": [
         { "type": "tab", "settings": { "tab_title": "Lo nuevo" } },
         { "type": "tab", "settings": { "tab_title": "Lo más vendido" } },

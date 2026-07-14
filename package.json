@@ -1,7 +1,7 @@
 {
   "name": "caletzza-theme",
   "version": "1.0.0",
-  "description": "Caletzza Theme — Shopify theme inspirado en Pauly Lingerie con funcionalidades pack/COD",
+  "description": "Caletzza Theme — Shopify theme Caletzza Theme con funcionalidades pack/COD",
   "main": "index.js",
   "scripts": {
     "shopify": "shopify",

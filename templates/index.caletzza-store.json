@@ -1,7 +1,7 @@
 {
   "sections": {
-    "pauly_marquee": {
-      "type": "pauly-marquee-bar",
+    "caletzza_marquee": {
+      "type": "caletzza-marquee-bar",
       "blocks": {
         "msg_1": {
           "type": "message",
@@ -58,7 +58,7 @@
       }
     },
     "shipping_bar": {
-      "type": "pauly-shipping-bar",
+      "type": "caletzza-shipping-bar",
       "blocks": {
         "b1": {
           "type": "benefit",
@@ -100,7 +100,7 @@
       }
     },
     "category_grid": {
-      "type": "pauly-category-grid",
+      "type": "caletzza-category-grid",
       "blocks": {
         "c1": { "type": "category", "settings": { "title": "Lo nuevo" } },
         "c2": { "type": "category", "settings": { "title": "Bodys" } },
@@ -115,7 +115,7 @@
       }
     },
     "tabs_collection": {
-      "type": "pauly-tabs-collection",
+      "type": "caletzza-tabs-collection",
       "blocks": {
         "t1": { "type": "tab", "settings": { "tab_title": "Lo nuevo" } },
         "t2": { "type": "tab", "settings": { "tab_title": "Lo más vendido" } },
@@ -131,7 +131,7 @@
       }
     },
     "split_banner": {
-      "type": "pauly-split-banner",
+      "type": "caletzza-split-banner",
       "blocks": {
         "sb1": {
           "type": "banner",
@@ -239,7 +239,7 @@
     }
   },
   "order": [
-    "pauly_marquee",
+    "caletzza_marquee",
     "slideshow_hero",
     "shipping_bar",
     "category_grid",

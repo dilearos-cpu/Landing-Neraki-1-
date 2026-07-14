@@ -1,8 +1,8 @@
 # Caletzza Theme
 
-Sub-repositorio del theme de Shopify para [caletzza.myshopify.com](https://caletzza.myshopify.com). Fusiona la interfaz y experiencia de [Pauly Lingerie](https://www.paulylingerie.com/) con las funcionalidades personalizadas ya existentes de Caletzza.
+Sub-repositorio del theme de Shopify para [caletzza.myshopify.com](https://caletzza.myshopify.com). Fusiona una interfaz de tienda de lencería con las funcionalidades personalizadas de Caletzza (pack builder, COD, prueba social).
 
-## Inspiración visual (Pauly Lingerie)
+## Inspiración visual
 
 - Paleta cálida: marrón `#502f1d`, rosa `#d3aba9`, grises suaves
 - Tipografías Poppins (cuerpo) y Rubik (títulos)
@@ -27,7 +27,7 @@ Sub-repositorio del theme de Shopify para [caletzza.myshopify.com](https://calet
 
 | Template | Uso |
 |---|---|
-| `index.caletzza-store.json` | Homepage tienda estilo Pauly (borrador) |
+| `index.caletzza-store.json` | Homepage tienda estilo Caletzza (borrador) |
 | `index.json` | Landing Pack Básicas (funcionalidad actual) |
 | `page.landing-basicas-x10.json` | Landing pack básicas |
 | `page.landing-bodys-x4.json` | Landing pack bodys |
@@ -82,24 +82,24 @@ store = "caletzza.myshopify.com"
 # theme = ""  # Dejar vacío para crear/subir como borrador
 ```
 
-## Secciones Pauly nuevas
+## Secciones Caletzza nuevas
 
-- `pauly-marquee-bar` — Barra de anuncios con scroll continuo
-- `pauly-shipping-bar` — Beneficios (envío, pago, cambios)
-- `pauly-category-grid` — Grid visual de categorías
-- `pauly-tabs-collection` — Productos destacados con tabs
-- `pauly-split-banner` — Banners divididos 50/50
-- `pauly-mobile-toolbar` — Navegación inferior móvil
-- `pauly-collection-banner` — Banner superior compacto por colección (escritorio + móvil)
-- `pauly-unit-price-table` — Tabla de precios por unidades
+- `caletzza-marquee-bar` — Barra de anuncios con scroll continuo
+- `caletzza-shipping-bar` — Beneficios (envío, pago, cambios)
+- `caletzza-category-grid` — Grid visual de categorías
+- `caletzza-tabs-collection` — Productos destacados con tabs
+- `caletzza-split-banner` — Banners divididos 50/50
+- `caletzza-mobile-toolbar` — Navegación inferior móvil
+- `caletzza-collection-banner` — Banner superior compacto por colección (escritorio + móvil)
+- `caletzza-unit-price-table` — Tabla de precios por unidades
 
 ## Colecciones (banner + tabla de precios)
 
 ### Banner superior compacto
 
-En **Personalizar tema → Colecciones → Banner colección (Pauly)**:
+En **Personalizar tema → Colecciones → Banner colección (Caletzza)**:
 
-1. Ajusta altura: ~140px escritorio / ~100px móvil (banner bajo, estilo Pauly)
+1. Ajusta altura: ~140px escritorio / ~100px móvil (banner bajo, estilo Caletzza)
 2. Agrega un **bloque por colección** (ej. Bodys):
    - Colección: `bodys` / `bodies`
    - Imagen escritorio y móvil (formato panorámico, ratio ~4:1)
@@ -109,7 +109,7 @@ Template dedicado: `collection.bodys.json` (asignable en Admin → Colecciones �
 
 ### Tabla de precios por unidades
 
-Ingeniería inversa de Pauly: usan precios por volumen de Shopify (`quantity_price_breaks`) en productos pack; en colección se muestra tabla promocional manual.
+Referencia de ingeniería inversa: usan precios por volumen de Shopify (`quantity_price_breaks`) en productos pack; en colección se muestra tabla promocional manual.
 
 Configurar en **Tabla precios por unidades**:
 

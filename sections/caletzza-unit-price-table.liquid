@@ -1,4 +1,4 @@
-{{ 'caletzza-pauly.css' | asset_url | stylesheet_tag }}
+{{ 'caletzza-theme.css' | asset_url | stylesheet_tag }}
 
 {%- liquid
   assign has_rows = false
@@ -103,7 +103,7 @@
     </div>
   </div>
 
-  <script src="{{ 'caletzza-pauly.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'caletzza-theme.js' | asset_url }}" defer="defer"></script>
 {%- elsif request.design_mode -%}
   <div class="page-width section-{{ section.id }}-padding">
     <p class="cz-unit-price-table__placeholder">
@@ -129,11 +129,11 @@
 {
   "name": "Precios por unidades",
   "tag": "section",
-  "class": "section-pauly-unit-price-table",
+  "class": "section-caletzza-unit-price-table",
   "settings": [
     {
       "type": "paragraph",
-      "content": "Tabla estilo Pauly para mostrar descuentos por cantidad. Asigna filas a una colección específica (ej. Bodys) o déjala vacía para todas."
+      "content": "Tabla estilo Caletzza para mostrar descuentos por cantidad. Asigna filas a una colección específica (ej. Bodys) o déjala vacía para todas."
     },
     {
       "type": "text",

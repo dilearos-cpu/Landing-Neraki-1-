@@ -1,4 +1,4 @@
-/* Caletzza Theme — Pauly Lingerie inspired design layer */
+/* Caletzza Theme — Caletzza Theme design layer */
 
 :root {
   --cz-brown: #502f1d;
@@ -142,7 +142,7 @@ body.caletzza-theme {
   line-height: 1.4;
 }
 
-/* Category grid — Pauly style image tiles */
+/* Category grid — Caletzza style image tiles */
 .cz-category-grid {
   padding: 3rem 0;
 }
@@ -276,7 +276,7 @@ body.caletzza-theme {
   text-transform: uppercase;
 }
 
-/* Product cards — Pauly hover & ratio */
+/* Product cards — Caletzza hover & ratio */
 .caletzza-theme .product-card-wrapper .card__heading {
   font-size: 1.3rem;
   font-weight: 400;
@@ -355,7 +355,7 @@ body.caletzza-theme {
   border-color: var(--cz-brown);
 }
 
-/* Footer — Pauly style */
+/* Footer — Caletzza style */
 .caletzza-theme .footer {
   background: var(--cz-gray-light);
   border-top: 1px solid rgba(80, 47, 29, 0.08);
@@ -603,7 +603,7 @@ body.caletzza-theme {
   border-radius: 4px;
 }
 
-/* Unit price table — Pauly style */
+/* Unit price table — Caletzza style */
 .cz-unit-price-table {
   background: #fff;
 }

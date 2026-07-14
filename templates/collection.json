@@ -9,8 +9,8 @@
  */
 {
   "sections": {
-    "pauly_collection_banner": {
-      "type": "pauly-collection-banner",
+    "caletzza_collection_banner": {
+      "type": "caletzza-collection-banner",
       "blocks": {
         "banner_bodys": {
           "type": "banner",
@@ -28,8 +28,8 @@
         "show_title": false
       }
     },
-    "pauly_unit_price_table": {
-      "type": "pauly-unit-price-table",
+    "caletzza_unit_price_table": {
+      "type": "caletzza-unit-price-table",
       "blocks": {
         "tier_1": {
           "type": "tier",
@@ -103,8 +103,8 @@
     }
   },
   "order": [
-    "pauly_collection_banner",
-    "pauly_unit_price_table",
+    "caletzza_collection_banner",
+    "caletzza_unit_price_table",
     "banner",
     "product-grid"
   ]

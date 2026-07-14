@@ -1,4 +1,4 @@
-{{ 'caletzza-pauly.css' | asset_url | stylesheet_tag }}
+{{ 'caletzza-theme.css' | asset_url | stylesheet_tag }}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -27,9 +27,9 @@
 
 {% schema %}
 {
-  "name": "Barra marquee (Pauly)",
+  "name": "Barra marquee (Caletzza)",
   "tag": "section",
-  "class": "section-pauly-marquee",
+  "class": "section-caletzza-marquee",
   "max_blocks": 6,
   "settings": [],
   "blocks": [
@@ -53,7 +53,7 @@
   ],
   "presets": [
     {
-      "name": "Barra marquee (Pauly)",
+      "name": "Barra marquee (Caletzza)",
       "blocks": [
         { "type": "message", "settings": { "text": "COMPRA HOY, PAGA DESPUÉS" } },
         { "type": "message", "settings": { "text": "HECHO POR MANOS COLOMBIANAS" } },

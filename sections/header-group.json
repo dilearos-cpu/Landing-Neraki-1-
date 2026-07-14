@@ -11,8 +11,8 @@
   "name": "t:sections.header.name",
   "type": "header",
   "sections": {
-    "pauly-marquee": {
-      "type": "pauly-marquee-bar",
+    "caletzza-marquee": {
+      "type": "caletzza-marquee-bar",
       "blocks": {
         "marquee-1": {
           "type": "message",
@@ -50,5 +50,5 @@
       }
     }
   },
-  "order": ["pauly-marquee", "header"]
+  "order": ["caletzza-marquee", "header"]
 }

@@ -1,4 +1,4 @@
-{{ 'caletzza-pauly.css' | asset_url | stylesheet_tag }}
+{{ 'caletzza-theme.css' | asset_url | stylesheet_tag }}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -44,9 +44,9 @@
 
 {% schema %}
 {
-  "name": "Beneficios envío (Pauly)",
+  "name": "Beneficios envío (Caletzza)",
   "tag": "section",
-  "class": "section-pauly-shipping",
+  "class": "section-caletzza-shipping",
   "max_blocks": 4,
   "settings": [
     {
@@ -104,7 +104,7 @@
   ],
   "presets": [
     {
-      "name": "Beneficios envío (Pauly)",
+      "name": "Beneficios envío (Caletzza)",
       "blocks": [
         { "type": "benefit", "settings": { "icon": "card", "title": "COMPRA HOY, PAGA DESPUÉS", "text": "Paga al recibir tu pedido" } },
         { "type": "benefit", "settings": { "icon": "heart", "title": "HECHO EN COLOMBIA", "text": "Diseño y confección local" } },

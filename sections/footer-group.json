@@ -52,7 +52,7 @@
       }
     },
     "mobile-toolbar": {
-      "type": "pauly-mobile-toolbar",
+      "type": "caletzza-mobile-toolbar",
       "settings": {}
     }
   },
