@@ -1,0 +1,95 @@
+/*
+ * Template alternativo para la colección Bodys.
+ * Asignar en Admin → Productos → Colecciones → Bodys → Theme template.
+ */
+{
+  "sections": {
+    "caletzza_collection_banner": {
+      "type": "caletzza-collection-banner",
+      "blocks": {
+        "banner_bodys": {
+          "type": "banner",
+          "settings": {
+            "title": "Bodys",
+            "show_title": false
+          }
+        }
+      },
+      "block_order": ["banner_bodys"],
+      "settings": {
+        "full_width": true,
+        "height_desktop": 140,
+        "height_mobile": 100,
+        "show_title": false
+      }
+    },
+    "caletzza_unit_price_table": {
+      "type": "caletzza-unit-price-table",
+      "blocks": {
+        "tier_bodys_1": {
+          "type": "tier",
+          "settings": {
+            "quantity": 1,
+            "unit_price": 72900
+          }
+        },
+        "tier_bodys_3": {
+          "type": "tier",
+          "settings": {
+            "quantity": 3,
+            "unit_price": 69900,
+            "badge": "Ahorra"
+          }
+        },
+        "tier_bodys_6": {
+          "type": "tier",
+          "settings": {
+            "quantity": 6,
+            "unit_price": 65900
+          }
+        },
+        "tier_bodys_10": {
+          "type": "tier",
+          "settings": {
+            "quantity": 10,
+            "unit_price": 59900,
+            "highlight": true,
+            "badge": "Mejor precio"
+          }
+        }
+      },
+      "block_order": ["tier_bodys_1", "tier_bodys_3", "tier_bodys_6", "tier_bodys_10"],
+      "settings": {
+        "heading": "Precios por cantidad — Bodys",
+        "show_total_column": true,
+        "padding_top": 12,
+        "padding_bottom": 12
+      }
+    },
+    "product-grid": {
+      "type": "main-collection-product-grid",
+      "settings": {
+        "products_per_page": 16,
+        "columns_desktop": 4,
+        "color_scheme": "scheme-1",
+        "image_ratio": "portrait",
+        "image_shape": "default",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": false,
+        "quick_add": "none",
+        "enable_filtering": true,
+        "filter_type": "horizontal",
+        "enable_sorting": true,
+        "columns_mobile": "2",
+        "padding_top": 24,
+        "padding_bottom": 36
+      }
+    }
+  },
+  "order": [
+    "caletzza_collection_banner",
+    "caletzza_unit_price_table",
+    "product-grid"
+  ]
+}

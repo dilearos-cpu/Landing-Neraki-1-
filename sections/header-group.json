@@ -1,0 +1,54 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "name": "t:sections.header.name",
+  "type": "header",
+  "sections": {
+    "caletzza-marquee": {
+      "type": "caletzza-marquee-bar",
+      "blocks": {
+        "marquee-1": {
+          "type": "message",
+          "settings": {
+            "text": "ENVÍO GRATIS en compras superiores a $150.000"
+          }
+        },
+        "marquee-2": {
+          "type": "message",
+          "settings": {
+            "text": "PAGA AL RECIBIR — Compra hoy, paga después"
+          }
+        }
+      },
+      "block_order": ["marquee-1", "marquee-2"],
+      "settings": {}
+    },
+    "header": {
+      "type": "header",
+      "settings": {
+        "logo_position": "middle-center",
+        "menu": "main-menu",
+        "menu_type_desktop": "dropdown",
+        "sticky_header_type": "reduce-logo-size",
+        "show_line_separator": true,
+        "color_scheme": "scheme-1",
+        "menu_color_scheme": "scheme-1",
+        "enable_country_selector": false,
+        "enable_language_selector": false,
+        "enable_customer_avatar": true,
+        "mobile_logo_position": "center",
+        "margin_bottom": 0,
+        "padding_top": 16,
+        "padding_bottom": 16
+      }
+    }
+  },
+  "order": ["caletzza-marquee", "header"]
+}
