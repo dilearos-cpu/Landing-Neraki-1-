@@ -90,6 +90,11 @@ class Landing_Bonus_Assets {
 			wp_enqueue_script( 'landing-bonus-social-proof' );
 		}
 
+		if ( ! empty( $modules['pack'] ) ) {
+			wp_enqueue_style( 'landing-bonus-pack' );
+			wp_enqueue_script( 'landing-bonus-pack' );
+		}
+
 		self::register_module_assets();
 	}
 
@@ -103,6 +108,7 @@ class Landing_Bonus_Assets {
 			'landing-bonus-google-badge'     => array( 'css/google-badge.css', null ),
 			'landing-bonus-floating-button'  => array( 'css/floating-button.css', 'js/floating-button.js' ),
 			'landing-bonus-social-proof'     => array( 'css/social-proof.css', 'js/social-proof.js' ),
+			'landing-bonus-pack'             => array( 'css/pack.css', 'js/pack.js' ),
 		);
 
 		foreach ( $assets as $handle => $files ) {
@@ -160,20 +166,29 @@ class Landing_Bonus_Assets {
 		if ( is_singular() ) {
 			global $post;
 
-			if ( $post instanceof WP_Post && has_shortcode( $post->post_content, 'landing_bonus_countdown' ) ) {
-				return true;
+			if ( ! $post instanceof WP_Post ) {
+				return false;
 			}
-			if ( $post instanceof WP_Post && has_shortcode( $post->post_content, 'landing_bonus_google_badge' ) ) {
-				return true;
+
+			$shortcodes = array(
+				'landing_bonus_countdown',
+				'landing_bonus_google_badge',
+				'landing_bonus_floating_button',
+				'landing_bonus_social_proof',
+				'landing_bonus_pack',
+			);
+
+			foreach ( $shortcodes as $shortcode ) {
+				if ( has_shortcode( $post->post_content, $shortcode ) ) {
+					return true;
+				}
 			}
-			if ( $post instanceof WP_Post && has_shortcode( $post->post_content, 'landing_bonus_floating_button' ) ) {
-				return true;
-			}
-			if ( $post instanceof WP_Post && has_shortcode( $post->post_content, 'landing_bonus_social_proof' ) ) {
-				return true;
-			}
-			if ( $post instanceof WP_Post && has_shortcode( $post->post_content, 'landing_bonus_pack' ) ) {
-				return true;
+
+			foreach ( Landing_Bonus_Pack_Manager::enabled() as $pack ) {
+				$tag = $pack['shortcode'] ?? '';
+				if ( $tag && has_shortcode( $post->post_content, $tag ) ) {
+					return true;
+				}
 			}
 		}
 

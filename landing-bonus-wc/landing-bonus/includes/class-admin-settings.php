@@ -19,6 +19,7 @@ class Landing_Bonus_Admin_Settings {
 	 */
 	private static array $tabs = array(
 		'general'         => 'General',
+		'packs'           => 'Packs',
 		'cod_modal'       => 'COD Modal',
 		'countdown'       => 'Contador',
 		'google_badge'    => 'Google Badge',
@@ -33,6 +34,8 @@ class Landing_Bonus_Admin_Settings {
 	public static function init(): void {
 		add_action( 'admin_menu', array( __CLASS__, 'register_menu' ) );
 		add_action( 'admin_post_landing_bonus_save_settings', array( __CLASS__, 'handle_save' ) );
+		add_action( 'admin_post_landing_bonus_save_pack', array( __CLASS__, 'handle_save_pack' ) );
+		add_action( 'admin_post_landing_bonus_delete_pack', array( __CLASS__, 'handle_delete_pack' ) );
 	}
 
 	/**
@@ -84,6 +87,7 @@ class Landing_Bonus_Admin_Settings {
 			case 'general':
 				$settings['modules'] = array(
 					'cod_modal'       => isset( $_POST['module_cod_modal'] ),
+					'pack'            => isset( $_POST['module_pack'] ),
 					'countdown'       => isset( $_POST['module_countdown'] ),
 					'google_badge'    => isset( $_POST['module_google_badge'] ),
 					'floating_button' => isset( $_POST['module_floating_button'] ),
@@ -172,6 +176,75 @@ class Landing_Bonus_Admin_Settings {
 					'page'    => 'landing-bonus',
 					'tab'     => $tab,
 					'updated' => '1',
+				),
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
+	}
+
+	/**
+	 * Maneja guardado de un pack shortcode.
+	 */
+	public static function handle_save_pack(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'No tienes permisos.', 'landing-bonus' ) );
+		}
+
+		check_admin_referer( 'landing_bonus_save_pack' );
+
+		$id = Landing_Bonus_Pack_Manager::save(
+			array(
+				'id'             => sanitize_key( wp_unslash( $_POST['pack_id'] ?? '' ) ),
+				'title'          => sanitize_text_field( wp_unslash( $_POST['pack_title'] ?? '' ) ),
+				'shortcode'      => sanitize_key( wp_unslash( $_POST['pack_shortcode'] ?? '' ) ),
+				'enabled'        => isset( $_POST['pack_enabled'] ),
+				'type'           => sanitize_text_field( wp_unslash( $_POST['pack_type'] ?? 'simple' ) ),
+				'cat_id'         => absint( $_POST['pack_cat_id'] ?? 0 ),
+				'slots'          => absint( $_POST['pack_slots'] ?? 4 ),
+				'slot_columns'   => absint( $_POST['pack_slot_columns'] ?? 4 ),
+				'per_page'       => absint( $_POST['pack_per_page'] ?? 20 ),
+				'checkout_mode'  => sanitize_text_field( wp_unslash( $_POST['pack_checkout_mode'] ?? 'cod_modal' ) ),
+				'checkout_url'   => esc_url_raw( wp_unslash( $_POST['pack_checkout_url'] ?? '' ) ),
+				'countdown_id'   => sanitize_key( wp_unslash( $_POST['pack_countdown_id'] ?? '' ) ),
+			)
+		);
+
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'    => 'landing-bonus',
+					'tab'     => 'packs',
+					'updated' => '1',
+					'pack_id' => $id,
+				),
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
+	}
+
+	/**
+	 * Maneja eliminación de un pack.
+	 */
+	public static function handle_delete_pack(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'No tienes permisos.', 'landing-bonus' ) );
+		}
+
+		check_admin_referer( 'landing_bonus_delete_pack' );
+
+		$pack_id = isset( $_GET['pack_id'] ) ? sanitize_key( wp_unslash( $_GET['pack_id'] ) ) : '';
+		if ( $pack_id ) {
+			Landing_Bonus_Pack_Manager::delete( $pack_id );
+		}
+
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'    => 'landing-bonus',
+					'tab'     => 'packs',
+					'deleted' => '1',
 				),
 				admin_url( 'admin.php' )
 			)

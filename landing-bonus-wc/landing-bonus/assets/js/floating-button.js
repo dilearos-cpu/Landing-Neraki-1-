@@ -5,7 +5,7 @@
     if (settings.floatTrigger === 'cta_section') {
       return document.querySelector('[data-landing-bonus-float-inline]');
     }
-    return document.querySelector('[data-landing-bonus-pack-buy], .landing-bonus-pack-buy');
+    return document.querySelector('[data-landing-bonus-pack-buy], .landing-bonus-pack-buy, .pack-buy');
   }
 
   function initFloatingButton(section) {

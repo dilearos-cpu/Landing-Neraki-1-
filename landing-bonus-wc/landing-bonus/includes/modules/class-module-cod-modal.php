@@ -30,10 +30,16 @@ class Landing_Bonus_Module_Cod_Modal {
 				if ( has_shortcode( $post->post_content, 'landing_bonus_pack' ) ) {
 					return true;
 				}
+				foreach ( Landing_Bonus_Pack_Manager::enabled() as $pack ) {
+					$tag = $pack['shortcode'] ?? '';
+					if ( $tag && has_shortcode( $post->post_content, $tag ) ) {
+						return true;
+					}
+				}
 			}
 		}
 
-		return true;
+		return false;
 	}
 
 	/**

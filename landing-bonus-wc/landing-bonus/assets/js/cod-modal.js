@@ -185,26 +185,7 @@
   }
 
   function bindPackButtons() {
-    document.querySelectorAll('[data-landing-bonus-pack-buy], .landing-bonus-pack-buy').forEach(function (button) {
-      button.addEventListener('click', function () {
-        var pack = button.closest('[data-landing-bonus-pack]');
-        var demoItems = [
-          {
-            product_id: 0,
-            quantity: 1,
-            name: 'Pack demo',
-            price: 0
-          }
-        ];
-
-        if (pack) {
-          var slots = Number(pack.getAttribute('data-slots')) || 4;
-          demoItems[0].name = 'Pack x' + slots;
-        }
-
-        openModal(demoItems);
-      });
-    });
+    // Los packs reales los gestiona pack.js vía landing_bonus_pack_resolve_items.
   }
 
   window.LandingBonus.openCodModal = openModal;

@@ -23,6 +23,9 @@ define( 'LANDING_BONUS_PLUGIN_FILE', __FILE__ );
 define( 'LANDING_BONUS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LANDING_BONUS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'LANDING_BONUS_OPTION_KEY', 'landing_bonus_settings' );
+define( 'LANDING_BONUS_PACKS_OPTION_KEY', 'landing_bonus_packs' );
+
+require_once LANDING_BONUS_PLUGIN_DIR . 'includes/class-pack-manager.php';
 
 /**
  * Comprueba si WooCommerce está activo.
@@ -93,6 +96,7 @@ function landing_bonus_default_settings(): array {
 	return array(
 		'modules' => array(
 			'cod_modal'        => true,
+			'pack'             => true,
 			'countdown'        => true,
 			'google_badge'     => true,
 			'floating_button'  => true,
@@ -180,6 +184,9 @@ function landing_bonus_get_settings(): array {
 function landing_bonus_activate(): void {
 	if ( false === get_option( LANDING_BONUS_OPTION_KEY, false ) ) {
 		add_option( LANDING_BONUS_OPTION_KEY, landing_bonus_default_settings() );
+	}
+	if ( false === get_option( LANDING_BONUS_PACKS_OPTION_KEY, false ) ) {
+		add_option( LANDING_BONUS_PACKS_OPTION_KEY, Landing_Bonus_Pack_Manager::default_packs() );
 	}
 }
 register_activation_hook( LANDING_BONUS_PLUGIN_FILE, 'landing_bonus_activate' );

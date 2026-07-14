@@ -131,26 +131,33 @@ class Landing_Bonus_Ajax_Cod_Order {
 		$normalized = array();
 
 		foreach ( $items as $item ) {
-			if ( ! is_array( $item ) ) {
+			if ( is_array( $item ) ) {
+				$product_id   = absint( $item['product_id'] ?? 0 );
+				$variation_id = absint( $item['variation_id'] ?? 0 );
+				$quantity     = max( 1, absint( $item['quantity'] ?? 1 ) );
+			} else {
+				$product_id   = absint( $item );
+				$variation_id = 0;
+				$quantity     = 1;
+			}
+
+			if ( $variation_id > 0 ) {
+				$product = wc_get_product( $variation_id );
+			} elseif ( $product_id > 0 ) {
+				$product = wc_get_product( $product_id );
+			} else {
 				continue;
 			}
 
-			$product_id = absint( $item['product_id'] ?? 0 );
-			$quantity   = max( 1, absint( $item['quantity'] ?? 1 ) );
-
-			if ( $product_id <= 0 ) {
-				continue;
-			}
-
-			$product = wc_get_product( $product_id );
 			if ( ! $product ) {
 				continue;
 			}
 
 			$normalized[] = array(
-				'product_id' => $product_id,
-				'quantity'   => $quantity,
-				'product'    => $product,
+				'product_id'   => $variation_id ? (int) $product->get_parent_id() : $product_id,
+				'variation_id' => $variation_id,
+				'quantity'     => $quantity,
+				'product'      => $product,
 			);
 		}
 

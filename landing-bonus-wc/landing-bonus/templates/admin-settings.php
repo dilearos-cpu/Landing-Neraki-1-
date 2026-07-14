@@ -21,6 +21,12 @@ $tabs = Landing_Bonus_Admin_Settings::get_tabs();
 		</div>
 	<?php endif; ?>
 
+	<?php if ( isset( $_GET['deleted'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+		<div class="notice notice-success is-dismissible">
+			<p><?php esc_html_e( 'Pack eliminado.', 'landing-bonus' ); ?></p>
+		</div>
+	<?php endif; ?>
+
 	<nav class="nav-tab-wrapper">
 		<?php foreach ( $tabs as $tab_key => $tab_label ) : ?>
 			<a
@@ -60,16 +66,135 @@ $tabs = Landing_Bonus_Admin_Settings::get_tabs();
 						<td><?php esc_html_e( 'Prueba social', 'landing-bonus' ); ?></td>
 						<td><code>[landing_bonus_social_proof pack_label="pack de básicas" units="10"]</code></td>
 					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Pack builder (placeholder)', 'landing-bonus' ); ?></td>
-						<td><code>[landing_bonus_pack collection="slug" slots="4"]</code></td>
-					</tr>
+					<?php foreach ( Landing_Bonus_Pack_Manager::enabled() as $pack ) : ?>
+						<tr>
+							<td><?php echo esc_html( $pack['title'] ?? '' ); ?></td>
+							<td>
+								<code>[landing_bonus_pack id="<?php echo esc_attr( $pack['id'] ?? '' ); ?>"]</code>
+								<?php if ( ! empty( $pack['shortcode'] ) ) : ?>
+									<br><code>[<?php echo esc_html( $pack['shortcode'] ); ?>]</code>
+								<?php endif; ?>
+							</td>
+						</tr>
+					<?php endforeach; ?>
 				</tbody>
 			</table>
 			<p>
-				<?php esc_html_e( 'El botón comprar del pack usa la clase .landing-bonus-pack-buy. Al completar slots, llama LandingBonus.openCodModal(items).', 'landing-bonus' ); ?>
+				<?php esc_html_e( 'Al completar los slots y pulsar Comprar, se abre el modal COD (si checkout_mode = cod_modal). La barra de progreso se sincroniza vía LandingBonusCountdown.setSlotsFilled().', 'landing-bonus' ); ?>
 			</p>
 		</div>
+	<?php elseif ( 'packs' === $tab ) : ?>
+		<?php
+		$packs       = Landing_Bonus_Pack_Manager::all();
+		$edit_id     = isset( $_GET['pack_id'] ) ? sanitize_key( wp_unslash( $_GET['pack_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$editing     = $edit_id ? ( Landing_Bonus_Pack_Manager::get( $edit_id ) ?? array() ) : array();
+		$is_editing  = ! empty( $editing );
+		?>
+		<div class="landing-bonus-admin__panel">
+			<h2><?php esc_html_e( 'Packs configurados', 'landing-bonus' ); ?></h2>
+			<table class="widefat striped">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Título', 'landing-bonus' ); ?></th>
+						<th><?php esc_html_e( 'Shortcode', 'landing-bonus' ); ?></th>
+						<th><?php esc_html_e( 'Tipo', 'landing-bonus' ); ?></th>
+						<th><?php esc_html_e( 'Slots', 'landing-bonus' ); ?></th>
+						<th><?php esc_html_e( 'Checkout', 'landing-bonus' ); ?></th>
+						<th><?php esc_html_e( 'Acciones', 'landing-bonus' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $packs as $pack ) : ?>
+						<tr>
+							<td><?php echo esc_html( $pack['title'] ?? '' ); ?></td>
+							<td>
+								<code>[landing_bonus_pack id="<?php echo esc_attr( $pack['id'] ?? '' ); ?>"]</code>
+								<?php if ( ! empty( $pack['shortcode'] ) ) : ?>
+									<br><code>[<?php echo esc_html( $pack['shortcode'] ); ?>]</code>
+								<?php endif; ?>
+							</td>
+							<td><?php echo esc_html( $pack['type'] ?? '' ); ?></td>
+							<td><?php echo esc_html( (string) ( $pack['slots'] ?? '' ) ); ?></td>
+							<td><?php echo esc_html( $pack['checkout_mode'] ?? '' ); ?></td>
+							<td>
+								<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'landing-bonus', 'tab' => 'packs', 'pack_id' => $pack['id'] ?? '' ), admin_url( 'admin.php' ) ) ); ?>"><?php esc_html_e( 'Editar', 'landing-bonus' ); ?></a>
+								|
+								<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'landing_bonus_delete_pack', 'pack_id' => $pack['id'] ?? '' ), admin_url( 'admin-post.php' ) ), 'landing_bonus_delete_pack' ) ); ?>" onclick="return confirm('<?php esc_attr_e( '¿Eliminar este pack?', 'landing-bonus' ); ?>');"><?php esc_html_e( 'Eliminar', 'landing-bonus' ); ?></a>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		</div>
+
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="landing-bonus-admin__form">
+			<?php wp_nonce_field( 'landing_bonus_save_pack' ); ?>
+			<input type="hidden" name="action" value="landing_bonus_save_pack">
+			<div class="landing-bonus-admin__panel">
+				<h2><?php echo $is_editing ? esc_html__( 'Editar pack', 'landing-bonus' ) : esc_html__( 'Nuevo pack', 'landing-bonus' ); ?></h2>
+				<table class="form-table">
+					<tr>
+						<th><label for="pack_id"><?php esc_html_e( 'ID interno', 'landing-bonus' ); ?></label></th>
+						<td><input type="text" class="regular-text" id="pack_id" name="pack_id" value="<?php echo esc_attr( $editing['id'] ?? '' ); ?>" <?php echo $is_editing ? 'readonly' : ''; ?> placeholder="bodys4"></td>
+					</tr>
+					<tr>
+						<th><label for="pack_title"><?php esc_html_e( 'Título', 'landing-bonus' ); ?></label></th>
+						<td><input type="text" class="regular-text" id="pack_title" name="pack_title" value="<?php echo esc_attr( $editing['title'] ?? '' ); ?>"></td>
+					</tr>
+					<tr>
+						<th><label for="pack_shortcode"><?php esc_html_e( 'Shortcode legacy', 'landing-bonus' ); ?></label></th>
+						<td><input type="text" class="regular-text" id="pack_shortcode" name="pack_shortcode" value="<?php echo esc_attr( $editing['shortcode'] ?? '' ); ?>" placeholder="pack_bodys4"></td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Activo', 'landing-bonus' ); ?></th>
+						<td><label><input type="checkbox" name="pack_enabled" <?php checked( ! isset( $editing['enabled'] ) || ! empty( $editing['enabled'] ) ); ?>> <?php esc_html_e( 'Habilitado', 'landing-bonus' ); ?></label></td>
+					</tr>
+					<tr>
+						<th><label for="pack_type"><?php esc_html_e( 'Tipo', 'landing-bonus' ); ?></label></th>
+						<td>
+							<select id="pack_type" name="pack_type">
+								<option value="variable" <?php selected( $editing['type'] ?? '', 'variable' ); ?>><?php esc_html_e( 'Variable (bodys)', 'landing-bonus' ); ?></option>
+								<option value="simple" <?php selected( $editing['type'] ?? '', 'simple' ); ?>><?php esc_html_e( 'Simple (básicas)', 'landing-bonus' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="pack_cat_id"><?php esc_html_e( 'ID categoría WC', 'landing-bonus' ); ?></label></th>
+						<td><input type="number" id="pack_cat_id" name="pack_cat_id" value="<?php echo esc_attr( $editing['cat_id'] ?? 0 ); ?>" min="0"></td>
+					</tr>
+					<tr>
+						<th><label for="pack_slots"><?php esc_html_e( 'Slots', 'landing-bonus' ); ?></label></th>
+						<td><input type="number" id="pack_slots" name="pack_slots" value="<?php echo esc_attr( $editing['slots'] ?? 4 ); ?>" min="1"></td>
+					</tr>
+					<tr>
+						<th><label for="pack_slot_columns"><?php esc_html_e( 'Columnas grid', 'landing-bonus' ); ?></label></th>
+						<td><input type="number" id="pack_slot_columns" name="pack_slot_columns" value="<?php echo esc_attr( $editing['slot_columns'] ?? 4 ); ?>" min="1"></td>
+					</tr>
+					<tr>
+						<th><label for="pack_per_page"><?php esc_html_e( 'Productos por página', 'landing-bonus' ); ?></label></th>
+						<td><input type="number" id="pack_per_page" name="pack_per_page" value="<?php echo esc_attr( $editing['per_page'] ?? 20 ); ?>" min="1"></td>
+					</tr>
+					<tr>
+						<th><label for="pack_checkout_mode"><?php esc_html_e( 'Modo checkout', 'landing-bonus' ); ?></label></th>
+						<td>
+							<select id="pack_checkout_mode" name="pack_checkout_mode">
+								<option value="cod_modal" <?php selected( $editing['checkout_mode'] ?? '', 'cod_modal' ); ?>><?php esc_html_e( 'Modal COD express', 'landing-bonus' ); ?></option>
+								<option value="redirect" <?php selected( $editing['checkout_mode'] ?? '', 'redirect' ); ?>><?php esc_html_e( 'Redirigir a checkout WC', 'landing-bonus' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="pack_checkout_url"><?php esc_html_e( 'URL checkout (redirect)', 'landing-bonus' ); ?></label></th>
+						<td><input type="text" class="regular-text" id="pack_checkout_url" name="pack_checkout_url" value="<?php echo esc_attr( $editing['checkout_url'] ?? '/finaliza-compra/' ); ?>"></td>
+					</tr>
+					<tr>
+						<th><label for="pack_countdown_id"><?php esc_html_e( 'ID contador vinculado', 'landing-bonus' ); ?></label></th>
+						<td><input type="text" class="regular-text" id="pack_countdown_id" name="pack_countdown_id" value="<?php echo esc_attr( $editing['countdown_id'] ?? '' ); ?>" placeholder="promo1"></td>
+					</tr>
+				</table>
+				<?php submit_button( $is_editing ? __( 'Actualizar pack', 'landing-bonus' ) : __( 'Crear pack', 'landing-bonus' ) ); ?>
+			</div>
+		</form>
 	<?php else : ?>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="landing-bonus-admin__form">
 			<?php wp_nonce_field( 'landing_bonus_save_settings' ); ?>
@@ -83,6 +208,7 @@ $tabs = Landing_Bonus_Admin_Settings::get_tabs();
 					$modules = $settings['modules'] ?? array();
 					$labels  = array(
 						'cod_modal'       => __( 'Checkout COD Modal', 'landing-bonus' ),
+						'pack'            => __( 'Pack builder (bodys / básicas)', 'landing-bonus' ),
 						'countdown'       => __( 'Barra progreso + contador 24h', 'landing-bonus' ),
 						'google_badge'    => __( 'Recuadro estrellas Google', 'landing-bonus' ),
 						'floating_button' => __( 'Botón flotante estilo RSI', 'landing-bonus' ),
