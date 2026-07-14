@@ -130,18 +130,18 @@
       section.classList.toggle("promo-countdown--complete", isComplete);
       section.classList.toggle("promo-countdown--started", percent > 0);
 
-      if (barTrackNode) {
+      if (progressWrapNode) {
         if (isComplete) {
-          barTrackNode.setAttribute("role", "button");
-          barTrackNode.setAttribute("tabindex", "0");
-          barTrackNode.setAttribute(
+          progressWrapNode.setAttribute("role", "button");
+          progressWrapNode.setAttribute("tabindex", "0");
+          progressWrapNode.setAttribute(
             "aria-label",
             settings.completionMessage || "Pack completo. Comprar ahora."
           );
         } else {
-          barTrackNode.removeAttribute("role");
-          barTrackNode.setAttribute("tabindex", "-1");
-          barTrackNode.removeAttribute("aria-label");
+          progressWrapNode.removeAttribute("role");
+          progressWrapNode.setAttribute("tabindex", "-1");
+          progressWrapNode.removeAttribute("aria-label");
         }
       }
 
@@ -197,8 +197,8 @@
     renderTime();
     timerId = setInterval(renderTime, 1000);
 
-    if (barTrackNode) {
-      barTrackNode.addEventListener("click", function () {
+    if (progressWrapNode) {
+      progressWrapNode.addEventListener("click", function () {
         if (!section.classList.contains("promo-countdown--complete")) {
           return;
         }
@@ -206,7 +206,7 @@
         triggerPackBuy();
       });
 
-      barTrackNode.addEventListener("keydown", function (event) {
+      progressWrapNode.addEventListener("keydown", function (event) {
         if (!section.classList.contains("promo-countdown--complete")) {
           return;
         }

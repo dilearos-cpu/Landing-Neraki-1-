@@ -44,17 +44,19 @@
 
 .google-rating-badge__card {
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 10px;
   width: 100%;
-  padding: 14px 20px;
+  padding: 12px 18px;
   background: var(--grb-card-bg, #fff);
   color: var(--grb-text-color, #202124);
   border: 1px solid var(--grb-border-color, #dadce0);
   border-radius: var(--grb-radius, 12px);
   box-shadow: 0 var(--grb-shadow-y, 1px) var(--grb-shadow-blur, 6px) rgba(32, 33, 36, 0.12);
-  text-align: center;
+  text-align: left;
 }
 
 .google-rating-badge--animate .google-rating-badge__card {
@@ -67,6 +69,7 @@
   justify-content: center;
   gap: 2px;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .google-rating-badge__star {
@@ -85,7 +88,7 @@
   margin: 0;
   font-size: clamp(0.95rem, 2.6vw, 1.1rem);
   font-weight: 500;
-  line-height: 1.35;
+  line-height: 1.2;
   color: var(--grb-text-color, #202124);
 }
 
@@ -122,6 +125,11 @@
 
 @media (max-width: 480px) {
   .google-rating-badge__card {
-    padding: 12px 16px;
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .google-rating-badge__text {
+    font-size: 0.9rem;
   }
 }
