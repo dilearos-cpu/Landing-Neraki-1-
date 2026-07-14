@@ -35,7 +35,15 @@
       </div>
     </div>
 
+    <p class="promo-countdown__instruction">
+      <strong>{{ section.settings.instruction_bold }}</strong>
+      {{ section.settings.instruction_regular }}
+    </p>
+
     <div class="promo-countdown__progress-wrap" data-progress-wrap aria-live="polite">
+      <div class="promo-countdown__bar-track" data-bar-track>
+        <div class="promo-countdown__bar-fill" data-bar-fill aria-hidden="true"></div>
+      </div>
       <div class="promo-countdown__bar-text" data-bar-label>
         <span class="promo-countdown__progress-copy" data-progress-copy>
           <span data-progress-prefix>{{ section.settings.progress_prefix }}</span>
@@ -46,15 +54,7 @@
           {{ section.settings.completion_message }}
         </span>
       </div>
-      <div class="promo-countdown__bar-track" data-bar-track>
-        <div class="promo-countdown__bar-fill" data-bar-fill aria-hidden="true"></div>
-      </div>
     </div>
-
-    <p class="promo-countdown__instruction">
-      <strong>{{ section.settings.instruction_bold }}</strong>
-      {{ section.settings.instruction_regular }}
-    </p>
   </div>
 
   <script type="application/json" data-promo-settings>
