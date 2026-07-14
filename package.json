@@ -1,7 +1,7 @@
 {
   "name": "caletzza-theme",
   "version": "1.0.0",
-  "description": "Caletzza Theme — Shopify theme con pack builder, COD UI, prueba social y diseño tienda lencería",
+  "description": "Caletzza Theme — Shopify theme + COD express app (Render) + pack builder",
   "private": true,
   "scripts": {
     "shopify": "shopify",
@@ -10,9 +10,11 @@
     "theme:dev": "shopify theme dev -e default",
     "theme:push": "shopify theme push -e default --unpublished --json",
     "theme:push:draft": "shopify theme push -e default --unpublished --json",
-    "theme:check": "shopify theme check"
+    "theme:check": "shopify theme check",
+    "cod:dev": "npm --prefix cod-express-app run dev",
+    "cod:start": "npm --prefix cod-express-app start"
   },
-  "keywords": ["shopify", "theme", "caletzza", "lingerie"],
+  "keywords": ["shopify", "theme", "caletzza", "cod", "pack"],
   "author": "Caletzza",
   "license": "UNLICENSED",
   "engines": {
