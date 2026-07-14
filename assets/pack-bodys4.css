@@ -85,7 +85,8 @@
   cursor: wait;
 }
 
-.pack-button--buy {
+.pack-button--buy,
+.pack-button--select-variant {
   color: #fff;
   background: #5fae5f;
 }

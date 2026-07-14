@@ -97,6 +97,7 @@
   {% endif %}
 </section>
 
+<script src="{{ 'pack-page-utils.js' | asset_url }}" defer></script>
 <script src="{{ 'pack-cta-button.js' | asset_url }}" defer></script>
 
 {% schema %}
@@ -294,6 +295,10 @@
         {
           "value": "pack_buy",
           "label": "Al pasar el boton Comprar ahora del pack"
+        },
+        {
+          "value": "pack_slots",
+          "label": "Al pasar los recuadros del pack"
         },
         {
           "value": "cta_section",

@@ -259,8 +259,8 @@
       "name": "Boton compra flotante",
       "settings": {
         "button_label": "Compra aqui | Paga en casa",
-        "button_action": "link",
-        "button_link_url": "/",
+        "button_action": "scroll_pack",
+        "button_link_url": "#pack-bodys",
         "section_background_transparent": false,
         "section_background_color": "#d2b49b",
         "floating_background_transparent": true,

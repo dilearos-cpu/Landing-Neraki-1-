@@ -61,12 +61,19 @@
   }
 
   function triggerPackBuy() {
+    if (global.PackPage && typeof global.PackPage.triggerPackBuy === "function" && global.PackPage.triggerPackBuy()) {
+      return;
+    }
+
     if (global.PackCheckout && typeof global.PackCheckout.triggerBuy === "function") {
       global.PackCheckout.triggerBuy();
       return;
     }
 
-    var buyButton = document.querySelector(".pack-button--buy");
+    var buyButton = document.querySelector(".pack-actions .pack-button--buy");
+    if (!buyButton) {
+      buyButton = document.querySelector('.pack-button--buy:not([data-select-variant])');
+    }
     if (buyButton) {
       buyButton.click();
     }

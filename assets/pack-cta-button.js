@@ -19,12 +19,22 @@
       event.preventDefault();
 
       if (action === "trigger_buy") {
+        if (window.PackPage && window.PackPage.triggerPackBuy()) {
+          return;
+        }
+
         if (window.PackCheckout && typeof window.PackCheckout.triggerBuy === "function") {
           window.PackCheckout.triggerBuy();
           return;
         }
 
-        var buyButton = document.querySelector(".pack-button--buy");
+        var buyButton = window.PackPage ? window.PackPage.getPackBuyButton() : null;
+        if (!buyButton) {
+          buyButton = document.querySelector(".pack-actions .pack-button--buy");
+        }
+        if (!buyButton) {
+          buyButton = document.querySelector('.pack-button--buy:not([data-select-variant])');
+        }
         if (buyButton) {
           buyButton.click();
         }
@@ -32,6 +42,10 @@
       }
 
       if (action === "scroll_pack") {
+        if (window.PackPage && window.PackPage.scrollToPack()) {
+          return;
+        }
+
         var packSection = document.querySelector(".pack-ui");
         if (packSection) {
           packSection.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -62,8 +76,27 @@
     bindButtonAction(floatingButton);
 
     function getTriggerNode() {
-      if (triggerMode === "pack_buy") {
-        return document.querySelector(".pack-button--buy");
+      if (triggerMode === "pack_buy" || triggerMode === "pack_slots") {
+        if (window.PackPage && typeof window.PackPage.getPackTriggerNode === "function") {
+          var packTrigger = window.PackPage.getPackTriggerNode(triggerMode);
+          if (packTrigger) {
+            return packTrigger;
+          }
+        }
+
+        if (triggerMode === "pack_slots") {
+          var slotsNode = document.querySelector(".pack-ui .pack-slots");
+          if (slotsNode) {
+            return slotsNode;
+          }
+        }
+
+        var scopedBuy = document.querySelector(".pack-actions .pack-button--buy");
+        if (scopedBuy) {
+          return scopedBuy;
+        }
+
+        return document.querySelector('.pack-button--buy:not([data-select-variant])');
       }
 
       return anchorNode;

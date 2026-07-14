@@ -554,7 +554,7 @@
           readyProduct.name +
           "</h3>" +
           optionMarkup +
-          '<button type="button" class="pack-button pack-button--buy" data-select-variant>Seleccionar</button>' +
+          '<button type="button" class="pack-button pack-button--select-variant" data-select-variant>Seleccionar</button>' +
           "</div>";
 
         updateVariantPreview();
