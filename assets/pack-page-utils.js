@@ -48,7 +48,7 @@
 
     if (preferredMode === "simple") {
       var basicasPack = packs.find(function (pack) {
-        return pack.dataset.packMode === "simple";
+        return pack.dataset.packMode === "simple" || pack.dataset.packKind === "basicas";
       });
       if (basicasPack) {
         return basicasPack;
@@ -57,7 +57,7 @@
 
     if (preferredMode === "variable") {
       var bodysPack = packs.find(function (pack) {
-        return pack.dataset.packMode === "variable";
+        return pack.dataset.packMode === "variable" || pack.dataset.packKind === "bodys";
       });
       if (bodysPack) {
         return bodysPack;
@@ -89,7 +89,7 @@
     if (preferredMode === "simple") {
       return (
         packs.find(function (pack) {
-          return pack.dataset.packMode === "simple";
+          return pack.dataset.packMode === "simple" || pack.dataset.packKind === "basicas";
         }) || null
       );
     }
@@ -97,7 +97,7 @@
     if (preferredMode === "variable") {
       return (
         packs.find(function (pack) {
-          return pack.dataset.packMode === "variable";
+          return pack.dataset.packMode === "variable" || pack.dataset.packKind === "bodys";
         }) || null
       );
     }
@@ -193,6 +193,43 @@
     return true;
   }
 
+  var packBuilderInstances = {};
+
+  function registerPackBuilder(sectionId, api) {
+    if (!sectionId || !api) {
+      return;
+    }
+
+    packBuilderInstances[String(sectionId)] = api;
+  }
+
+  function unregisterPackBuilder(sectionId) {
+    if (!sectionId) {
+      return;
+    }
+
+    delete packBuilderInstances[String(sectionId)];
+  }
+
+  function getPackBuilder(packSection) {
+    if (!packSection || !packSection.dataset.sectionId) {
+      return null;
+    }
+
+    return packBuilderInstances[packSection.dataset.sectionId] || null;
+  }
+
+  function getPackBuilderForNode(node, preferredMode) {
+    var pack = getPackSectionForNode(node, preferredMode);
+    if (!pack && preferredMode === "variable") {
+      pack = document.querySelector('.pack-ui[data-pack-kind="bodys"]:not([data-empty="true"])');
+    }
+    if (!pack && preferredMode === "simple") {
+      pack = document.querySelector('.pack-ui[data-pack-kind="basicas"]:not([data-empty="true"])');
+    }
+    return getPackBuilder(pack);
+  }
+
   global.PackPage = {
     getAllPackSections: getAllPackSections,
     getPackSection: getPackSection,
@@ -203,6 +240,10 @@
     resolveFloatTriggerMode: resolveFloatTriggerMode,
     getPackTriggerNode: getPackTriggerNode,
     triggerPackBuy: triggerPackBuy,
-    scrollToPack: scrollToPack
+    scrollToPack: scrollToPack,
+    registerPackBuilder: registerPackBuilder,
+    unregisterPackBuilder: unregisterPackBuilder,
+    getPackBuilder: getPackBuilder,
+    getPackBuilderForNode: getPackBuilderForNode
   };
 })(window);

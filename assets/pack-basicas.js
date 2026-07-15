@@ -381,6 +381,37 @@
       window.PackCheckout.triggerBuy = function () {
         buyButton.click();
       };
+
+      if (window.PackPage && typeof window.PackPage.registerPackBuilder === "function") {
+        window.PackPage.registerPackBuilder(section.dataset.sectionId, {
+          packMode: "simple",
+          packSection: section,
+          getProducts: function () {
+            return products.slice();
+          },
+          getSlotCount: function () {
+            return slotCount;
+          },
+          getAvailableSizes: function () {
+            return [];
+          },
+          fillSelections: function (selections) {
+            resetSelections();
+            selections.forEach(function (selection) {
+              var slotNode = slots[selection.slotIndex];
+              if (!slotNode) {
+                return;
+              }
+
+              fillSlot(slotNode, selection.image, selection.name);
+              currentState.selected[slotNode.dataset.slot] = selection.variantId;
+            });
+            syncPromoSlots();
+            showMessage("", false);
+          },
+          reset: resetSelections
+        });
+      }
     }
 
     bootstrapPackUI();

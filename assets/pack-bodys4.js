@@ -285,6 +285,7 @@
     var products = [];
     var productsLimit = Number(section.dataset.productsLimit || 50);
     var collectionHandle = section.dataset.collectionHandle || "";
+    var hasBootstrapped = false;
 
     try {
       products = JSON.parse(productsNode.textContent).filter(function (product) {
@@ -304,6 +305,13 @@
       if (!products.length && productsLimit > 0) {
         showInitMessage("No hay productos disponibles en esta coleccion.");
       }
+
+      if (hasBootstrapped) {
+        renderProducts();
+        return;
+      }
+
+      hasBootstrapped = true;
     var slotCount = Number(section.dataset.slotCount || 4);
     var cartUrl = section.dataset.cartUrl || "/cart/add.js";
     var checkoutUrl = section.dataset.checkoutUrl || "/checkout";
@@ -762,7 +770,89 @@
     window.PackCheckout.triggerBuy = function () {
       buyButton.click();
     };
+
+    function detectSizeOptionIndexFromProduct(product) {
+      if (!product || !product.options || !product.options.length) {
+        return -1;
+      }
+
+      for (var index = 0; index < product.options.length; index += 1) {
+        var name = String(product.options[index].name || "").toLowerCase();
+        if (name.indexOf("talla") !== -1 || name.indexOf("size") !== -1) {
+          return index;
+        }
+      }
+
+      return -1;
     }
+
+    function getAvailableSizes() {
+      var seen = {};
+      var sizes = [];
+
+      products.forEach(function (product) {
+        var sizeIndex = detectSizeOptionIndexFromProduct(product);
+        if (sizeIndex === -1) {
+          return;
+        }
+
+        (product.variants || []).forEach(function (variant) {
+          if (!variant.available) {
+            return;
+          }
+
+          var sizeValue = variant.options && variant.options[sizeIndex];
+          if (!sizeValue || seen[sizeValue]) {
+            return;
+          }
+
+          seen[sizeValue] = true;
+          sizes.push(sizeValue);
+        });
+      });
+
+      return sizes;
+    }
+
+    if (window.PackPage && typeof window.PackPage.registerPackBuilder === "function") {
+      window.PackPage.registerPackBuilder(section.dataset.sectionId, {
+        packMode: "variable",
+        packSection: section,
+        getProducts: function () {
+          return products.slice();
+        },
+        getSlotCount: function () {
+          return slotCount;
+        },
+        getAvailableSizes: getAvailableSizes,
+        fillSelections: function (selections) {
+          resetSelections();
+          selections.forEach(function (selection) {
+            var slotNode = slots[selection.slotIndex];
+            if (!slotNode) {
+              return;
+            }
+
+            if (selection.productId) {
+              currentState.selected[slotNode.dataset.slot] = {
+                product_id: selection.productId,
+                variant_id: selection.variantId
+              };
+            } else {
+              currentState.selected[slotNode.dataset.slot] = selection.variantId;
+            }
+
+            fillSlot(slotNode, selection.image, selection.name);
+          });
+          syncPromoSlots();
+          showMessage("", false);
+        },
+        reset: resetSelections
+      });
+    }
+    }
+
+    bootstrapPackUI();
 
     if (collectionHandle && productsLimit > products.length) {
       fetchCollectionProducts(collectionHandle, productsLimit)
@@ -776,12 +866,8 @@
         })
         .catch(function (error) {
           console.error("Pack Bodys 4: error cargando productos extra.", error);
-          bootstrapPackUI();
         });
-      return;
     }
-
-    bootstrapPackUI();
   }
 
   function initAllPackSections() {
