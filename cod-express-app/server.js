@@ -174,6 +174,15 @@ async function createCodOrder(body) {
     }
   };
 
+  const discountAmount = Number(body.discountAmount || 0);
+  if (discountAmount > 0) {
+    draftInput.appliedDiscount = {
+      description: "Descuento pack por cantidad",
+      value: moneyFromCents(discountAmount),
+      valueType: "FIXED_AMOUNT"
+    };
+  }
+
   const createMutation = `
     mutation draftOrderCreate($input: DraftOrderInput!) {
       draftOrderCreate(input: $input) {

@@ -37,6 +37,7 @@
 %}
 {{ 'pack-bodys4.css' | asset_url | stylesheet_tag }}
 {{ 'pack-cod-checkout.css' | asset_url | stylesheet_tag }}
+{{ 'pack-discount-rules.css' | asset_url | stylesheet_tag }}
 <section
   class="pack-ui"
   id="{{ pack_anchor_id }}"
@@ -216,6 +217,7 @@
     </script>
   {% endif %}
 </section>
+<script src="{{ 'pack-discount-rules.js' | asset_url }}" defer></script>
 <script src="{{ 'pack-cod-checkout.js' | asset_url }}" defer></script>
 <script src="{{ 'pack-page-utils.js' | asset_url }}" defer></script>
 <script src="{{ 'pack-bodys4.js' | asset_url }}" defer></script>

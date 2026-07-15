@@ -194,6 +194,10 @@
     this.taxRow = section.querySelector("[data-cod-tax-row]");
     this.shippingNode = section.querySelector("[data-cod-shipping]");
     this.totalNode = section.querySelector("[data-cod-total]");
+    this.discountRow = section.querySelector("[data-cod-discount-row]");
+    this.discountNode = section.querySelector("[data-cod-discount]");
+    this.savedRow = section.querySelector("[data-cod-saved-row]");
+    this.savedNode = section.querySelector("[data-cod-saved]");
     this.submitButton = section.querySelector("[data-cod-submit]");
     this.fallbackButton = section.querySelector("[data-cod-fallback]");
     this.orderNameNode = section.querySelector("[data-cod-order-name]");
@@ -201,6 +205,7 @@
     this.paymentsFieldset = section.querySelector("[data-cod-payments]");
     this.grid = section.querySelector(".pack-cod__grid");
     this.pendingItems = [];
+    this.pendingLineItems = [];
     this.pendingSummary = null;
     this.onComplete = null;
     this.isLoading = false;
@@ -229,6 +234,7 @@
       this.form.addEventListener("change", function (event) {
         if (event.target && event.target.name === "payment_method") {
           self.updatePaymentUI();
+          self.refreshSummary();
         }
       });
     }
@@ -328,18 +334,80 @@
     }
   };
 
-  PackCodCheckout.prototype.renderSummary = function (lineItems) {
+  PackCodCheckout.prototype.applyPricingRules = function (lineItems) {
+    if (!global.PackDiscountRules || typeof global.PackDiscountRules.applyRules !== "function") {
+      var fallbackSubtotal = lineItems.reduce(function (sum, item) {
+        return sum + Number(item.price || 0);
+      }, 0);
+
+      return {
+        lineItems: lineItems,
+        originalSubtotal: fallbackSubtotal,
+        subtotal: fallbackSubtotal,
+        discountTotal: 0,
+        appliedRule: null,
+        appliedTier: null
+      };
+    }
+
+    return global.PackDiscountRules.applyRules(lineItems, {
+      collectionHandle: this.config.collectionHandle || "",
+      paymentMethod: this.getPaymentMethod()
+    });
+  };
+
+  PackCodCheckout.prototype.refreshSummary = function () {
+    if (!this.pendingLineItems.length) {
+      return;
+    }
+
+    var baseItems = this.pendingLineItems.map(function (item) {
+      return {
+        variantId: item.variantId,
+        quantity: item.quantity,
+        title: item.title,
+        variantTitle: item.variantTitle,
+        image: item.image,
+        unitPrice: item.originalUnitPrice || item.unitPrice,
+        price: (item.originalUnitPrice || item.unitPrice) * item.quantity
+      };
+    });
+    var priced = this.applyPricingRules(baseItems);
+    this.renderSummary(priced.lineItems, priced);
+  };
+
+  PackCodCheckout.prototype.renderSummary = function (lineItems, pricing) {
     var self = this;
-    var subtotal = 0;
+    var subtotal = pricing && typeof pricing.subtotal === "number" ? pricing.subtotal : 0;
+    var discountTotal = pricing && typeof pricing.discountTotal === "number" ? pricing.discountTotal : 0;
+    var originalSubtotal =
+      pricing && typeof pricing.originalSubtotal === "number" ? pricing.originalSubtotal : subtotal;
     var shipping = Number(this.config.shippingFlat || 0);
     var taxRate = this.getTaxRate();
 
+    if (!pricing) {
+      subtotal = 0;
+      lineItems.forEach(function (item) {
+        subtotal += Number(item.price || 0);
+      });
+      originalSubtotal = subtotal;
+    }
+
     this.itemsNode.innerHTML = lineItems
       .map(function (item) {
-        subtotal += Number(item.price || 0);
         var image = item.image
           ? '<img src="' + item.image + '" alt="">'
           : '<div class="pack-cod__item-placeholder"></div>';
+        var compareAt = Number(item.compareAtUnitPrice || 0);
+        var showCompare = compareAt > Number(item.unitPrice || 0);
+        var priceMarkup = showCompare
+          ? '<span class="pack-cod__item-price--compare">' +
+            formatMoney(compareAt * item.quantity, self.config.currency) +
+            '</span><span class="pack-cod__item-price--final">' +
+            formatMoney(item.price, self.config.currency) +
+            "</span>"
+          : formatMoney(item.price, self.config.currency);
+
         return (
           '<li class="pack-cod__item">' +
           image +
@@ -347,15 +415,16 @@
           item.title +
           '</p><p class="pack-cod__item-variant">' +
           (item.variantTitle || "") +
+          (item.tierLabel ? " · " + item.tierLabel : "") +
           "</p></div>" +
           '<span class="pack-cod__item-price">' +
-          formatMoney(item.price, self.config.currency) +
+          priceMarkup +
           "</span></li>"
         );
       })
       .join("");
 
-    if (this.config.freeShippingThreshold && subtotal >= Number(this.config.freeShippingThreshold)) {
+    if (subtotal >= Number(this.config.freeShippingThreshold || 0) && this.config.freeShippingThreshold) {
       shipping = 0;
     }
 
@@ -364,13 +433,25 @@
 
     this.pendingSummary = {
       subtotal: subtotal,
+      originalSubtotal: originalSubtotal,
+      discountTotal: discountTotal,
       taxAmount: taxAmount,
       taxRate: taxRate,
       shipping: shipping,
-      total: displayTotal
+      total: displayTotal,
+      appliedRule: pricing ? pricing.appliedRule : null,
+      appliedTier: pricing ? pricing.appliedTier : null
     };
 
     this.subtotalNode.textContent = formatMoney(subtotal, this.config.currency);
+    if (this.discountRow && this.discountNode) {
+      this.discountRow.hidden = discountTotal <= 0;
+      this.discountNode.textContent = "-" + formatMoney(discountTotal, this.config.currency);
+    }
+    if (this.savedRow && this.savedNode) {
+      this.savedRow.hidden = discountTotal <= 0;
+      this.savedNode.textContent = formatMoney(discountTotal, this.config.currency);
+    }
     if (this.taxNode) {
       this.taxNode.textContent = formatMoney(taxAmount, this.config.currency);
     }
@@ -402,6 +483,8 @@
           title: details.product.name,
           variantTitle: details.variant.title,
           image: details.variant.image || details.product.img || "",
+          unitPrice: Number(details.variant.price || 0),
+          originalUnitPrice: Number(details.variant.price || 0),
           price: Number(details.variant.price || 0) * (item.quantity || 1)
         };
       })
@@ -421,7 +504,11 @@
       return;
     }
 
-    this.renderSummary(lineItems);
+    this.pendingLineItems = lineItems.map(function (item) {
+      return Object.assign({}, item);
+    });
+    var priced = this.applyPricingRules(this.pendingLineItems);
+    this.renderSummary(priced.lineItems, priced);
     this.form.hidden = false;
     this.form.reset();
     this.grid.hidden = false;
@@ -792,6 +879,7 @@
       }),
       note: customer.note,
       shippingPrice: this.pendingSummary ? this.pendingSummary.shipping : 0,
+      discountAmount: this.pendingSummary ? this.pendingSummary.discountTotal : 0,
       packLabel: this.config.packLabel || "Pack Bodys"
     };
 

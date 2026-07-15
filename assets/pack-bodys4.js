@@ -453,7 +453,8 @@
           storefrontApiUrl:
             "/api/" + (section.dataset.codStorefrontApi || "2025-01") + "/graphql.json",
           cartUrl: cartUrl,
-          checkoutUrl: checkoutUrl
+          checkoutUrl: checkoutUrl,
+          collectionHandle: section.dataset.collectionHandle || ""
         });
       } catch (error) {
         console.error("Pack Bodys 4: no se pudo iniciar checkout COD.", error);
