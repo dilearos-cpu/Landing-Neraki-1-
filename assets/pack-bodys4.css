@@ -80,6 +80,10 @@
   flex: 1 1 0;
   min-width: 0;
   text-align: center;
+  font-size: 0.88rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  padding: 12px 10px;
 }
 
 .pack-button {
