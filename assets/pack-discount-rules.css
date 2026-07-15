@@ -1,0 +1,26 @@
+.section-pack-discount-rules {
+  display: none;
+}
+
+.pack-cod__total-row--discount {
+  color: #067647;
+  font-weight: 700;
+}
+
+.pack-cod__total-row--saved {
+  color: #6b7280;
+  font-size: 0.95em;
+}
+
+.pack-cod__item-price--compare {
+  display: block;
+  font-size: 0.85em;
+  color: #9ca3af;
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.pack-cod__item-price--final {
+  display: block;
+  font-weight: 700;
+}
