@@ -186,6 +186,9 @@
     this.successPanel = section.querySelector("[data-cod-success]");
     this.errorNode = section.querySelector("[data-cod-error]");
     this.itemsNode = section.querySelector("[data-cod-items]");
+    this.itemsWrap = section.querySelector("[data-cod-items-wrap]");
+    this.itemsFade = section.querySelector("[data-cod-items-fade]");
+    this.itemsHint = section.querySelector("[data-cod-items-hint]");
     this.subtotalNode = section.querySelector("[data-cod-subtotal]");
     this.taxNode = section.querySelector("[data-cod-tax]");
     this.taxRow = section.querySelector("[data-cod-tax-row]");
@@ -257,6 +260,29 @@
       this.fallbackButton.addEventListener("click", function () {
         self.fallbackToCheckout();
       });
+    }
+
+    if (this.itemsNode) {
+      this.itemsNode.addEventListener("scroll", function () {
+        self.updateItemsScrollState();
+      });
+    }
+  };
+
+  PackCodCheckout.prototype.updateItemsScrollState = function () {
+    if (!this.itemsNode || !this.itemsWrap) {
+      return;
+    }
+
+    var list = this.itemsNode;
+    var canScroll = list.scrollHeight > list.clientHeight + 2;
+    var atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 2;
+
+    this.itemsWrap.classList.toggle("pack-cod__items-wrap--scrollable", canScroll);
+    this.itemsWrap.classList.toggle("pack-cod__items-wrap--at-bottom", !canScroll || atBottom);
+
+    if (this.itemsHint) {
+      this.itemsHint.hidden = !canScroll || atBottom;
     }
   };
 
@@ -359,6 +385,7 @@
       this.shippingNode.classList.toggle("pack-cod__shipping-gift", isFreeShipping);
     }
     this.totalNode.textContent = formatMoney(displayTotal, this.config.currency);
+    this.updateItemsScrollState();
   };
 
   PackCodCheckout.prototype.buildLineItems = function (cartItems, products) {
@@ -426,6 +453,11 @@
     }
     this.root.hidden = false;
     document.body.classList.add("pack-modal-open");
+
+    var self = this;
+    window.requestAnimationFrame(function () {
+      self.updateItemsScrollState();
+    });
   };
 
   PackCodCheckout.prototype.close = function () {

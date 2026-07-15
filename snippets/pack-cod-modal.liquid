@@ -1,6 +1,12 @@
 {% comment %}
   Modal checkout express estilo EasySell COD Form.
 {% endcomment %}
+{% liquid
+  assign online_payment_title = section.settings.cod_payment_online_title
+  if online_payment_title == 'Mercado Pago'
+    assign online_payment_title = 'Paga con PSE, Tarjeta crédito o débito'
+  endif
+%}
 <div
   class="pack-cod"
   data-pack-cod
@@ -24,7 +30,11 @@
       <div class="pack-cod__grid">
         <div class="pack-cod__summary">
           <p class="pack-cod__summary-label">Tu pedido</p>
-          <ul class="pack-cod__items" data-cod-items></ul>
+          <div class="pack-cod__items-wrap" data-cod-items-wrap>
+            <ul class="pack-cod__items" data-cod-items></ul>
+            <div class="pack-cod__items-fade" data-cod-items-fade aria-hidden="true"></div>
+          </div>
+          <p class="pack-cod__items-hint" data-cod-items-hint hidden>Desliza para ver mas productos</p>
           <dl class="pack-cod__totals">
             <div class="pack-cod__total-row">
               <dt>Subtotal</dt>
@@ -69,7 +79,7 @@
                       <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg>
                     </span>
                     <span class="pack-cod__pay-text">
-                      <strong>{{ section.settings.cod_payment_online_title }}</strong>
+                      <strong>{{ online_payment_title }}</strong>
                       <small>{{ section.settings.cod_payment_online_hint }}</small>
                     </span>
                   </span>
