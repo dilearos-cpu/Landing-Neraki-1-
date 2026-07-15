@@ -83,7 +83,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: 1.15rem;
+  font-size: calc(1.15rem + 4px);
   font-weight: 700;
   line-height: 1.25;
   white-space: normal;
@@ -300,7 +300,7 @@
   }
 
   .pack-actions .pack-button {
-    font-size: 1.05rem;
+    font-size: calc(1.05rem + 4px);
     min-height: 54px;
     padding: 14px 10px;
   }
