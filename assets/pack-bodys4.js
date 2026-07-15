@@ -762,6 +762,86 @@
     window.PackCheckout.triggerBuy = function () {
       buyButton.click();
     };
+
+    function detectSizeOptionIndexFromProduct(product) {
+      if (!product || !product.options || !product.options.length) {
+        return -1;
+      }
+
+      for (var index = 0; index < product.options.length; index += 1) {
+        var name = String(product.options[index].name || "").toLowerCase();
+        if (name.indexOf("talla") !== -1 || name.indexOf("size") !== -1) {
+          return index;
+        }
+      }
+
+      return -1;
+    }
+
+    function getAvailableSizes() {
+      var seen = {};
+      var sizes = [];
+
+      products.forEach(function (product) {
+        var sizeIndex = detectSizeOptionIndexFromProduct(product);
+        if (sizeIndex === -1) {
+          return;
+        }
+
+        (product.variants || []).forEach(function (variant) {
+          if (!variant.available) {
+            return;
+          }
+
+          var sizeValue = variant.options && variant.options[sizeIndex];
+          if (!sizeValue || seen[sizeValue]) {
+            return;
+          }
+
+          seen[sizeValue] = true;
+          sizes.push(sizeValue);
+        });
+      });
+
+      return sizes;
+    }
+
+    if (window.PackPage && typeof window.PackPage.registerPackBuilder === "function") {
+      window.PackPage.registerPackBuilder(section.dataset.sectionId, {
+        packMode: "variable",
+        packSection: section,
+        getProducts: function () {
+          return products.slice();
+        },
+        getSlotCount: function () {
+          return slotCount;
+        },
+        getAvailableSizes: getAvailableSizes,
+        fillSelections: function (selections) {
+          resetSelections();
+          selections.forEach(function (selection) {
+            var slotNode = slots[selection.slotIndex];
+            if (!slotNode) {
+              return;
+            }
+
+            if (selection.productId) {
+              currentState.selected[slotNode.dataset.slot] = {
+                product_id: selection.productId,
+                variant_id: selection.variantId
+              };
+            } else {
+              currentState.selected[slotNode.dataset.slot] = selection.variantId;
+            }
+
+            fillSlot(slotNode, selection.image, selection.name);
+          });
+          syncPromoSlots();
+          showMessage("", false);
+        },
+        reset: resetSelections
+      });
+    }
     }
 
     if (collectionHandle && productsLimit > products.length) {

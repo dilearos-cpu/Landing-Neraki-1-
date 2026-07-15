@@ -193,6 +193,37 @@
     return true;
   }
 
+  var packBuilderInstances = {};
+
+  function registerPackBuilder(sectionId, api) {
+    if (!sectionId || !api) {
+      return;
+    }
+
+    packBuilderInstances[String(sectionId)] = api;
+  }
+
+  function unregisterPackBuilder(sectionId) {
+    if (!sectionId) {
+      return;
+    }
+
+    delete packBuilderInstances[String(sectionId)];
+  }
+
+  function getPackBuilder(packSection) {
+    if (!packSection || !packSection.dataset.sectionId) {
+      return null;
+    }
+
+    return packBuilderInstances[packSection.dataset.sectionId] || null;
+  }
+
+  function getPackBuilderForNode(node, preferredMode) {
+    var pack = getPackSectionForNode(node, preferredMode);
+    return getPackBuilder(pack);
+  }
+
   global.PackPage = {
     getAllPackSections: getAllPackSections,
     getPackSection: getPackSection,
@@ -203,6 +234,10 @@
     resolveFloatTriggerMode: resolveFloatTriggerMode,
     getPackTriggerNode: getPackTriggerNode,
     triggerPackBuy: triggerPackBuy,
-    scrollToPack: scrollToPack
+    scrollToPack: scrollToPack,
+    registerPackBuilder: registerPackBuilder,
+    unregisterPackBuilder: unregisterPackBuilder,
+    getPackBuilder: getPackBuilder,
+    getPackBuilderForNode: getPackBuilderForNode
   };
 })(window);
