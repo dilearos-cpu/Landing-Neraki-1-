@@ -58,39 +58,44 @@
   cursor: wait;
 }
 
+.pack-auto-pick__modal .modal-content {
+  font-size: 1.25rem;
+  padding: 28px 22px;
+}
+
 .pack-auto-pick__modal-title {
-  margin: 0 0 10px;
-  font-size: 1.75rem;
+  margin: 0 0 12px;
+  font-size: 2rem;
   font-weight: 800;
   line-height: 1.2;
   text-align: center;
 }
 
 .pack-auto-pick__modal-subtitle {
-  margin: 0 0 20px;
+  margin: 0 0 22px;
   text-align: center;
-  color: #444;
-  font-size: 1.15rem;
+  color: #333;
+  font-size: 1.35rem;
   line-height: 1.45;
 }
 
 .pack-auto-pick__sizes {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .pack-auto-pick__size {
-  min-width: 64px;
-  min-height: 52px;
-  padding: 10px 18px;
+  min-width: 76px;
+  min-height: 58px;
+  padding: 12px 22px;
   border: 2px solid #ddd;
   border-radius: 12px;
   background: #fff;
   color: #111;
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   font-weight: 700;
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
@@ -110,10 +115,10 @@
 
 .pack-auto-pick__message,
 .pack-auto-pick__message--info[data-auto-pick-no-sizes] {
-  margin: 0 0 16px;
+  margin: 0 0 18px;
   text-align: center;
-  font-size: 1.08rem;
-  line-height: 1.45;
+  font-size: 1.28rem;
+  line-height: 1.5;
 }
 
 .pack-auto-pick__message--error {
@@ -129,17 +134,17 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 58px;
+  min-height: 64px;
   border: none;
   border-radius: 14px;
   background: var(--pack-auto-pick-accent, #5fae5f);
   color: #fff;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 700;
   line-height: 1.25;
   text-transform: uppercase;
   cursor: pointer;
-  padding: 14px 18px;
+  padding: 16px 20px;
 }
 
 .pack-auto-pick__confirm:disabled {
@@ -153,22 +158,32 @@
     padding: 12px 16px;
   }
 
+  .pack-auto-pick__modal .modal-content {
+    font-size: 1.3rem;
+    padding: 24px 18px;
+  }
+
   .pack-auto-pick__modal-title {
-    font-size: 1.55rem;
+    font-size: 1.9rem;
   }
 
   .pack-auto-pick__modal-subtitle {
-    font-size: 1.08rem;
+    font-size: 1.3rem;
   }
 
   .pack-auto-pick__size {
-    min-width: 58px;
-    min-height: 48px;
-    font-size: 1.08rem;
+    min-width: 72px;
+    min-height: 56px;
+    font-size: 1.3rem;
+  }
+
+  .pack-auto-pick__message,
+  .pack-auto-pick__message--info[data-auto-pick-no-sizes] {
+    font-size: 1.22rem;
   }
 
   .pack-auto-pick__confirm {
-    min-height: 54px;
-    font-size: 1.12rem;
+    min-height: 60px;
+    font-size: 1.32rem;
   }
 }
