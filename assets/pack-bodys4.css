@@ -69,9 +69,17 @@
 .pack-actions {
   margin-top: 20px;
   display: flex;
-  justify-content: center;
+  justify-content: stretch;
+  align-items: stretch;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.pack-actions .pack-button {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
 }
 
 .pack-button {
