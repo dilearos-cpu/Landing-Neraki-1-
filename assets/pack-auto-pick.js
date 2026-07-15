@@ -130,40 +130,183 @@
     return { selections: selections };
   }
 
-  function waitForBuilder(section, attempts) {
+  function readPackProducts(packSection) {
+    if (!packSection) {
+      return [];
+    }
+
+    var productsNode = packSection.querySelector("[data-pack-products]");
+    if (!productsNode) {
+      return [];
+    }
+
+    try {
+      return JSON.parse(productsNode.textContent).filter(function (product) {
+        if (product.default_variant_id && product.available !== false) {
+          return true;
+        }
+
+        return product.variants && product.variants.some(function (variant) {
+          return variant.available;
+        });
+      });
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function createFallbackBuilder(packSection) {
+    var packMode = packSection.dataset.packMode || "simple";
+
+    return {
+      packMode: packMode,
+      packSection: packSection,
+      getProducts: function () {
+        if (window.PackPage && typeof window.PackPage.getPackBuilder === "function") {
+          var registered = window.PackPage.getPackBuilder(packSection);
+          if (registered && registered.getProducts().length) {
+            return registered.getProducts();
+          }
+        }
+
+        return readPackProducts(packSection);
+      },
+      getSlotCount: function () {
+        if (window.PackPage && typeof window.PackPage.getPackBuilder === "function") {
+          var registered = window.PackPage.getPackBuilder(packSection);
+          if (registered) {
+            return registered.getSlotCount();
+          }
+        }
+
+        return Number(packSection.dataset.slotCount || 4);
+      },
+      getAvailableSizes: function () {
+        if (window.PackPage && typeof window.PackPage.getPackBuilder === "function") {
+          var registered = window.PackPage.getPackBuilder(packSection);
+          if (registered) {
+            return registered.getAvailableSizes();
+          }
+        }
+
+        if (packMode !== "variable") {
+          return [];
+        }
+
+        return sortSizes(collectSizesFromProducts(readPackProducts(packSection)));
+      },
+      fillSelections: function (selections) {
+        if (window.PackPage && typeof window.PackPage.getPackBuilder === "function") {
+          var registered = window.PackPage.getPackBuilder(packSection);
+          if (registered && typeof registered.fillSelections === "function") {
+            registered.fillSelections(selections);
+            return;
+          }
+        }
+
+        throw new Error("Pack builder unavailable");
+      },
+      reset: function () {
+        if (window.PackPage && typeof window.PackPage.getPackBuilder === "function") {
+          var registered = window.PackPage.getPackBuilder(packSection);
+          if (registered && typeof registered.reset === "function") {
+            registered.reset();
+          }
+        }
+      }
+    };
+  }
+
+  function collectSizesFromProducts(products) {
+    var seen = {};
+    var sizes = [];
+
+    products.forEach(function (product) {
+      var sizeIndex = detectSizeOptionIndex(product.options);
+      if (sizeIndex === -1) {
+        return;
+      }
+
+      (product.variants || []).forEach(function (variant) {
+        if (!variant.available) {
+          return;
+        }
+
+        var sizeValue = variant.options && variant.options[sizeIndex];
+        if (!sizeValue || seen[sizeValue]) {
+          return;
+        }
+
+        seen[sizeValue] = true;
+        sizes.push(sizeValue);
+      });
+    });
+
+    return sizes;
+  }
+
+  function resolvePackSection(section) {
     var preferredMode = section.dataset.packTarget || "";
     var normalizedMode = preferredMode === "basicas" ? "simple" : preferredMode === "bodys" ? "variable" : "";
     var pack = null;
+
+    if (window.PackPage && typeof window.PackPage.getPackSectionForNode === "function") {
+      pack = window.PackPage.getPackSectionForNode(section, normalizedMode);
+    }
+
+    if (!pack && normalizedMode === "variable") {
+      pack = document.querySelector('.pack-ui[data-pack-kind="bodys"]:not([data-empty="true"])');
+    }
+
+    if (!pack && normalizedMode === "simple") {
+      pack = document.querySelector('.pack-ui[data-pack-kind="basicas"]:not([data-empty="true"])');
+    }
+
+    if (!pack) {
+      pack = document.querySelector('.pack-ui[data-pack-mode="simple"]:not([data-empty="true"])');
+    }
+
+    if (!pack) {
+      pack = document.querySelector('.pack-ui[data-pack-mode="variable"]:not([data-empty="true"])');
+    }
+
+    if (!pack && window.PackPage && typeof window.PackPage.getPackSection === "function") {
+      pack = window.PackPage.getPackSection();
+    }
+
+    return pack;
+  }
+
+  function waitForBuilder(section, attempts) {
+    var pack = resolvePackSection(section);
     var builder = null;
+    var jsonProducts = pack ? readPackProducts(pack) : [];
 
-    if (window.PackPage) {
-      if (typeof window.PackPage.getPackSectionForNode === "function") {
-        pack = window.PackPage.getPackSectionForNode(section, normalizedMode);
-      }
-
-      if (!pack && normalizedMode === "variable") {
-        pack = document.querySelector('.pack-ui[data-pack-kind="bodys"]:not([data-empty="true"])');
-      }
-
-      if (!pack && normalizedMode === "simple") {
-        pack = document.querySelector('.pack-ui[data-pack-kind="basicas"]:not([data-empty="true"])');
-      }
-
-      if (!pack && typeof window.PackPage.getPackSection === "function") {
-        pack = window.PackPage.getPackSection();
-      }
-
-      if (pack && typeof window.PackPage.getPackBuilder === "function") {
-        builder = window.PackPage.getPackBuilder(pack);
-      }
+    if (pack && window.PackPage && typeof window.PackPage.getPackBuilder === "function") {
+      builder = window.PackPage.getPackBuilder(pack);
     }
 
     if (builder && builder.getProducts().length) {
       return Promise.resolve(builder);
     }
 
-    if ((attempts || 0) >= 80) {
+    if (pack && jsonProducts.length && (attempts || 0) >= 8) {
+      var fallbackBuilder = createFallbackBuilder(pack);
+      if (fallbackBuilder.getProducts().length) {
+        return Promise.resolve(fallbackBuilder);
+      }
+    }
+
+    if (builder && (attempts || 0) >= 100) {
       return Promise.resolve(builder);
+    }
+
+    if (!pack && (attempts || 0) >= 40) {
+      return Promise.resolve(null);
+    }
+
+    if ((attempts || 0) >= 100) {
+      return Promise.resolve(pack ? createFallbackBuilder(pack) : null);
     }
 
     return new Promise(function (resolve) {
@@ -273,6 +416,12 @@
           return;
         }
 
+        if (builder.packMode === "simple" || section.dataset.packTarget === "basicas") {
+          if (noSizesNode) {
+            noSizesNode.hidden = false;
+          }
+        }
+
         var sizes = sortSizes(builder.getAvailableSizes());
         renderSizes(sizes);
 
@@ -338,7 +487,29 @@
       }
 
       confirmButton.disabled = true;
-      currentBuilder.fillSelections(result.selections);
+
+      try {
+        currentBuilder.fillSelections(result.selections);
+      } catch (error) {
+        waitForBuilder(section, 90).then(function (builder) {
+          if (!builder) {
+            setMessage("No pudimos llenar el pack. Recarga la pagina e intenta de nuevo.", "error");
+            confirmButton.disabled = false;
+            return;
+          }
+
+          currentBuilder = builder;
+          builder.fillSelections(result.selections);
+
+          if (builder.packSection && window.PackPage && typeof window.PackPage.scrollToPack === "function") {
+            window.PackPage.scrollToPack(builder.packSection);
+          }
+
+          closeModal();
+          confirmButton.disabled = false;
+        });
+        return;
+      }
 
       if (currentBuilder.packSection && window.PackPage && typeof window.PackPage.scrollToPack === "function") {
         window.PackPage.scrollToPack(currentBuilder.packSection);

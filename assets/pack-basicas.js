@@ -127,6 +127,63 @@
       });
     }
 
+    var slotCount = Number(section.dataset.slotCount || 4);
+    var slots = [];
+    var fillSlot = function () {};
+    var resetSelections = function () {};
+    var syncPromoSlots = function () {};
+    var currentState = {
+      currentSlot: null,
+      selected: {},
+      currentPage: 1,
+      perPage: 40
+    };
+
+    function registerPackBuilderApi() {
+      if (!window.PackPage || typeof window.PackPage.registerPackBuilder !== "function") {
+        return;
+      }
+
+      window.PackPage.registerPackBuilder(section.dataset.sectionId, {
+        packMode: "simple",
+        packSection: section,
+        getProducts: function () {
+          return products.slice();
+        },
+        getSlotCount: function () {
+          return slotCount;
+        },
+        getAvailableSizes: function () {
+          return [];
+        },
+        fillSelections: function (selections) {
+          if (!slots.length) {
+            return;
+          }
+
+          resetSelections();
+          selections.forEach(function (selection) {
+            var slotNode = slots[selection.slotIndex];
+            if (!slotNode) {
+              return;
+            }
+
+            fillSlot(slotNode, selection.image, selection.name);
+            currentState.selected[slotNode.dataset.slot] = selection.variantId;
+          });
+          syncPromoSlots();
+          if (messageNode) {
+            messageNode.hidden = true;
+            messageNode.textContent = "";
+            messageNode.classList.remove("pack-ui__message--error", "pack-ui__message--success");
+          }
+        },
+        reset: resetSelections
+      });
+    }
+
+    registerPackBuilderApi();
+
     function bootstrapPackUI() {
       products = products.filter(function (product) {
         return Boolean(product.default_variant_id) && product.available;
@@ -136,16 +193,16 @@
         showInitMessage("No hay productos simples disponibles en esta coleccion.");
       }
 
-      var slotCount = Number(section.dataset.slotCount || 4);
+      slotCount = Number(section.dataset.slotCount || 4);
       var cartUrl = section.dataset.cartUrl || "/cart/add.js";
       var checkoutUrl = section.dataset.checkoutUrl || "/checkout";
       var buyButton = section.querySelector(".pack-button--buy");
       var resetButton = section.querySelector(".pack-button--reset");
-      var slots = Array.prototype.slice.call(section.querySelectorAll(".slot"));
+      slots = Array.prototype.slice.call(section.querySelectorAll(".slot"));
       var productsModal = section.querySelector("[data-pack-modal]");
       var productsGrid = section.querySelector("[data-products-grid]");
       var paginationNode = section.querySelector("[data-pagination]");
-      var currentState = {
+      currentState = {
         currentSlot: null,
         selected: {},
         currentPage: 1,
@@ -227,22 +284,22 @@
 
       renderProductsRef = renderProducts;
 
-      function fillSlot(slotNode, image, alt) {
+      fillSlot = function (slotNode, image, alt) {
         slotNode.innerHTML = image
           ? '<img src="' + image + '" alt="' + escapeHtml(alt || "Producto seleccionado") + '">'
           : '<span class="slot__plus">+</span>';
         slotNode.classList.toggle("slot--filled", Boolean(image));
-      }
+      };
 
-      function syncPromoSlots() {
+      syncPromoSlots = function () {
         if (!window.PromoCountdown) {
           return;
         }
 
         window.PromoCountdown.setSlotsFilled(Object.keys(currentState.selected).length);
-      }
+      };
 
-      function resetSelections() {
+      resetSelections = function () {
         currentState.selected = {};
         slots.forEach(function (slot) {
           fillSlot(slot, null);
@@ -251,7 +308,7 @@
         if (window.PromoCountdown) {
           window.PromoCountdown.resetSlots();
         }
-      }
+      };
 
       function chooseProduct(product) {
         if (!product || !product.default_variant_id) {
@@ -382,36 +439,7 @@
         buyButton.click();
       };
 
-      if (window.PackPage && typeof window.PackPage.registerPackBuilder === "function") {
-        window.PackPage.registerPackBuilder(section.dataset.sectionId, {
-          packMode: "simple",
-          packSection: section,
-          getProducts: function () {
-            return products.slice();
-          },
-          getSlotCount: function () {
-            return slotCount;
-          },
-          getAvailableSizes: function () {
-            return [];
-          },
-          fillSelections: function (selections) {
-            resetSelections();
-            selections.forEach(function (selection) {
-              var slotNode = slots[selection.slotIndex];
-              if (!slotNode) {
-                return;
-              }
-
-              fillSlot(slotNode, selection.image, selection.name);
-              currentState.selected[slotNode.dataset.slot] = selection.variantId;
-            });
-            syncPromoSlots();
-            showMessage("", false);
-          },
-          reset: resetSelections
-        });
-      }
+      registerPackBuilderApi();
     }
 
     bootstrapPackUI();
@@ -424,6 +452,8 @@
               return Boolean(product.default_variant_id) && product.available;
             });
           }
+
+          registerPackBuilderApi();
 
           if (renderProductsRef) {
             renderProductsRef();
