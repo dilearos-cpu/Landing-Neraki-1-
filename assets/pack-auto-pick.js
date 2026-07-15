@@ -130,6 +130,34 @@
     return { selections: selections };
   }
 
+  function getSizesFromProducts(products) {
+    var seen = {};
+    var sizes = [];
+
+    products.forEach(function (product) {
+      var sizeIndex = detectSizeOptionIndex(product.options);
+      if (sizeIndex === -1) {
+        return;
+      }
+
+      (product.variants || []).forEach(function (variant) {
+        if (!variant.available) {
+          return;
+        }
+
+        var sizeValue = variant.options && variant.options[sizeIndex];
+        if (!sizeValue || seen[sizeValue]) {
+          return;
+        }
+
+        seen[sizeValue] = true;
+        sizes.push(sizeValue);
+      });
+    });
+
+    return sizes;
+  }
+
   function readPackProducts(packSection) {
     if (!packSection) {
       return [];
@@ -184,7 +212,14 @@
       getAvailableSizes: function () {
         var registered = getRegisteredBuilder(packSection);
         if (registered) {
-          return registered.getAvailableSizes();
+          var registeredSizes = registered.getAvailableSizes();
+          if (registeredSizes.length) {
+            return registeredSizes;
+          }
+        }
+
+        if (packMode === "variable") {
+          return getSizesFromProducts(readPackProducts(packSection));
         }
 
         return [];
@@ -240,34 +275,55 @@
   }
 
   function waitForBuilder(section, attempts) {
-    var isBasicasTarget = section.dataset.packTarget === "basicas";
+    var packTarget = section.dataset.packTarget || "";
+    var isBasicasTarget = packTarget === "basicas";
+    var isBodysTarget = packTarget === "bodys";
     var pack = findPackForSection(section);
-    var builder = getRegisteredBuilder(pack);
-    var jsonProducts = isBasicasTarget && pack ? readPackProducts(pack) : [];
+    var builder = pack ? getRegisteredBuilder(pack) : null;
+    var jsonProducts = pack ? readPackProducts(pack) : [];
+    var attempt = attempts || 0;
 
     if (builder && builder.getProducts().length) {
       return Promise.resolve(builder);
     }
 
-    if (isBasicasTarget && pack && jsonProducts.length && (attempts || 0) >= 8) {
-      return Promise.resolve(createFallbackBuilder(pack));
+    if (pack && jsonProducts.length) {
+      var jsonFallbackDelay = isBasicasTarget ? 8 : isBodysTarget ? 0 : 2;
+      if (attempt >= jsonFallbackDelay) {
+        return Promise.resolve(createFallbackBuilder(pack));
+      }
     }
 
-    if (isBasicasTarget && pack && (attempts || 0) >= 80) {
+    if (pack && attempt >= 80) {
       return Promise.resolve(builder || createFallbackBuilder(pack));
     }
 
-    if (!isBasicasTarget && (attempts || 0) >= 80) {
-      return Promise.resolve(builder);
-    }
-
-    if (!pack && (attempts || 0) >= 40) {
+    if (!pack && attempt >= 40) {
       return Promise.resolve(null);
     }
 
     return new Promise(function (resolve) {
       window.setTimeout(function () {
-        resolve(waitForBuilder(section, (attempts || 0) + 1));
+        resolve(waitForBuilder(section, attempt + 1));
+      }, 150);
+    });
+  }
+
+  function waitForRegisteredBuilder(packSection, attempts) {
+    var registered = getRegisteredBuilder(packSection);
+    var attempt = attempts || 0;
+
+    if (registered && typeof registered.fillSelections === "function") {
+      return Promise.resolve(registered);
+    }
+
+    if (attempt >= 40) {
+      return Promise.resolve(null);
+    }
+
+    return new Promise(function (resolve) {
+      window.setTimeout(function () {
+        resolve(waitForRegisteredBuilder(packSection, attempt + 1));
       }, 150);
     });
   }
@@ -351,11 +407,12 @@
     function prepareModal() {
       setMessage("", "");
       selectedSize = "";
-      openButton.disabled = true;
+      confirmButton.disabled = true;
+      setMessage("Cargando tallas del pack...", "info");
 
       return waitForBuilder(section).then(function (builder) {
         currentBuilder = builder;
-        openButton.disabled = false;
+        confirmButton.disabled = false;
 
         if (!builder) {
           setMessage(
@@ -396,9 +453,8 @@
     }
 
     openButton.addEventListener("click", function () {
-      prepareModal().then(function () {
-        openModal();
-      });
+      openModal();
+      prepareModal();
     });
 
     if (closeButton) {
@@ -443,16 +499,24 @@
       }
 
       confirmButton.disabled = true;
+      setMessage("Aplicando seleccion al pack...", "info");
 
-      var activeBuilder = getRegisteredBuilder(currentBuilder.packSection) || currentBuilder;
-      activeBuilder.fillSelections(result.selections);
+      waitForRegisteredBuilder(currentBuilder.packSection).then(function (activeBuilder) {
+        if (!activeBuilder) {
+          setMessage("El pack aun se esta cargando. Espera un momento e intenta de nuevo.", "error");
+          confirmButton.disabled = false;
+          return;
+        }
 
-      if (activeBuilder.packSection && window.PackPage && typeof window.PackPage.scrollToPack === "function") {
-        window.PackPage.scrollToPack(activeBuilder.packSection);
-      }
+        activeBuilder.fillSelections(result.selections);
 
-      closeModal();
-      confirmButton.disabled = false;
+        if (activeBuilder.packSection && window.PackPage && typeof window.PackPage.scrollToPack === "function") {
+          window.PackPage.scrollToPack(activeBuilder.packSection);
+        }
+
+        closeModal();
+        confirmButton.disabled = false;
+      });
     });
   }
 
