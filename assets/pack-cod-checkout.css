@@ -31,7 +31,7 @@
   overflow: hidden;
   min-height: min(640px, calc(100vh - 40px));
   max-height: calc(100vh - 40px);
-  font-size: 17px;
+  font-size: 19px;
 }
 
 .pack-cod__dialog--success {
@@ -75,7 +75,7 @@
 
 .pack-cod__title {
   margin: 0 0 6px;
-  font-size: 1.75rem;
+  font-size: 1.85rem;
   font-weight: 700;
   color: #111827;
 }
@@ -83,7 +83,7 @@
 .pack-cod__subtitle {
   margin: 0;
   color: var(--pack-cod-muted);
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   line-height: 1.45;
 }
 
@@ -101,7 +101,7 @@
 
 .pack-cod__summary-label {
   margin: 0 0 12px;
-  font-size: 0.88rem;
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -170,11 +170,11 @@
 
 .pack-cod__items-hint {
   margin: 0 0 12px;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--pack-cod-muted);
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .pack-cod__items-hint::before {
@@ -209,20 +209,20 @@
 
 .pack-cod__item-title {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.08rem;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .pack-cod__item-variant {
   margin: 2px 0 0;
-  font-size: 0.9rem;
+  font-size: 0.98rem;
   color: var(--pack-cod-muted);
 }
 
 .pack-cod__item-price {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.08rem;
   white-space: nowrap;
 }
 
@@ -287,7 +287,7 @@
 
 .pack-cod__payments-title {
   margin: 0 0 10px;
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #111827;
 }
@@ -353,21 +353,21 @@
 }
 
 .pack-cod__pay-text strong {
-  font-size: 0.98rem;
-  line-height: 1.25;
+  font-size: 1.08rem;
+  line-height: 1.3;
 }
 
 .pack-cod__pay-text small {
-  font-size: 0.86rem;
+  font-size: 0.95rem;
   color: var(--pack-cod-muted);
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .pack-cod__payment-note {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   color: #4b5563;
-  line-height: 1.4;
+  line-height: 1.45;
   padding: 10px 12px;
   background: #f9fafb;
   border-radius: 10px;
@@ -395,7 +395,7 @@
 }
 
 .pack-cod__field label {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #374151;
 }
@@ -422,7 +422,7 @@
   border: 1px solid #d1d5db;
   border-radius: 10px;
   font: inherit;
-  font-size: 1rem;
+  font-size: 1.08rem;
   box-sizing: border-box;
   background: #fff;
   color: #111827;
@@ -465,9 +465,9 @@
   width: 100%;
   border: none;
   border-radius: 12px;
-  padding: 16px 18px;
+  padding: 18px 20px;
   font: inherit;
-  font-size: 1.12rem;
+  font-size: 1.22rem;
   font-weight: 700;
   color: #fff;
   background: linear-gradient(180deg, var(--pack-cod-accent) 0%, var(--pack-cod-accent-dark) 100%);
@@ -499,7 +499,7 @@
   padding: 8px;
   font: inherit;
   color: #6b7280;
-  font-size: 0.86rem;
+  font-size: 0.98rem;
 }
 
 .pack-cod__success {
@@ -572,6 +572,15 @@
     max-height: calc(100vh - 28px);
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
+    font-size: 20px;
+  }
+
+  .pack-cod__title {
+    font-size: 1.7rem;
+  }
+
+  .pack-cod__subtitle {
+    font-size: 1.12rem;
   }
 
   .pack-cod__header {

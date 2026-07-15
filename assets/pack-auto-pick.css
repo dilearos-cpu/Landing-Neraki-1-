@@ -27,17 +27,17 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 52px;
-  padding: 12px 20px;
+  min-height: 58px;
+  padding: 14px 22px;
   border: var(--pack-auto-pick-border-width, 1px) solid var(--pack-auto-pick-border-color, #000);
   border-radius: var(--pack-auto-pick-radius, 20px);
   background: var(--pack-auto-pick-button-bg, #ffde21);
   color: var(--pack-auto-pick-button-color, #010101);
-  font-size: var(--pack-auto-pick-font-size, 16px);
+  font-size: var(--pack-auto-pick-font-size, 18px);
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  line-height: 1.2;
+  line-height: 1.25;
   cursor: pointer;
   box-shadow: var(--pack-auto-pick-shadow, 0 2px 7px rgba(0, 0, 0, 0.3));
   transition: filter 0.2s ease, transform 0.2s ease;
@@ -59,34 +59,38 @@
 }
 
 .pack-auto-pick__modal-title {
-  margin: 0 0 8px;
-  font-size: 1.35rem;
+  margin: 0 0 10px;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.2;
   text-align: center;
 }
 
 .pack-auto-pick__modal-subtitle {
-  margin: 0 0 18px;
+  margin: 0 0 20px;
   text-align: center;
-  color: #555;
-  font-size: 0.95rem;
+  color: #444;
+  font-size: 1.15rem;
+  line-height: 1.45;
 }
 
 .pack-auto-pick__sizes {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
   justify-content: center;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .pack-auto-pick__size {
-  min-width: 52px;
-  min-height: 44px;
-  padding: 8px 14px;
+  min-width: 64px;
+  min-height: 52px;
+  padding: 10px 18px;
   border: 2px solid #ddd;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fff;
   color: #111;
+  font-size: 1.15rem;
   font-weight: 700;
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
@@ -104,10 +108,12 @@
   color: #fff;
 }
 
-.pack-auto-pick__message {
-  margin: 0 0 14px;
+.pack-auto-pick__message,
+.pack-auto-pick__message--info[data-auto-pick-no-sizes] {
+  margin: 0 0 16px;
   text-align: center;
-  font-size: 0.92rem;
+  font-size: 1.08rem;
+  line-height: 1.45;
 }
 
 .pack-auto-pick__message--error {
@@ -115,21 +121,25 @@
 }
 
 .pack-auto-pick__message--info {
-  color: #555;
+  color: #444;
 }
 
 .pack-auto-pick__confirm {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  min-height: 48px;
+  min-height: 58px;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--pack-auto-pick-accent, #5fae5f);
   color: #fff;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 700;
+  line-height: 1.25;
   text-transform: uppercase;
   cursor: pointer;
+  padding: 14px 18px;
 }
 
 .pack-auto-pick__confirm:disabled {
@@ -139,7 +149,26 @@
 
 @media (max-width: 480px) {
   .pack-auto-pick__trigger {
+    min-height: 54px;
+    padding: 12px 16px;
+  }
+
+  .pack-auto-pick__modal-title {
+    font-size: 1.55rem;
+  }
+
+  .pack-auto-pick__modal-subtitle {
+    font-size: 1.08rem;
+  }
+
+  .pack-auto-pick__size {
+    min-width: 58px;
     min-height: 48px;
-    padding: 10px 16px;
+    font-size: 1.08rem;
+  }
+
+  .pack-auto-pick__confirm {
+    min-height: 54px;
+    font-size: 1.12rem;
   }
 }
