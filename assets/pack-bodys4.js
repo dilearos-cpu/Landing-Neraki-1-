@@ -297,6 +297,113 @@
       return;
     }
 
+    var slotCount = Number(section.dataset.slotCount || 4);
+    var slots = [];
+    var fillSlot = function () {};
+    var resetSelections = function () {};
+    var syncPromoSlots = function () {};
+    var currentState = {
+      currentSlot: null,
+      selected: {},
+      currentPage: 1,
+      perPage: 20,
+      currentProduct: null
+    };
+
+    function detectSizeOptionIndexFromProduct(product) {
+      if (!product || !product.options || !product.options.length) {
+        return -1;
+      }
+
+      for (var index = 0; index < product.options.length; index += 1) {
+        var name = String(product.options[index].name || "").toLowerCase();
+        if (name.indexOf("talla") !== -1 || name.indexOf("size") !== -1) {
+          return index;
+        }
+      }
+
+      return -1;
+    }
+
+    function getAvailableSizes() {
+      var seen = {};
+      var sizes = [];
+
+      products.forEach(function (product) {
+        var sizeIndex = detectSizeOptionIndexFromProduct(product);
+        if (sizeIndex === -1) {
+          return;
+        }
+
+        (product.variants || []).forEach(function (variant) {
+          if (!variant.available) {
+            return;
+          }
+
+          var sizeValue = variant.options && variant.options[sizeIndex];
+          if (!sizeValue || seen[sizeValue]) {
+            return;
+          }
+
+          seen[sizeValue] = true;
+          sizes.push(sizeValue);
+        });
+      });
+
+      return sizes;
+    }
+
+    function registerPackBuilderApi() {
+      if (!window.PackPage || typeof window.PackPage.registerPackBuilder !== "function") {
+        return;
+      }
+
+      window.PackPage.registerPackBuilder(section.dataset.sectionId, {
+        packMode: "variable",
+        packSection: section,
+        getProducts: function () {
+          return products.slice();
+        },
+        getSlotCount: function () {
+          return slotCount;
+        },
+        getAvailableSizes: getAvailableSizes,
+        fillSelections: function (selections) {
+          if (!slots.length) {
+            return;
+          }
+
+          resetSelections();
+          selections.forEach(function (selection) {
+            var slotNode = slots[selection.slotIndex];
+            if (!slotNode) {
+              return;
+            }
+
+            if (selection.productId) {
+              currentState.selected[slotNode.dataset.slot] = {
+                product_id: selection.productId,
+                variant_id: selection.variantId
+              };
+            } else {
+              currentState.selected[slotNode.dataset.slot] = selection.variantId;
+            }
+
+            fillSlot(slotNode, selection.image, selection.name);
+          });
+          syncPromoSlots();
+          if (messageNode) {
+            messageNode.hidden = true;
+            messageNode.textContent = "";
+            messageNode.classList.remove("pack-ui__message--error", "pack-ui__message--success");
+          }
+        },
+        reset: resetSelections
+      });
+    }
+
+    registerPackBuilderApi();
+
     function bootstrapPackUI() {
       products = products.filter(function (product) {
         return isProductInStock(product);
@@ -312,12 +419,12 @@
       }
 
       hasBootstrapped = true;
-    var slotCount = Number(section.dataset.slotCount || 4);
+    slotCount = Number(section.dataset.slotCount || 4);
     var cartUrl = section.dataset.cartUrl || "/cart/add.js";
     var checkoutUrl = section.dataset.checkoutUrl || "/checkout";
     var buyButton = section.querySelector(".pack-button--buy");
     var resetButton = section.querySelector(".pack-button--reset");
-    var slots = Array.prototype.slice.call(section.querySelectorAll(".slot"));
+    slots = Array.prototype.slice.call(section.querySelectorAll(".slot"));
     var productsModal = section.querySelector("[data-pack-modal]");
     var variantsModal = section.querySelector("[data-variant-modal]");
     var productsGrid = section.querySelector("[data-products-grid]");
@@ -353,7 +460,7 @@
       }
     }
 
-    var currentState = {
+    currentState = {
       currentSlot: null,
       selected: {},
       currentPage: 1,
@@ -435,22 +542,22 @@
         ">Siguiente</button>";
     }
 
-    function fillSlot(slotNode, image, alt) {
+    fillSlot = function (slotNode, image, alt) {
       slotNode.innerHTML = image
         ? '<img src="' + image + '" alt="' + (alt || "Producto seleccionado") + '">'
         : '<span class="slot__plus">+</span>';
       slotNode.classList.toggle("slot--filled", Boolean(image));
-    }
+    };
 
-    function syncPromoSlots() {
+    syncPromoSlots = function () {
       if (!window.PromoCountdown) {
         return;
       }
 
       window.PromoCountdown.setSlotsFilled(Object.keys(currentState.selected).length);
-    }
+    };
 
-    function resetSelections() {
+    resetSelections = function () {
       currentState.selected = {};
       slots.forEach(function (slot) {
         fillSlot(slot, null);
@@ -459,7 +566,7 @@
       if (window.PromoCountdown) {
         window.PromoCountdown.resetSlots();
       }
-    }
+    };
 
     function chooseSimpleProduct(product) {
       if (!product.default_variant_id) {
@@ -771,85 +878,7 @@
       buyButton.click();
     };
 
-    function detectSizeOptionIndexFromProduct(product) {
-      if (!product || !product.options || !product.options.length) {
-        return -1;
-      }
-
-      for (var index = 0; index < product.options.length; index += 1) {
-        var name = String(product.options[index].name || "").toLowerCase();
-        if (name.indexOf("talla") !== -1 || name.indexOf("size") !== -1) {
-          return index;
-        }
-      }
-
-      return -1;
-    }
-
-    function getAvailableSizes() {
-      var seen = {};
-      var sizes = [];
-
-      products.forEach(function (product) {
-        var sizeIndex = detectSizeOptionIndexFromProduct(product);
-        if (sizeIndex === -1) {
-          return;
-        }
-
-        (product.variants || []).forEach(function (variant) {
-          if (!variant.available) {
-            return;
-          }
-
-          var sizeValue = variant.options && variant.options[sizeIndex];
-          if (!sizeValue || seen[sizeValue]) {
-            return;
-          }
-
-          seen[sizeValue] = true;
-          sizes.push(sizeValue);
-        });
-      });
-
-      return sizes;
-    }
-
-    if (window.PackPage && typeof window.PackPage.registerPackBuilder === "function") {
-      window.PackPage.registerPackBuilder(section.dataset.sectionId, {
-        packMode: "variable",
-        packSection: section,
-        getProducts: function () {
-          return products.slice();
-        },
-        getSlotCount: function () {
-          return slotCount;
-        },
-        getAvailableSizes: getAvailableSizes,
-        fillSelections: function (selections) {
-          resetSelections();
-          selections.forEach(function (selection) {
-            var slotNode = slots[selection.slotIndex];
-            if (!slotNode) {
-              return;
-            }
-
-            if (selection.productId) {
-              currentState.selected[slotNode.dataset.slot] = {
-                product_id: selection.productId,
-                variant_id: selection.variantId
-              };
-            } else {
-              currentState.selected[slotNode.dataset.slot] = selection.variantId;
-            }
-
-            fillSlot(slotNode, selection.image, selection.name);
-          });
-          syncPromoSlots();
-          showMessage("", false);
-        },
-        reset: resetSelections
-      });
-    }
+    registerPackBuilderApi();
     }
 
     bootstrapPackUI();
@@ -863,6 +892,7 @@
             });
           }
           bootstrapPackUI();
+          registerPackBuilderApi();
         })
         .catch(function (error) {
           console.error("Pack Bodys 4: error cargando productos extra.", error);

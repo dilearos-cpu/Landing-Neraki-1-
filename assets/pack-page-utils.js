@@ -1,4 +1,9 @@
 (function (global) {
+  var state = global.__PackPageState || (global.__PackPageState = {
+    packBuilderInstances: {}
+  });
+  var packBuilderInstances = state.packBuilderInstances;
+
   function getAllPackSections() {
     return Array.prototype.slice.call(
       document.querySelectorAll('.pack-ui:not([data-empty="true"])')
@@ -192,8 +197,6 @@
     pack.scrollIntoView({ behavior: "smooth", block: "start" });
     return true;
   }
-
-  var packBuilderInstances = {};
 
   function registerPackBuilder(sectionId, api) {
     if (!sectionId || !api) {
