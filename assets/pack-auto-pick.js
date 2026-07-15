@@ -182,70 +182,32 @@
         return Number(packSection.dataset.slotCount || 4);
       },
       getAvailableSizes: function () {
-        if (window.PackPage && typeof window.PackPage.getPackBuilder === "function") {
-          var registered = window.PackPage.getPackBuilder(packSection);
-          if (registered) {
-            return registered.getAvailableSizes();
-          }
+        var registered = getRegisteredBuilder(packSection);
+        if (registered) {
+          return registered.getAvailableSizes();
         }
 
-        if (packMode !== "variable") {
-          return [];
-        }
-
-        return sortSizes(collectSizesFromProducts(readPackProducts(packSection)));
+        return [];
       },
       fillSelections: function (selections) {
-        if (window.PackPage && typeof window.PackPage.getPackBuilder === "function") {
-          var registered = window.PackPage.getPackBuilder(packSection);
-          if (registered && typeof registered.fillSelections === "function") {
-            registered.fillSelections(selections);
-            return;
-          }
+        var registered = getRegisteredBuilder(packSection);
+        if (registered && typeof registered.fillSelections === "function") {
+          registered.fillSelections(selections);
+          return;
         }
 
         throw new Error("Pack builder unavailable");
       },
       reset: function () {
-        if (window.PackPage && typeof window.PackPage.getPackBuilder === "function") {
-          var registered = window.PackPage.getPackBuilder(packSection);
-          if (registered && typeof registered.reset === "function") {
-            registered.reset();
-          }
+        var registered = getRegisteredBuilder(packSection);
+        if (registered && typeof registered.reset === "function") {
+          registered.reset();
         }
       }
     };
   }
 
-  function collectSizesFromProducts(products) {
-    var seen = {};
-    var sizes = [];
-
-    products.forEach(function (product) {
-      var sizeIndex = detectSizeOptionIndex(product.options);
-      if (sizeIndex === -1) {
-        return;
-      }
-
-      (product.variants || []).forEach(function (variant) {
-        if (!variant.available) {
-          return;
-        }
-
-        var sizeValue = variant.options && variant.options[sizeIndex];
-        if (!sizeValue || seen[sizeValue]) {
-          return;
-        }
-
-        seen[sizeValue] = true;
-        sizes.push(sizeValue);
-      });
-    });
-
-    return sizes;
-  }
-
-  function resolvePackSection(section) {
+  function findPackForSection(section) {
     var preferredMode = section.dataset.packTarget || "";
     var normalizedMode = preferredMode === "basicas" ? "simple" : preferredMode === "bodys" ? "variable" : "";
     var pack = null;
@@ -262,14 +224,6 @@
       pack = document.querySelector('.pack-ui[data-pack-kind="basicas"]:not([data-empty="true"])');
     }
 
-    if (!pack) {
-      pack = document.querySelector('.pack-ui[data-pack-mode="simple"]:not([data-empty="true"])');
-    }
-
-    if (!pack) {
-      pack = document.querySelector('.pack-ui[data-pack-mode="variable"]:not([data-empty="true"])');
-    }
-
     if (!pack && window.PackPage && typeof window.PackPage.getPackSection === "function") {
       pack = window.PackPage.getPackSection();
     }
@@ -277,36 +231,38 @@
     return pack;
   }
 
-  function waitForBuilder(section, attempts) {
-    var pack = resolvePackSection(section);
-    var builder = null;
-    var jsonProducts = pack ? readPackProducts(pack) : [];
-
-    if (pack && window.PackPage && typeof window.PackPage.getPackBuilder === "function") {
-      builder = window.PackPage.getPackBuilder(pack);
+  function getRegisteredBuilder(packSection) {
+    if (!packSection || !window.PackPage || typeof window.PackPage.getPackBuilder !== "function") {
+      return null;
     }
+
+    return window.PackPage.getPackBuilder(packSection);
+  }
+
+  function waitForBuilder(section, attempts) {
+    var isBasicasTarget = section.dataset.packTarget === "basicas";
+    var pack = findPackForSection(section);
+    var builder = getRegisteredBuilder(pack);
+    var jsonProducts = isBasicasTarget && pack ? readPackProducts(pack) : [];
 
     if (builder && builder.getProducts().length) {
       return Promise.resolve(builder);
     }
 
-    if (pack && jsonProducts.length && (attempts || 0) >= 8) {
-      var fallbackBuilder = createFallbackBuilder(pack);
-      if (fallbackBuilder.getProducts().length) {
-        return Promise.resolve(fallbackBuilder);
-      }
+    if (isBasicasTarget && pack && jsonProducts.length && (attempts || 0) >= 8) {
+      return Promise.resolve(createFallbackBuilder(pack));
     }
 
-    if (builder && (attempts || 0) >= 100) {
+    if (isBasicasTarget && pack && (attempts || 0) >= 80) {
+      return Promise.resolve(builder || createFallbackBuilder(pack));
+    }
+
+    if (!isBasicasTarget && (attempts || 0) >= 80) {
       return Promise.resolve(builder);
     }
 
     if (!pack && (attempts || 0) >= 40) {
       return Promise.resolve(null);
-    }
-
-    if ((attempts || 0) >= 100) {
-      return Promise.resolve(pack ? createFallbackBuilder(pack) : null);
     }
 
     return new Promise(function (resolve) {
@@ -416,7 +372,7 @@
           return;
         }
 
-        if (builder.packMode === "simple" || section.dataset.packTarget === "basicas") {
+        if (section.dataset.packTarget === "basicas") {
           if (noSizesNode) {
             noSizesNode.hidden = false;
           }
@@ -488,31 +444,11 @@
 
       confirmButton.disabled = true;
 
-      try {
-        currentBuilder.fillSelections(result.selections);
-      } catch (error) {
-        waitForBuilder(section, 90).then(function (builder) {
-          if (!builder) {
-            setMessage("No pudimos llenar el pack. Recarga la pagina e intenta de nuevo.", "error");
-            confirmButton.disabled = false;
-            return;
-          }
+      var activeBuilder = getRegisteredBuilder(currentBuilder.packSection) || currentBuilder;
+      activeBuilder.fillSelections(result.selections);
 
-          currentBuilder = builder;
-          builder.fillSelections(result.selections);
-
-          if (builder.packSection && window.PackPage && typeof window.PackPage.scrollToPack === "function") {
-            window.PackPage.scrollToPack(builder.packSection);
-          }
-
-          closeModal();
-          confirmButton.disabled = false;
-        });
-        return;
-      }
-
-      if (currentBuilder.packSection && window.PackPage && typeof window.PackPage.scrollToPack === "function") {
-        window.PackPage.scrollToPack(currentBuilder.packSection);
+      if (activeBuilder.packSection && window.PackPage && typeof window.PackPage.scrollToPack === "function") {
+        window.PackPage.scrollToPack(activeBuilder.packSection);
       }
 
       closeModal();
