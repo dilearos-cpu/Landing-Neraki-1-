@@ -233,6 +233,36 @@
     return getPackBuilder(pack);
   }
 
+  function normalizeCartAddUrl(cartUrl) {
+    var base = String(cartUrl || "/cart/add").replace(/\.js$/, "");
+    return base + ".js";
+  }
+
+  function clearCart() {
+    return fetch("/cart/clear.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      }
+    }).catch(function () {
+      return null;
+    });
+  }
+
+  function replaceCartWithItems(items, cartUrl) {
+    return clearCart().then(function () {
+      return fetch(normalizeCartAddUrl(cartUrl), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify({ items: items })
+      });
+    });
+  }
+
   global.PackPage = {
     getAllPackSections: getAllPackSections,
     getPackSection: getPackSection,
@@ -247,6 +277,8 @@
     registerPackBuilder: registerPackBuilder,
     unregisterPackBuilder: unregisterPackBuilder,
     getPackBuilder: getPackBuilder,
-    getPackBuilderForNode: getPackBuilderForNode
+    getPackBuilderForNode: getPackBuilderForNode,
+    clearCart: clearCart,
+    replaceCartWithItems: replaceCartWithItems
   };
 })(window);

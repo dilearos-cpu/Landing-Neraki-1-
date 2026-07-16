@@ -630,14 +630,19 @@
     }
 
     this.setLoading(true);
-    fetch(cartAddUrl(this.config.cartUrl), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      },
-      body: JSON.stringify({ items: this.pendingItems })
-    })
+    var addToCart =
+      global.PackPage && typeof global.PackPage.replaceCartWithItems === "function"
+        ? global.PackPage.replaceCartWithItems(this.pendingItems, this.config.cartUrl)
+        : fetch(cartAddUrl(this.config.cartUrl), {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json"
+            },
+            body: JSON.stringify({ items: this.pendingItems })
+          });
+
+    addToCart
       .then(function (response) {
         if (!response.ok) {
           throw new Error("No se pudo preparar el carrito.");
@@ -781,27 +786,31 @@
 
   PackCodCheckout.prototype.submitOnlineFallback = function (customer) {
     var self = this;
+    var addToCart =
+      global.PackPage && typeof global.PackPage.replaceCartWithItems === "function"
+        ? global.PackPage.replaceCartWithItems(self.pendingItems, self.config.cartUrl)
+        : fetch("/cart/clear.js", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json"
+            }
+          })
+            .catch(function () {
+              return null;
+            })
+            .then(function () {
+              return fetch(cartAddUrl(self.config.cartUrl), {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Accept: "application/json"
+                },
+                body: JSON.stringify({ items: self.pendingItems })
+              });
+            });
 
-    fetch("/cart/clear.js", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      }
-    })
-      .catch(function () {
-        return null;
-      })
-      .then(function () {
-        return fetch(cartAddUrl(self.config.cartUrl), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json"
-          },
-          body: JSON.stringify({ items: self.pendingItems })
-        });
-      })
+    addToCart
       .then(function (response) {
         if (!response.ok) {
           throw new Error("No se pudo agregar el pack al carrito.");

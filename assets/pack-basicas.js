@@ -363,14 +363,18 @@
         buyButton.textContent = section.dataset.buttonLoadingText || "Procesando...";
         showMessage("", false);
 
-        fetch(cartUrl + ".js", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json"
-          },
-          body: JSON.stringify({ items: items })
-        })
+        var addToCart = window.PackPage && typeof window.PackPage.replaceCartWithItems === "function"
+          ? window.PackPage.replaceCartWithItems(items, cartUrl)
+          : fetch(cartUrl + ".js", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json"
+              },
+              body: JSON.stringify({ items: items })
+            });
+
+        addToCart
           .then(function (response) {
             if (!response.ok) {
               throw new Error("No se pudo agregar el pack al carrito.");
