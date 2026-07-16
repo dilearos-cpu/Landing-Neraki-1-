@@ -197,7 +197,8 @@
           return;
         }
         productRoot.dataset.variantPrice = String(event.data.variant.price || "");
-        window.setTimeout(refresh, 0);
+        window.setTimeout(refresh, 50);
+        window.setTimeout(refresh, 250);
       });
 
       subscribe(PUB_SUB_EVENTS.quantityUpdate, function () {
@@ -206,13 +207,6 @@
     }
 
     document.addEventListener("product-info:loaded", refresh);
-
-    if (typeof MutationObserver !== "undefined") {
-      var observer = new MutationObserver(function () {
-        refresh();
-      });
-      observer.observe(productRoot, { childList: true, subtree: true, characterData: true });
-    }
   }
 
   function logDesignMode(engine) {

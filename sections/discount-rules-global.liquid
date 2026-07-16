@@ -4,11 +4,19 @@
 [
 {%- assign first_rule = true -%}
 {%- for block in section.blocks -%}
-  {%- if block.type == 'rule' and block.settings.enabled -%}
+  {%- if block.type == 'rule' -%}
+    {%- liquid
+      assign rule_enabled = block.settings.enabled
+      if rule_enabled == nil
+        assign rule_enabled = true
+      endif
+    -%}
+    {%- if rule_enabled -%}
     {%- liquid
       assign filter_type = block.settings.filter_type | default: 'collection'
       assign rule_product = blank
       assign rule_collection = blank
+      assign product_handle_setting = blank
       assign has_filter = false
 
       if filter_type == 'all_products'
@@ -17,11 +25,16 @@
         assign rule_collection = block.settings.collection
         assign has_filter = true
       elsif filter_type == 'product' and block.settings.product != blank
-        assign rule_product = block.settings.product
-        if rule_product.id == blank
-          assign rule_product = all_products[block.settings.product]
+        if block.settings.product.handle != blank
+          assign product_handle_setting = block.settings.product.handle
+          assign rule_product = block.settings.product
+        else
+          assign product_handle_setting = block.settings.product
+          assign rule_product = all_products[product_handle_setting]
         endif
         if rule_product != blank
+          assign has_filter = true
+        elsif product_handle_setting != blank
           assign has_filter = true
         endif
       elsif filter_type == 'tag' and block.settings.product_tag != blank
@@ -50,14 +63,16 @@
           {{ collection_product.id }}
           {%- assign first_product_id = false -%}
         {%- endfor -%}
-      ]{% elsif filter_type == 'product' and rule_product != blank %},
+      ]{% elsif filter_type == 'product' %}{% if rule_product != blank %},
       "product_id": {{ rule_product.id | json }},
-      "product_handle": {{ rule_product.handle | json }}{% elsif filter_type == 'tag' %},
+      "product_handle": {{ rule_product.handle | json }}{% elsif product_handle_setting != blank %},
+      "product_handle": {{ product_handle_setting | json }}{% endif %}{% elsif filter_type == 'tag' %},
       "tag": {{ block.settings.product_tag | json }}{% endif %}
     },
     "ranges": {% if block.settings.tiers_json != blank %}{{ block.settings.tiers_json }}{% else %}[]{% endif %},
     "conditions": {% if block.settings.conditions_json != blank %}{{ block.settings.conditions_json }}{% else %}[]{% endif %}
   }
+    {%- endif -%}
     {%- endif -%}
   {%- endif -%}
 {%- endfor -%}
@@ -70,10 +85,6 @@
   data-checkout-endpoint="{{ section.settings.checkout_endpoint | escape }}"
   hidden
 ></div>
-
-<script src="{{ 'pack-discount-rules.js' | asset_url }}" defer></script>
-<script src="{{ 'discount-rules-storefront.js' | asset_url }}" defer></script>
-<script src="{{ 'discount-rules-cart.js' | asset_url }}" defer></script>
 
 {% schema %}
 {

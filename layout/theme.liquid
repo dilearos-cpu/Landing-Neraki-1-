@@ -27,16 +27,7 @@
     {% endif %}
 
     {% render 'meta-tags' %}
-    <script>
-      window.addEventListener('load', function () {
-  fetch('/cart/clear.js', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-});
-    </script>
+
     <script src="{{ 'constants.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'pubsub.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'global.js' | asset_url }}" defer="defer"></script>
@@ -381,6 +372,9 @@
       <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
 
-    {% section 'discount-rules-global' %}
+    <script src="{{ 'pack-discount-rules.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'discount-rules-storefront.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'discount-rules-cart.js' | asset_url }}" defer="defer"></script>
+    {% sections 'discount-rules-group' %}
   </body>
 </html>

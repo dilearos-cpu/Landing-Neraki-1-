@@ -287,9 +287,20 @@
       return {};
     }
 
+    var productInfo = node.closest("product-info");
+    var productId = node.dataset.productId || (productInfo ? productInfo.dataset.productId : "") || "";
+    var productHandle = node.dataset.productHandle || "";
+
+    if (!productHandle && productInfo && productInfo.dataset.url) {
+      var urlMatch = String(productInfo.dataset.url).match(/\/products\/([^/?#]+)/);
+      if (urlMatch) {
+        productHandle = urlMatch[1];
+      }
+    }
+
     return {
-      productId: node.dataset.productId || "",
-      productHandle: node.dataset.productHandle || "",
+      productId: productId,
+      productHandle: productHandle,
       collectionHandles: String(node.dataset.collectionHandles || "")
         .split(",")
         .map(function (value) {
@@ -706,6 +717,11 @@
 
   function initFromDocument() {
     registerRules(readRulesFromDocument(), { replace: true });
+    if (!rules.length) {
+      console.warn(
+        "DiscountRules: no se cargaron reglas. Revisa la seccion «Reglas de precio (global)» en el editor del tema."
+      );
+    }
     document.dispatchEvent(
       new CustomEvent("discount-rules:ready", {
         detail: {
