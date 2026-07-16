@@ -96,6 +96,19 @@
         "padding_bottom": 52
       }
     },
+    "google_rating_badge_main": {
+      "type": "google-rating-badge",
+      "name": "Recuadro estrellas Google",
+      "settings": {
+        "star_count": 5,
+        "prefix_text": "mas de",
+        "customer_count": "5.000",
+        "phrase_text": "clientes felices",
+        "enable_animation": true,
+        "section_background_transparent": true,
+        "alignment": "center"
+      }
+    },
     "popup_storefront_xDXEfG": {
       "type": "popup-storefront",
       "disabled": true,
@@ -126,6 +139,38 @@
         "buy_button_label": "Comprar ahora",
         "loading_button_label": "Procesando...",
         "reset_button_label": "Borrar todo"
+      }
+    },
+    "pack_cta_button_main": {
+      "type": "pack-cta-button",
+      "name": "Boton compra flotante",
+      "settings": {
+        "button_label": "Compra aqui | Paga en casa",
+        "button_action": "scroll_pack",
+        "button_link_url": "#pack-basicas",
+        "section_background_transparent": false,
+        "section_background_color": "#ffffff",
+        "floating_background_transparent": true,
+        "floating_background_color": "#ffffff",
+        "button_background_color": "#ffde21",
+        "button_text_color": "#010101",
+        "button_border_color": "#000000",
+        "button_border_width": 1,
+        "button_border_radius": 20,
+        "button_font_size": 16,
+        "show_icon": true,
+        "icon_preset": "cart",
+        "position_mode": "fixed_floating",
+        "float_trigger": "pack_slots",
+        "enable_shake_animation": true,
+        "float_bottom_offset": 0,
+        "float_z_index": 90,
+        "alignment": "center",
+        "button_max_width": 680,
+        "padding_top": 16,
+        "padding_bottom": 16,
+        "padding_left": 16,
+        "padding_right": 16
       }
     },
     "rich_text_cHyKfW": {
@@ -346,9 +391,11 @@
     "custom_liquid_cTa4qB",
     "progress_bar_nVJTmJ",
     "rich_text_yEPHRy",
+    "google_rating_badge_main",
     "popup_storefront_xDXEfG",
     "product_popup_YYdMc7",
     "pack_basicas_keCtGX",
+    "pack_cta_button_main",
     "rich_text_cHyKfW",
     "collage_BWEkmy",
     "collage_FPd3Cm",
