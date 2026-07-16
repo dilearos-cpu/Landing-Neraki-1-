@@ -6,18 +6,167 @@
     return Number.isFinite(parsed) ? parsed : fallback || 0;
   }
 
-  function registerRules(newRules) {
-    rules = (newRules || [])
+  function toLower(value) {
+    return String(value || "").toLowerCase();
+  }
+
+  function normalizeScope(scope) {
+    var value = String(scope || "pack").toLowerCase();
+    if (value === "storefront" || value === "pack" || value === "both") {
+      return value;
+    }
+    return "pack";
+  }
+
+  function normalizeFilter(rule) {
+    var filter = rule.filter || {};
+    if (filter.type) {
+      return filter;
+    }
+
+    if (filter.collection) {
+      return {
+        type: "collection",
+        collection: filter.collection,
+        collections: filter.collections || [filter.collection]
+      };
+    }
+
+    return {
+      type: "all_products"
+    };
+  }
+
+  function getCollectionHandles(filter) {
+    var handles = [];
+    if (filter.collection) {
+      handles.push(filter.collection);
+    }
+    if (Array.isArray(filter.collections)) {
+      handles = handles.concat(filter.collections);
+    }
+    return handles.map(toLower).filter(Boolean);
+  }
+
+  function matchesScope(rule, scope) {
+    var ruleScope = normalizeScope(rule.scope);
+    var targetScope = normalizeScope(scope);
+
+    if (targetScope === "both") {
+      return true;
+    }
+
+    return ruleScope === targetScope || ruleScope === "both";
+  }
+
+  function matchesFilter(rule, productContext) {
+    productContext = productContext || {};
+    var filter = normalizeFilter(rule);
+    var filterType = filter.type || "all_products";
+
+    if (filterType === "all_products") {
+      return true;
+    }
+
+    if (filterType === "collection") {
+      var ruleCollections = getCollectionHandles(filter);
+      if (!ruleCollections.length) {
+        return false;
+      }
+
+      var productCollections = (productContext.collectionHandles || []).map(toLower);
+      if (!productCollections.length && productContext.collectionHandle) {
+        productCollections = [toLower(productContext.collectionHandle)];
+      }
+
+      return ruleCollections.some(function (handle) {
+        return productCollections.indexOf(handle) !== -1;
+      });
+    }
+
+    if (filterType === "product") {
+      var productId = String(filter.product_id || "");
+      var productHandle = toLower(filter.product_handle || filter.product || "");
+      return (
+        (productId && String(productContext.productId || "") === productId) ||
+        (productHandle && toLower(productContext.productHandle || "") === productHandle)
+      );
+    }
+
+    if (filterType === "tag") {
+      var tag = toLower(filter.tag || "");
+      var tags = (productContext.tags || []).map(toLower);
+      return tag && tags.indexOf(tag) !== -1;
+    }
+
+    return false;
+  }
+
+  function matchesPackCollection(rule, context) {
+    var filter = normalizeFilter(rule);
+    if (filter.type !== "collection" && filter.collection) {
+      filter.type = "collection";
+    }
+
+    if (filter.type === "all_products") {
+      return true;
+    }
+
+    if (filter.type === "collection") {
+      var collectionHandle = toLower(context.collectionHandle || "");
+      var ruleCollections = getCollectionHandles(filter);
+      if (!ruleCollections.length) {
+        return true;
+      }
+      return ruleCollections.indexOf(collectionHandle) !== -1;
+    }
+
+    return matchesFilter(rule, context);
+  }
+
+  function registerRules(newRules, options) {
+    options = options || {};
+    var normalized = (newRules || [])
       .filter(function (rule) {
         return rule && rule.enabled !== false;
       })
-      .sort(function (a, b) {
-        return toNumber(b.priority, 0) - toNumber(a.priority, 0);
+      .map(function (rule) {
+        return Object.assign({}, rule, {
+          scope: normalizeScope(rule.scope),
+          filter: normalizeFilter(rule)
+        });
       });
+
+    if (options.replace) {
+      rules = normalized;
+      return;
+    }
+
+    var merged = rules.slice();
+    normalized.forEach(function (rule) {
+      var existingIndex = merged.findIndex(function (item) {
+        return String(item.id || "") === String(rule.id || "");
+      });
+      if (existingIndex === -1) {
+        merged.push(rule);
+      } else {
+        merged[existingIndex] = rule;
+      }
+    });
+
+    rules = merged.sort(function (a, b) {
+      return toNumber(b.priority, 0) - toNumber(a.priority, 0);
+    });
   }
 
-  function getRules() {
-    return rules.slice();
+  function getRules(scope) {
+    if (!scope) {
+      return rules.slice();
+    }
+
+    return rules.filter(function (rule) {
+      return matchesScope(rule, scope);
+    });
   }
 
   function countLineItems(lineItems) {
@@ -105,6 +254,10 @@
 
     return {
       variantId: item.variantId,
+      productId: item.productId,
+      productHandle: item.productHandle,
+      collectionHandles: item.collectionHandles || [],
+      tags: item.tags || [],
       quantity: quantity,
       title: item.title || "",
       variantTitle: item.variantTitle || "",
@@ -117,9 +270,150 @@
     };
   }
 
+  function getProductContextFromNode(node) {
+    if (!node) {
+      return {};
+    }
+
+    return {
+      productId: node.dataset.productId || "",
+      productHandle: node.dataset.productHandle || "",
+      collectionHandles: String(node.dataset.collectionHandles || "")
+        .split(",")
+        .map(function (value) {
+          return value.trim();
+        })
+        .filter(Boolean),
+      tags: String(node.dataset.tags || "")
+        .split(",")
+        .map(function (value) {
+          return value.trim();
+        })
+        .filter(Boolean),
+      variantPrice: toNumber(node.dataset.variantPrice, 0)
+    };
+  }
+
+  function getUnitPriceForQuantity(originalUnitPrice, quantity, productContext, options) {
+    options = options || {};
+    var scope = options.scope || "storefront";
+    var paymentMethod = options.paymentMethod || "online";
+    var qty = toNumber(quantity, 1);
+    var unitPrice = toNumber(originalUnitPrice, 0);
+    var appliedRule = null;
+    var appliedTier = null;
+
+    for (var index = 0; index < rules.length; index += 1) {
+      var rule = rules[index];
+
+      if (!matchesScope(rule, scope)) {
+        continue;
+      }
+
+      if (!matchesFilter(rule, productContext)) {
+        continue;
+      }
+
+      if (
+        !matchesConditions(rule, {
+          paymentMethod: paymentMethod,
+          totalQuantity: qty,
+          variantIds: productContext.variantId ? [String(productContext.variantId)] : [],
+          collectionHandle: (productContext.collectionHandles || [])[0] || ""
+        })
+      ) {
+        continue;
+      }
+
+      var tier = findMatchingTier(rule.ranges, qty);
+      if (!tier) {
+        continue;
+      }
+
+      unitPrice = applyTierToUnitPrice(unitPrice, tier);
+      appliedRule = rule;
+      appliedTier = tier;
+
+      if (rule.exclusive) {
+        break;
+      }
+    }
+
+    return {
+      unitPrice: unitPrice,
+      originalUnitPrice: toNumber(originalUnitPrice, 0),
+      quantity: qty,
+      appliedRule: appliedRule,
+      appliedTier: appliedTier,
+      discountAmount: Math.max(0, toNumber(originalUnitPrice, 0) - unitPrice)
+    };
+  }
+
+  function getLowestTierPrice(originalUnitPrice, productContext, options) {
+    options = options || {};
+    var scope = options.scope || "storefront";
+    var lowest = {
+      unitPrice: toNumber(originalUnitPrice, 0),
+      originalUnitPrice: toNumber(originalUnitPrice, 0),
+      appliedTier: null,
+      appliedRule: null
+    };
+
+    getRules(scope).forEach(function (rule) {
+      if (!matchesFilter(rule, productContext)) {
+        return;
+      }
+
+      (rule.ranges || []).forEach(function (tier) {
+        var unitPrice = applyTierToUnitPrice(toNumber(originalUnitPrice, 0), tier);
+        if (unitPrice < lowest.unitPrice) {
+          lowest = {
+            unitPrice: unitPrice,
+            originalUnitPrice: toNumber(originalUnitPrice, 0),
+            appliedTier: tier,
+            appliedRule: rule
+          };
+        }
+      });
+    });
+
+    return lowest;
+  }
+
+  function getTierRowsForProduct(productContext, options) {
+    options = options || {};
+    var scope = options.scope || "storefront";
+    var originalUnitPrice = toNumber(productContext.variantPrice, 0);
+    var rows = [];
+
+    getRules(scope).forEach(function (rule) {
+      if (!matchesFilter(rule, productContext)) {
+        return;
+      }
+
+      (rule.ranges || []).forEach(function (tier) {
+        rows.push({
+          rule: rule,
+          tier: tier,
+          min: toNumber(tier.min, 0),
+          max: toNumber(tier.max, 999999),
+          label: tier.label || "",
+          unitPrice: applyTierToUnitPrice(originalUnitPrice, tier),
+          originalUnitPrice: originalUnitPrice
+        });
+      });
+    });
+
+    rows.sort(function (a, b) {
+      return a.min - b.min;
+    });
+
+    return rows;
+  }
+
   function applyRules(lineItems, context) {
     context = context || {};
-    var collectionHandle = String(context.collectionHandle || "").toLowerCase();
+    var collectionHandle = toLower(context.collectionHandle || "");
     var paymentMethod = context.paymentMethod || "cod";
     var normalized = (lineItems || []).map(normalizeLineItem);
     var variantIds = normalized.map(function (item) {
@@ -135,10 +429,12 @@
 
     for (var index = 0; index < rules.length; index += 1) {
       var rule = rules[index];
-      var filter = rule.filter || {};
-      var ruleCollection = String(filter.collection || "").toLowerCase();
 
-      if (ruleCollection && ruleCollection !== collectionHandle) {
+      if (!matchesScope(rule, "pack")) {
+        continue;
+      }
+
+      if (!matchesPackCollection(rule, context)) {
         continue;
       }
 
@@ -209,25 +505,55 @@
     };
   }
 
-  function initFromDocument() {
-    var node = document.querySelector("[data-pack-discount-rules]");
-    if (!node) {
-      return;
-    }
+  function readRulesFromDocument() {
+    var nodes = document.querySelectorAll("[data-discount-rules], [data-pack-discount-rules]");
+    var merged = [];
 
-    try {
-      registerRules(JSON.parse(node.textContent));
-    } catch (error) {
-      console.error("PackDiscountRules: no se pudieron leer las reglas.", error);
-    }
+    nodes.forEach(function (node) {
+      try {
+        var parsed = JSON.parse(node.textContent || "[]");
+        if (Array.isArray(parsed)) {
+          merged = merged.concat(
+            parsed.map(function (rule) {
+              if (!rule.scope && node.hasAttribute("data-pack-discount-rules")) {
+                return Object.assign({}, rule, { scope: "pack" });
+              }
+              return rule;
+            })
+          );
+        }
+      } catch (error) {
+        console.error("PackDiscountRules: no se pudieron leer las reglas.", error);
+      }
+    });
+
+    return merged;
   }
 
-  global.PackDiscountRules = {
+  function initFromDocument() {
+    registerRules(readRulesFromDocument(), { replace: true });
+    document.dispatchEvent(
+      new CustomEvent("discount-rules:ready", {
+        detail: {
+          rules: getRules()
+        }
+      })
+    );
+  }
+
+  var api = {
     registerRules: registerRules,
     getRules: getRules,
     applyRules: applyRules,
+    getUnitPriceForQuantity: getUnitPriceForQuantity,
+    getLowestTierPrice: getLowestTierPrice,
+    getTierRowsForProduct: getTierRowsForProduct,
+    getProductContextFromNode: getProductContextFromNode,
     initFromDocument: initFromDocument
   };
+
+  global.PackDiscountRules = api;
+  global.DiscountRules = api;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initFromDocument);

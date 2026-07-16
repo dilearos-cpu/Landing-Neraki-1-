@@ -106,7 +106,19 @@
                   </a>
                 </div>
               {%- when 'price' -%}
-                <div id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
+                <div
+                  id="price-{{ section.id }}"
+                  role="status"
+                  data-discount-rules-product
+                  data-section-id="{{ section.id }}"
+                  data-quantity-input="#Quantity-{{ section.id }}"
+                  data-product-id="{{ product.id }}"
+                  data-product-handle="{{ product.handle }}"
+                  data-variant-price="{{ product.selected_or_first_available_variant.price }}"
+                  data-collection-handles="{{ product.collections | map: 'handle' | join: ',' }}"
+                  data-tags="{{ product.tags | join: ',' }}"
+                  {{ block.shopify_attributes }}
+                >
                   {%- render 'price',
                     product: product,
                     use_variant: true,
@@ -114,6 +126,7 @@
                     price_class: 'price--large'
                   -%}
                 </div>
+                {% render 'discount-rules-tier-table', product: product %}
                 {%- if product.quantity_price_breaks_configured? -%}
                   <div class="volume-pricing-note" id="Volume-Note-{{ section.id }}">
                     <span>{{ 'products.product.volume_pricing.note' | t }}</span>

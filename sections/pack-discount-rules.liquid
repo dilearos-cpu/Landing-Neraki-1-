@@ -12,6 +12,7 @@
     "id": {{ block.id | json }},
     "title": {{ block.settings.title | default: rule_collection.title | json }},
     "enabled": true,
+    "scope": "pack",
     "priority": {{ block.settings.priority | default: 10 }},
     "exclusive": {{ block.settings.exclusive | json }},
     "count_mode": {{ block.settings.count_mode | json }},
@@ -36,7 +37,7 @@
   "settings": [
     {
       "type": "paragraph",
-      "content": "Replica reglas tipo Flycart (Discount Rules): filtra por coleccion, cuenta cantidades del pack y aplica tramos de precio. El pack debe usar la misma coleccion que la regla."
+      "content": "Preferible usar el panel global «Reglas de precio (global)» en el editor del tema (aplica en toda la tienda). Esta seccion solo sirve para reglas exclusivas de una landing de pack."
     },
     {
       "type": "paragraph",
