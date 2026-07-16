@@ -1,0 +1,284 @@
+(function (global) {
+  var state = global.__PackPageState || (global.__PackPageState = {
+    packBuilderInstances: {}
+  });
+  var packBuilderInstances = state.packBuilderInstances;
+
+  function getAllPackSections() {
+    return Array.prototype.slice.call(
+      document.querySelectorAll('.pack-ui:not([data-empty="true"])')
+    );
+  }
+
+  function getPackSection() {
+    var packs = getAllPackSections();
+    return packs.length ? packs[0] : null;
+  }
+
+  function findPackInSectionWrapper(wrapper) {
+    if (!wrapper) {
+      return null;
+    }
+
+    if (wrapper.classList && wrapper.classList.contains("pack-ui") && wrapper.dataset.empty !== "true") {
+      return wrapper;
+    }
+
+    return wrapper.querySelector('.pack-ui:not([data-empty="true"])');
+  }
+
+  function walkSectionSiblings(startWrapper, direction) {
+    var cursor = startWrapper;
+
+    while (cursor) {
+      cursor = direction === "next" ? cursor.nextElementSibling : cursor.previousElementSibling;
+      if (!cursor) {
+        break;
+      }
+
+      var pack = findPackInSectionWrapper(cursor);
+      if (pack) {
+        return pack;
+      }
+    }
+
+    return null;
+  }
+
+  function getPackSectionForNode(node, preferredMode) {
+    var packs = getAllPackSections();
+    if (!packs.length) {
+      return null;
+    }
+
+    if (preferredMode === "simple") {
+      var basicasPack = packs.find(function (pack) {
+        return pack.dataset.packMode === "simple" || pack.dataset.packKind === "basicas";
+      });
+      if (basicasPack) {
+        return basicasPack;
+      }
+    }
+
+    if (preferredMode === "variable") {
+      var bodysPack = packs.find(function (pack) {
+        return pack.dataset.packMode === "variable" || pack.dataset.packKind === "bodys";
+      });
+      if (bodysPack) {
+        return bodysPack;
+      }
+    }
+
+    var wrapper = node.closest(".shopify-section");
+    if (wrapper) {
+      var nextPack = walkSectionSiblings(wrapper, "next");
+      if (nextPack) {
+        return nextPack;
+      }
+
+      var previousPack = walkSectionSiblings(wrapper, "previous");
+      if (previousPack) {
+        return previousPack;
+      }
+    }
+
+    return packs[0];
+  }
+
+  function getPackSectionForCta(ctaElement, preferredMode) {
+    var packs = getAllPackSections();
+    if (!packs.length) {
+      return null;
+    }
+
+    if (preferredMode === "simple") {
+      return (
+        packs.find(function (pack) {
+          return pack.dataset.packMode === "simple" || pack.dataset.packKind === "basicas";
+        }) || null
+      );
+    }
+
+    if (preferredMode === "variable") {
+      return (
+        packs.find(function (pack) {
+          return pack.dataset.packMode === "variable" || pack.dataset.packKind === "bodys";
+        }) || null
+      );
+    }
+
+    var wrapper = ctaElement.closest(".shopify-section");
+    if (wrapper) {
+      var previousPack = walkSectionSiblings(wrapper, "previous");
+      if (previousPack) {
+        return previousPack;
+      }
+
+      var nextPack = walkSectionSiblings(wrapper, "next");
+      if (nextPack) {
+        return nextPack;
+      }
+    }
+
+    return packs[0];
+  }
+
+  function getPackBuyButton(packSection) {
+    var pack = packSection || getPackSection();
+    if (!pack) {
+      return null;
+    }
+
+    var actionsBuy = pack.querySelector(".pack-actions .pack-button--buy");
+    if (actionsBuy) {
+      return actionsBuy;
+    }
+
+    return pack.querySelector('.pack-button--buy:not([data-select-variant])');
+  }
+
+  function getPackSlots(packSection) {
+    var pack = packSection || getPackSection();
+    return pack ? pack.querySelector(".pack-slots") : null;
+  }
+
+  function resolveFloatTriggerMode(triggerMode, packSection) {
+    if (triggerMode === "pack_slots" || triggerMode === "cta_section") {
+      return triggerMode;
+    }
+
+    var pack = packSection || getPackSection();
+    if (!pack) {
+      return triggerMode;
+    }
+
+    if (pack.dataset.packMode === "simple") {
+      return "pack_slots";
+    }
+
+    return triggerMode;
+  }
+
+  function getPackTriggerNode(triggerMode, packSection) {
+    var mode = resolveFloatTriggerMode(triggerMode, packSection);
+
+    if (mode === "pack_slots") {
+      return getPackSlots(packSection) || getPackBuyButton(packSection);
+    }
+
+    if (mode === "pack_buy") {
+      return getPackBuyButton(packSection) || getPackSlots(packSection);
+    }
+
+    return null;
+  }
+
+  function triggerPackBuy(packSection) {
+    if (global.PackCheckout && typeof global.PackCheckout.triggerBuy === "function") {
+      global.PackCheckout.triggerBuy();
+      return true;
+    }
+
+    var buyButton = getPackBuyButton(packSection);
+    if (buyButton) {
+      buyButton.click();
+      return true;
+    }
+
+    return false;
+  }
+
+  function scrollToPack(packSection) {
+    var pack = packSection || getPackSection();
+    if (!pack) {
+      return false;
+    }
+
+    pack.scrollIntoView({ behavior: "smooth", block: "start" });
+    return true;
+  }
+
+  function registerPackBuilder(sectionId, api) {
+    if (!sectionId || !api) {
+      return;
+    }
+
+    packBuilderInstances[String(sectionId)] = api;
+  }
+
+  function unregisterPackBuilder(sectionId) {
+    if (!sectionId) {
+      return;
+    }
+
+    delete packBuilderInstances[String(sectionId)];
+  }
+
+  function getPackBuilder(packSection) {
+    if (!packSection || !packSection.dataset.sectionId) {
+      return null;
+    }
+
+    return packBuilderInstances[packSection.dataset.sectionId] || null;
+  }
+
+  function getPackBuilderForNode(node, preferredMode) {
+    var pack = getPackSectionForNode(node, preferredMode);
+    if (!pack && preferredMode === "variable") {
+      pack = document.querySelector('.pack-ui[data-pack-kind="bodys"]:not([data-empty="true"])');
+    }
+    if (!pack && preferredMode === "simple") {
+      pack = document.querySelector('.pack-ui[data-pack-kind="basicas"]:not([data-empty="true"])');
+    }
+    return getPackBuilder(pack);
+  }
+
+  function normalizeCartAddUrl(cartUrl) {
+    var base = String(cartUrl || "/cart/add").replace(/\.js$/, "");
+    return base + ".js";
+  }
+
+  function clearCart() {
+    return fetch("/cart/clear.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      }
+    }).catch(function () {
+      return null;
+    });
+  }
+
+  function replaceCartWithItems(items, cartUrl) {
+    return clearCart().then(function () {
+      return fetch(normalizeCartAddUrl(cartUrl), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify({ items: items })
+      });
+    });
+  }
+
+  global.PackPage = {
+    getAllPackSections: getAllPackSections,
+    getPackSection: getPackSection,
+    getPackSectionForNode: getPackSectionForNode,
+    getPackSectionForCta: getPackSectionForCta,
+    getPackBuyButton: getPackBuyButton,
+    getPackSlots: getPackSlots,
+    resolveFloatTriggerMode: resolveFloatTriggerMode,
+    getPackTriggerNode: getPackTriggerNode,
+    triggerPackBuy: triggerPackBuy,
+    scrollToPack: scrollToPack,
+    registerPackBuilder: registerPackBuilder,
+    unregisterPackBuilder: unregisterPackBuilder,
+    getPackBuilder: getPackBuilder,
+    getPackBuilderForNode: getPackBuilderForNode,
+    clearCart: clearCart,
+    replaceCartWithItems: replaceCartWithItems
+  };
+})(window);

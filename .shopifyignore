@@ -1,0 +1,3 @@
+# No sobrescribir contenido editado en Theme Editor al hacer theme:push
+templates/*.json
+config/settings_data.json
