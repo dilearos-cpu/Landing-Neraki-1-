@@ -1,0 +1,265 @@
+{{ 'pack-discount-rules.css' | asset_url | stylesheet_tag }}
+
+<script type="application/json" data-discount-rules>
+[
+{%- assign first_rule = true -%}
+{%- for block in section.blocks -%}
+  {%- if block.type == 'rule' -%}
+    {%- liquid
+      assign rule_enabled = block.settings.enabled
+      if rule_enabled == nil
+        assign rule_enabled = true
+      endif
+    -%}
+    {%- if rule_enabled -%}
+    {%- liquid
+      assign filter_type = block.settings.filter_type | default: 'collection'
+      assign rule_product = blank
+      assign rule_collection = blank
+      assign product_handle_setting = blank
+      assign has_filter = false
+
+      if filter_type == 'all_products'
+        assign has_filter = true
+      elsif filter_type == 'collection' and block.settings.collection != blank
+        assign rule_collection = block.settings.collection
+        assign has_filter = true
+      elsif filter_type == 'product' and block.settings.product != blank
+        if block.settings.product.handle != blank
+          assign product_handle_setting = block.settings.product.handle
+          assign rule_product = block.settings.product
+        else
+          assign product_handle_setting = block.settings.product
+          assign rule_product = all_products[product_handle_setting]
+        endif
+        if rule_product != blank
+          assign has_filter = true
+        elsif product_handle_setting != blank
+          assign has_filter = true
+        endif
+      elsif filter_type == 'tag' and block.settings.product_tag != blank
+        assign has_filter = true
+      endif
+    -%}
+    {%- if has_filter -%}
+      {%- unless first_rule -%},{%- endunless -%}
+      {%- assign first_rule = false -%}
+  {
+    "id": {{ block.id | json }},
+    "title": {{ block.settings.title | default: 'Regla' | json }},
+    "enabled": true,
+    "scope": {{ block.settings.scope | default: 'both' | json }},
+    "priority": {{ block.settings.priority | default: 10 }},
+    "exclusive": {{ block.settings.exclusive | json }},
+    "count_mode": {{ block.settings.count_mode | json }},
+    "filter": {
+      "type": {{ filter_type | json }}{% if filter_type == 'collection' and rule_collection != blank %},
+      "collection": {{ rule_collection.handle | json }},
+      "collections": [{{ rule_collection.handle | json }}],
+      "product_ids": [
+        {%- assign first_product_id = true -%}
+        {%- for collection_product in rule_collection.products limit: 250 -%}
+          {%- unless first_product_id -%},{%- endunless -%}
+          {{ collection_product.id }}
+          {%- assign first_product_id = false -%}
+        {%- endfor -%}
+      ]{% elsif filter_type == 'product' %}{% if rule_product != blank %},
+      "product_id": {{ rule_product.id | json }},
+      "product_handle": {{ rule_product.handle | json }}{% elsif product_handle_setting != blank %},
+      "product_handle": {{ product_handle_setting | json }}{% endif %}{% elsif filter_type == 'tag' %},
+      "tag": {{ block.settings.product_tag | json }}{% endif %}
+    },
+    "ranges": {% if block.settings.tiers_json != blank %}{{ block.settings.tiers_json }}{% else %}[]{% endif %},
+    "conditions": {% if block.settings.conditions_json != blank %}{{ block.settings.conditions_json }}{% else %}[]{% endif %}
+  }
+    {%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+]
+</script>
+
+<div
+  class="discount-rules-cart-config"
+  data-discount-rules-cart-config
+  data-checkout-endpoint="{{ section.settings.checkout_endpoint | escape }}"
+  hidden
+></div>
+
+{% schema %}
+{
+  "name": "Reglas de precio (global)",
+  "tag": "section",
+  "class": "section-discount-rules-global",
+  "limit": 1,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Panel central para crear reglas de precio por cantidad (estilo Flycart). Aplica en colecciones, fichas de producto, packs y checkout COD segun el alcance de cada regla."
+    },
+    {
+      "type": "paragraph",
+      "content": "Importante: la Home usa secciones Pack (no tarjetas normales). Para que aplique ahi, usa alcance «Tienda y packs» y filtro por coleccion del pack (ej. Bodys). Si filtras un solo producto, solo afecta ese producto en coleccion y ficha."
+    },
+    {
+      "type": "paragraph",
+      "content": "La regla debe estar en «Activa». Si hay descuento, el checkout usa borrador con invoiceUrl (COD Express). Sin descuento, checkout normal de Shopify."
+    },
+    {
+      "type": "text",
+      "id": "checkout_endpoint",
+      "label": "Endpoint checkout con descuento",
+      "default": "/apps/cod-express/checkout",
+      "info": "Requiere app COD Express desplegada. Usa /apps/cod-express/checkout"
+    },
+    {
+      "type": "paragraph",
+      "content": "Ejemplo tiers_json: [{\"min\":1,\"max\":3,\"type\":\"fixed_price_per_item\",\"value\":3000000,\"label\":\"1-3 uds\"},{\"min\":4,\"max\":99,\"type\":\"fixed_price_per_item\",\"value\":2500000,\"label\":\"4+ uds\"}] — value en centavos (25000 COP = 2500000)."
+    },
+    {
+      "type": "paragraph",
+      "content": "Condiciones opcionales: [{\"type\":\"payment_method\",\"value\":\"cod\"}] solo afecta pack/COD. [{\"type\":\"min_quantity\",\"value\":4}] exige cantidad minima."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "rule",
+      "name": "Regla de precio",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "enabled",
+          "label": "Activa",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Nombre interno",
+          "default": "Regla tienda"
+        },
+        {
+          "type": "select",
+          "id": "scope",
+          "label": "Alcance",
+          "default": "both",
+          "options": [
+            {
+              "value": "storefront",
+              "label": "Solo tienda (Home, coleccion, producto)"
+            },
+            {
+              "value": "pack",
+              "label": "Solo packs + checkout COD"
+            },
+            {
+              "value": "both",
+              "label": "Tienda y packs"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "filter_type",
+          "label": "Filtrar productos por",
+          "default": "collection",
+          "options": [
+            {
+              "value": "all_products",
+              "label": "Todos los productos"
+            },
+            {
+              "value": "collection",
+              "label": "Coleccion"
+            },
+            {
+              "value": "product",
+              "label": "Producto especifico"
+            },
+            {
+              "value": "tag",
+              "label": "Etiqueta (tag)"
+            }
+          ]
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Coleccion"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Producto"
+        },
+        {
+          "type": "text",
+          "id": "product_tag",
+          "label": "Etiqueta del producto",
+          "info": "Coincidencia exacta, sin distinguir mayusculas."
+        },
+        {
+          "type": "select",
+          "id": "count_mode",
+          "label": "Contar cantidades por",
+          "default": "filter_set",
+          "options": [
+            {
+              "value": "filter_set",
+              "label": "Todo el conjunto del filtro (como Flycart)"
+            },
+            {
+              "value": "individual_product",
+              "label": "Por producto individual"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "id": "tiers_json",
+          "label": "Tramos de precio (JSON)",
+          "default": "[{\"min\":1,\"max\":3,\"type\":\"fixed_price_per_item\",\"value\":3000000,\"label\":\"1-3\"},{\"min\":4,\"max\":10,\"type\":\"fixed_price_per_item\",\"value\":2500000,\"label\":\"4-10\"}]",
+          "info": "type: fixed_price_per_item | percentage | fixed_discount"
+        },
+        {
+          "type": "textarea",
+          "id": "conditions_json",
+          "label": "Condiciones extra (JSON, opcional)",
+          "default": "[]"
+        },
+        {
+          "type": "range",
+          "id": "priority",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "label": "Prioridad (mayor gana primero)",
+          "default": 10
+        },
+        {
+          "type": "checkbox",
+          "id": "exclusive",
+          "label": "Exclusiva (ignorar otras reglas si coincide)",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Reglas de precio global",
+      "blocks": [
+        {
+          "type": "rule",
+          "settings": {
+            "title": "Bodys web - pack 4",
+            "scope": "both",
+            "filter_type": "collection",
+            "tiers_json": "[{\"min\":4,\"max\":4,\"type\":\"fixed_price_per_item\",\"value\":2500000,\"label\":\"Pack 4\"},{\"min\":1,\"max\":3,\"type\":\"fixed_price_per_item\",\"value\":3000000,\"label\":\"Menos de 4\"}]"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
