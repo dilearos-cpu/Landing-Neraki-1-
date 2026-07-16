@@ -194,10 +194,6 @@
     this.taxRow = section.querySelector("[data-cod-tax-row]");
     this.shippingNode = section.querySelector("[data-cod-shipping]");
     this.totalNode = section.querySelector("[data-cod-total]");
-    this.discountRow = section.querySelector("[data-cod-discount-row]");
-    this.discountNode = section.querySelector("[data-cod-discount]");
-    this.savedRow = section.querySelector("[data-cod-saved-row]");
-    this.savedNode = section.querySelector("[data-cod-saved]");
     this.submitButton = section.querySelector("[data-cod-submit]");
     this.fallbackButton = section.querySelector("[data-cod-fallback]");
     this.orderNameNode = section.querySelector("[data-cod-order-name]");
@@ -398,15 +394,7 @@
         var image = item.image
           ? '<img src="' + item.image + '" alt="">'
           : '<div class="pack-cod__item-placeholder"></div>';
-        var compareAt = Number(item.compareAtUnitPrice || 0);
-        var showCompare = compareAt > Number(item.unitPrice || 0);
-        var priceMarkup = showCompare
-          ? '<span class="pack-cod__item-price--compare">' +
-            formatMoney(compareAt * item.quantity, self.config.currency) +
-            '</span><span class="pack-cod__item-price--final">' +
-            formatMoney(item.price, self.config.currency) +
-            "</span>"
-          : formatMoney(item.price, self.config.currency);
+        var priceMarkup = formatMoney(item.price, self.config.currency);
 
         return (
           '<li class="pack-cod__item">' +
@@ -444,14 +432,6 @@
     };
 
     this.subtotalNode.textContent = formatMoney(subtotal, this.config.currency);
-    if (this.discountRow && this.discountNode) {
-      this.discountRow.hidden = discountTotal <= 0;
-      this.discountNode.textContent = "-" + formatMoney(discountTotal, this.config.currency);
-    }
-    if (this.savedRow && this.savedNode) {
-      this.savedRow.hidden = discountTotal <= 0;
-      this.savedNode.textContent = formatMoney(discountTotal, this.config.currency);
-    }
     if (this.taxNode) {
       this.taxNode.textContent = formatMoney(taxAmount, this.config.currency);
     }
