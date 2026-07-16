@@ -87,9 +87,12 @@
     if (filterType === "product") {
       var productId = String(filter.product_id || "");
       var productHandle = toLower(filter.product_handle || filter.product || "");
+      var contextId = String(productContext.productId || "");
+      var contextHandle = toLower(productContext.productHandle || "");
+
       return (
-        (productId && String(productContext.productId || "") === productId) ||
-        (productHandle && toLower(productContext.productHandle || "") === productHandle)
+        (productId && contextId && contextId === productId) ||
+        (productHandle && contextHandle && contextHandle === productHandle)
       );
     }
 
@@ -351,13 +354,21 @@
 
   function getLowestTierPrice(originalUnitPrice, productContext, options) {
     options = options || {};
+    return getUnitPriceForQuantity(originalUnitPrice, options.quantity || 1, productContext, {
+      scope: options.scope || "storefront",
+      paymentMethod: options.paymentMethod || "online"
+    });
+  }
+
+  function getBestCardPrice(originalUnitPrice, productContext, options) {
+    options = options || {};
     var scope = options.scope || "storefront";
-    var lowest = {
-      unitPrice: toNumber(originalUnitPrice, 0),
-      originalUnitPrice: toNumber(originalUnitPrice, 0),
-      appliedTier: null,
-      appliedRule: null
-    };
+    var base = toNumber(originalUnitPrice, 0);
+    var best = getUnitPriceForQuantity(base, 1, productContext, {
+      scope: scope,
+      paymentMethod: "online"
+    });
+    var lowest = best;
 
     getRules(scope).forEach(function (rule) {
       if (!matchesFilter(rule, productContext)) {
@@ -365,11 +376,11 @@
       }
 
       (rule.ranges || []).forEach(function (tier) {
-        var unitPrice = applyTierToUnitPrice(toNumber(originalUnitPrice, 0), tier);
+        var unitPrice = applyTierToUnitPrice(base, tier);
         if (unitPrice < lowest.unitPrice) {
           lowest = {
             unitPrice: unitPrice,
-            originalUnitPrice: toNumber(originalUnitPrice, 0),
+            originalUnitPrice: base,
             appliedTier: tier,
             appliedRule: rule
           };
@@ -377,7 +388,13 @@
       });
     });
 
-    return lowest;
+    return {
+      unitPrice: best.unitPrice,
+      originalUnitPrice: base,
+      appliedTier: best.appliedTier,
+      appliedRule: best.appliedRule,
+      fromPrice: lowest.unitPrice < best.unitPrice ? lowest.unitPrice : null
+    };
   }
 
   function getTierRowsForProduct(productContext, options) {
@@ -547,6 +564,7 @@
     applyRules: applyRules,
     getUnitPriceForQuantity: getUnitPriceForQuantity,
     getLowestTierPrice: getLowestTierPrice,
+    getBestCardPrice: getBestCardPrice,
     getTierRowsForProduct: getTierRowsForProduct,
     getProductContextFromNode: getProductContextFromNode,
     initFromDocument: initFromDocument

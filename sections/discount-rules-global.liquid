@@ -7,13 +7,23 @@
   {%- if block.type == 'rule' and block.settings.enabled -%}
     {%- liquid
       assign filter_type = block.settings.filter_type | default: 'collection'
+      assign rule_product = blank
+      assign rule_collection = blank
       assign has_filter = false
+
       if filter_type == 'all_products'
         assign has_filter = true
       elsif filter_type == 'collection' and block.settings.collection != blank
+        assign rule_collection = block.settings.collection
         assign has_filter = true
       elsif filter_type == 'product' and block.settings.product != blank
-        assign has_filter = true
+        assign rule_product = block.settings.product
+        if rule_product.id == blank
+          assign rule_product = all_products[block.settings.product]
+        endif
+        if rule_product != blank
+          assign has_filter = true
+        endif
       elsif filter_type == 'tag' and block.settings.product_tag != blank
         assign has_filter = true
       endif
@@ -30,11 +40,11 @@
     "exclusive": {{ block.settings.exclusive | json }},
     "count_mode": {{ block.settings.count_mode | json }},
     "filter": {
-      "type": {{ filter_type | json }}{% if filter_type == 'collection' and block.settings.collection != blank %},
-      "collection": {{ block.settings.collection.handle | json }},
-      "collections": [{{ block.settings.collection.handle | json }}]{% elsif filter_type == 'product' and block.settings.product != blank %},
-      "product_id": {{ block.settings.product.id | json }},
-      "product_handle": {{ block.settings.product.handle | json }}{% elsif filter_type == 'tag' %},
+      "type": {{ filter_type | json }}{% if filter_type == 'collection' and rule_collection != blank %},
+      "collection": {{ rule_collection.handle | json }},
+      "collections": [{{ rule_collection.handle | json }}]{% elsif filter_type == 'product' and rule_product != blank %},
+      "product_id": {{ rule_product.id | json }},
+      "product_handle": {{ rule_product.handle | json }}{% elsif filter_type == 'tag' %},
       "tag": {{ block.settings.product_tag | json }}{% endif %}
     },
     "ranges": {% if block.settings.tiers_json != blank %}{{ block.settings.tiers_json }}{% else %}[]{% endif %},
@@ -58,7 +68,15 @@
   "settings": [
     {
       "type": "paragraph",
-      "content": "Panel central para crear reglas de precio por cantidad (estilo Flycart). Aplica en Home, fichas de producto, packs y checkout COD segun el alcance de cada regla."
+      "content": "Panel central para crear reglas de precio por cantidad (estilo Flycart). Aplica en colecciones, fichas de producto, packs y checkout COD segun el alcance de cada regla."
+    },
+    {
+      "type": "paragraph",
+      "content": "Importante: la Home usa secciones Pack (no tarjetas normales). Para que aplique ahi, usa alcance «Tienda y packs» y filtro por coleccion del pack (ej. Bodys). Si filtras un solo producto, solo afecta ese producto en coleccion y ficha."
+    },
+    {
+      "type": "paragraph",
+      "content": "La regla debe estar en «Activa». El checkout online nativo de Shopify aun no recalcula el total automaticamente; en ficha y coleccion veras el precio correcto antes de comprar."
     },
     {
       "type": "paragraph",

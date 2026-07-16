@@ -12,6 +12,11 @@
     }
   }
 
+  function toNumber(value, fallback) {
+    var parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback || 0;
+  }
+
   function getEngine() {
     return global.DiscountRules || global.PackDiscountRules || null;
   }
@@ -29,40 +34,61 @@
     });
   }
 
-  function setPriceNode(priceRoot, unitPrice, originalUnitPrice, quantity) {
+  function ensureSaleMarkup(priceRoot, regularText, saleText) {
+    var saleWrap = priceRoot.querySelector(".price__sale");
+    if (!saleWrap) {
+      saleWrap = document.createElement("div");
+      saleWrap.className = "price__sale";
+      priceRoot.querySelector(".price__container").appendChild(saleWrap);
+    }
+
+    var compareNode = saleWrap.querySelector(".price-item--regular");
+    if (!compareNode) {
+      compareNode = document.createElement("s");
+      compareNode.className = "price-item price-item--regular";
+      saleWrap.appendChild(compareNode);
+    }
+
+    var saleNode = saleWrap.querySelector(".price-item--sale");
+    if (!saleNode) {
+      saleNode = document.createElement("span");
+      saleNode.className = "price-item price-item--sale price-item--last";
+      saleWrap.appendChild(saleNode);
+    }
+
+    compareNode.textContent = regularText;
+    saleNode.textContent = saleText;
+  }
+
+  function setPriceNode(priceRoot, unitPrice, originalUnitPrice, quantity, options) {
     if (!priceRoot) {
       return;
     }
 
+    options = options || {};
     var qty = toNumber(quantity, 1);
     var hasDiscount = originalUnitPrice > unitPrice;
     var displayTotal = unitPrice * qty;
     var originalTotal = originalUnitPrice * qty;
+    var prefix = options.fromPrefix ? "Desde " : "";
 
     priceRoot.classList.toggle("price--on-sale", hasDiscount);
     priceRoot.classList.toggle("discount-rules--active", hasDiscount);
 
     var regularItem = priceRoot.querySelector(".price__regular .price-item--regular");
-    var saleCompare = priceRoot.querySelector(".price__sale .price-item--regular");
-    var saleItem = priceRoot.querySelector(".price-item--sale");
 
     if (hasDiscount) {
-      if (saleCompare) {
-        saleCompare.textContent = formatMoney(originalTotal);
-      }
-      if (saleItem) {
-        saleItem.textContent = formatMoney(displayTotal);
-      } else if (regularItem) {
-        regularItem.textContent = formatMoney(displayTotal);
+      ensureSaleMarkup(
+        priceRoot,
+        formatMoney(originalTotal),
+        prefix + formatMoney(displayTotal)
+      );
+      if (regularItem) {
+        regularItem.textContent = prefix + formatMoney(displayTotal);
       }
     } else if (regularItem) {
       regularItem.textContent = formatMoney(displayTotal);
     }
-  }
-
-  function toNumber(value, fallback) {
-    var parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback || 0;
   }
 
   function enhanceCard(cardNode, engine) {
@@ -72,20 +98,25 @@
       return;
     }
 
-    var lowest = engine.getLowestTierPrice(originalPrice, productContext, { scope: "storefront" });
-    if (!lowest.appliedTier || lowest.unitPrice >= originalPrice) {
+    var pricing = engine.getBestCardPrice
+      ? engine.getBestCardPrice(originalPrice, productContext, { scope: "storefront" })
+      : engine.getLowestTierPrice(originalPrice, productContext, { scope: "storefront" });
+
+    if (!pricing.appliedTier || pricing.unitPrice >= originalPrice) {
       return;
     }
 
     var priceRoot = cardNode.querySelector(".price");
-    setPriceNode(priceRoot, lowest.unitPrice, originalPrice, 1);
+    setPriceNode(priceRoot, pricing.unitPrice, originalPrice, 1, {
+      fromPrefix: Boolean(pricing.fromPrice)
+    });
 
     var badge = cardNode.querySelector("[data-discount-rules-badge]");
     if (!badge) {
       badge = document.createElement("span");
       badge.className = "discount-rules__badge badge price__badge-sale color-accent-1";
       badge.setAttribute("data-discount-rules-badge", "");
-      badge.textContent = lowest.appliedTier.label || "Descuento por cantidad";
+      badge.textContent = pricing.appliedTier.label || "Descuento por cantidad";
       if (priceRoot) {
         priceRoot.appendChild(badge);
       }
@@ -166,11 +197,38 @@
           return;
         }
         productRoot.dataset.variantPrice = String(event.data.variant.price || "");
-        refresh();
+        window.setTimeout(refresh, 0);
       });
 
-      subscribe(PUB_SUB_EVENTS.quantityUpdate, refresh);
+      subscribe(PUB_SUB_EVENTS.quantityUpdate, function () {
+        window.setTimeout(refresh, 0);
+      });
     }
+
+    document.addEventListener("product-info:loaded", refresh);
+
+    if (typeof MutationObserver !== "undefined") {
+      var observer = new MutationObserver(function () {
+        refresh();
+      });
+      observer.observe(productRoot, { childList: true, subtree: true, characterData: true });
+    }
+  }
+
+  function logDesignMode(engine) {
+    if (!window.Shopify || !window.Shopify.designMode) {
+      return;
+    }
+
+    var rules = engine.getRules("storefront");
+    if (!rules.length) {
+      console.warn(
+        "DiscountRules: no hay reglas activas para tienda. Revisa que la regla este en Activa y tenga filtro/coleccion/producto configurado."
+      );
+      return;
+    }
+
+    console.info("DiscountRules: reglas de tienda cargadas", rules.length, rules);
   }
 
   function init(engine) {
@@ -178,6 +236,7 @@
       return;
     }
 
+    logDesignMode(engine);
     enhanceCards(engine);
     bindProductPage(engine);
   }
@@ -193,7 +252,5 @@
   }
 
   document.addEventListener("shopify:section:load", boot);
-  document.addEventListener("discount-rules:ready", function () {
-    waitForEngine(init);
-  });
+  document.addEventListener("discount-rules:ready", boot);
 })();
