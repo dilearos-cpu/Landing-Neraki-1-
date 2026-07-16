@@ -69,6 +69,15 @@
     }
 
     if (filterType === "collection") {
+      var productIds = (filter.product_ids || []).map(function (id) {
+        return String(id);
+      });
+      var contextId = String(productContext.productId || "");
+
+      if (productIds.length && contextId) {
+        return productIds.indexOf(contextId) !== -1;
+      }
+
       var ruleCollections = getCollectionHandles(filter);
       if (!ruleCollections.length) {
         return false;
@@ -428,6 +437,154 @@
     return rows;
   }
 
+  function normalizeCartLineItem(item) {
+    var handle = "";
+    var url = item.url || "";
+    var match = url.match(/\/products\/([^/?#]+)/);
+    if (match) {
+      handle = match[1];
+    }
+
+    var unitPrice = toNumber(item.original_price || item.price, 0);
+
+    return {
+      key: item.key || "",
+      variantId: item.variant_id || item.id,
+      productId: item.product_id,
+      productHandle: handle,
+      quantity: toNumber(item.quantity, 1),
+      title: item.product_title || item.title || "",
+      variantTitle: item.variant_title || "",
+      image: item.featured_image && item.featured_image.url ? item.featured_image.url : item.image || "",
+      collectionHandles: item.collectionHandles || [],
+      tags: item.tags || [],
+      unitPrice: unitPrice,
+      originalUnitPrice: unitPrice,
+      price: unitPrice * toNumber(item.quantity, 1),
+      compareAtUnitPrice: 0,
+      tierLabel: "",
+      ruleId: null
+    };
+  }
+
+  function applyStorefrontCartRules(cartItems, options) {
+    options = options || {};
+    var paymentMethod = options.paymentMethod || "online";
+    var itemState = (cartItems || []).map(normalizeCartLineItem);
+    var variantIds = itemState.map(function (item) {
+      return String(item.variantId);
+    });
+    var appliedRule = null;
+    var appliedTier = null;
+    var lockedIndices = {};
+
+    var originalSubtotal = itemState.reduce(function (sum, item) {
+      return sum + item.originalUnitPrice * item.quantity;
+    }, 0);
+
+    for (var ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
+      var rule = rules[ruleIndex];
+
+      if (!matchesScope(rule, "storefront")) {
+        continue;
+      }
+
+      var matchingIndices = [];
+      itemState.forEach(function (item, index) {
+        if (lockedIndices[index]) {
+          return;
+        }
+        if (matchesFilter(rule, item)) {
+          matchingIndices.push(index);
+        }
+      });
+
+      if (!matchingIndices.length) {
+        continue;
+      }
+
+      var matchedQuantity = matchingIndices.reduce(function (sum, index) {
+        return sum + itemState[index].quantity;
+      }, 0);
+
+      if (
+        !matchesConditions(rule, {
+          paymentMethod: paymentMethod,
+          totalQuantity: matchedQuantity,
+          variantIds: variantIds,
+          collectionHandle: ""
+        })
+      ) {
+        continue;
+      }
+
+      var countMode = rule.count_mode || "filter_set";
+      var tier = null;
+      var ruleApplied = false;
+
+      if (countMode === "individual_product") {
+        matchingIndices.forEach(function (index) {
+          var item = itemState[index];
+          var itemTier = findMatchingTier(rule.ranges, item.quantity);
+          if (!itemTier) {
+            return;
+          }
+          var unitPrice = applyTierToUnitPrice(item.originalUnitPrice, itemTier);
+          itemState[index] = Object.assign({}, item, {
+            unitPrice: unitPrice,
+            price: unitPrice * item.quantity,
+            compareAtUnitPrice: item.originalUnitPrice,
+            tierLabel: itemTier.label || "",
+            ruleId: rule.id
+          });
+          tier = itemTier;
+          ruleApplied = true;
+        });
+      } else {
+        tier = findMatchingTier(rule.ranges, matchedQuantity);
+        if (tier) {
+          matchingIndices.forEach(function (index) {
+            var item = itemState[index];
+            var unitPrice = applyTierToUnitPrice(item.originalUnitPrice, tier);
+            itemState[index] = Object.assign({}, item, {
+              unitPrice: unitPrice,
+              price: unitPrice * item.quantity,
+              compareAtUnitPrice: item.originalUnitPrice,
+              tierLabel: tier.label || "",
+              ruleId: rule.id
+            });
+          });
+          ruleApplied = true;
+        }
+      }
+
+      if (ruleApplied) {
+        appliedRule = rule;
+        appliedTier = tier;
+        if (rule.exclusive) {
+          matchingIndices.forEach(function (index) {
+            lockedIndices[index] = true;
+          });
+          break;
+        }
+      }
+    }
+
+    var subtotal = itemState.reduce(function (sum, item) {
+      return sum + item.price;
+    }, 0);
+
+    return {
+      lineItems: itemState,
+      originalSubtotal: originalSubtotal,
+      subtotal: subtotal,
+      discountTotal: Math.max(0, originalSubtotal - subtotal),
+      appliedRule: appliedRule,
+      appliedTier: appliedTier,
+      totalQuantity: countLineItems(itemState)
+    };
+  }
+
   function applyRules(lineItems, context) {
     context = context || {};
     var collectionHandle = toLower(context.collectionHandle || "");
@@ -562,6 +719,7 @@
     registerRules: registerRules,
     getRules: getRules,
     applyRules: applyRules,
+    applyStorefrontCartRules: applyStorefrontCartRules,
     getUnitPriceForQuantity: getUnitPriceForQuantity,
     getLowestTierPrice: getLowestTierPrice,
     getBestCardPrice: getBestCardPrice,

@@ -42,6 +42,36 @@
   color: #067647;
 }
 
+.discount-rules-cart-totals {
+  margin-bottom: 1rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid rgba(var(--color-foreground), 0.08);
+  border-bottom: 1px solid rgba(var(--color-foreground), 0.08);
+}
+
+.discount-rules-cart-totals__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.95rem;
+}
+
+.discount-rules-cart-totals__row--discount {
+  color: #067647;
+  font-weight: 700;
+}
+
+.discount-rules-cart-totals__row--total strong {
+  font-size: 1.05rem;
+}
+
+.discount-rules-cart-totals__note {
+  margin: 0.5rem 0 0;
+  color: rgba(var(--color-foreground), 0.65);
+  font-size: 0.85rem;
+}
+
 .pack-cod__total-row--discount {
   color: #067647;
   font-weight: 700;

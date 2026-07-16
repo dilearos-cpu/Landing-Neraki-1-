@@ -138,6 +138,80 @@ async function shopifyGraphql(query, variables) {
   return payload.data;
 }
 
+async function createStorefrontCheckout(body) {
+  const variantLineItems = (body.lineItems || []).map((item) => ({
+    variantId: variantGid(item.variantId),
+    quantity: Number(item.quantity || 1)
+  }));
+
+  if (!variantLineItems.length) {
+    throw new Error("No hay productos en el carrito.");
+  }
+
+  const discountAmount = Number(body.discountAmount || 0);
+  const draftInput = {
+    email: body.email || undefined,
+    phone: body.phone || undefined,
+    note: body.note || "Checkout con descuento por cantidad",
+    tags: ["Discount-Rules", "Storefront-Checkout"],
+    lineItems: variantLineItems
+  };
+
+  if (discountAmount > 0) {
+    draftInput.appliedDiscount = {
+      description: body.discountLabel || "Descuento por cantidad",
+      value: moneyFromCents(discountAmount),
+      valueType: "FIXED_AMOUNT"
+    };
+  }
+
+  const createMutation = `
+    mutation draftOrderCreate($input: DraftOrderInput!) {
+      draftOrderCreate(input: $input) {
+        draftOrder {
+          id
+          invoiceUrl
+          name
+        }
+        userErrors { field message }
+      }
+    }
+  `;
+
+  const createData = await shopifyGraphql(createMutation, { input: draftInput });
+  const createResult = createData.draftOrderCreate;
+
+  if (createResult.userErrors?.length) {
+    throw new Error(createResult.userErrors.map((error) => error.message).join(" "));
+  }
+
+  const draftOrder = createResult.draftOrder;
+  if (!draftOrder?.invoiceUrl) {
+    throw new Error("No se pudo generar la URL de pago.");
+  }
+
+  return {
+    draftOrderId: draftOrder.id,
+    draftOrderName: draftOrder.name,
+    invoiceUrl: draftOrder.invoiceUrl
+  };
+}
+
+async function handleProxyCheckout(req, res) {
+  try {
+    if (!verifyProxySignature(req.query)) {
+      return res.status(401).json({ error: "Firma de app proxy invalida." });
+    }
+
+    const body = parseProxyBody(req);
+    const result = await createStorefrontCheckout(body);
+    return res.json(result);
+  } catch (error) {
+    console.error("Discount checkout failed:", error.message);
+    return res.status(400).json({ error: error.message || "No se pudo iniciar el checkout." });
+  }
+}
+
 async function createCodOrder(body) {
   const customer = body.customer || {};
   const shippingAddress = body.shippingAddress || {};
@@ -238,6 +312,10 @@ app.get("/health", (_req, res) => {
 });
 
 app.post(["/proxy/order", "/proxy/order/", "/proxy/order/order", "/proxy/order/order/"], handleProxyOrder);
+app.post(
+  ["/proxy/checkout", "/proxy/checkout/", "/proxy/order/checkout", "/proxy/order/checkout/", "/checkout"],
+  handleProxyCheckout
+);
 
 app.post("/order", async (req, res) => {
   try {
@@ -245,6 +323,15 @@ app.post("/order", async (req, res) => {
     return res.json(result);
   } catch (error) {
     return res.status(400).json({ error: error.message || "No se pudo crear el pedido." });
+  }
+});
+
+app.post("/checkout", async (req, res) => {
+  try {
+    const result = await createStorefrontCheckout(req.body);
+    return res.json(result);
+  } catch (error) {
+    return res.status(400).json({ error: error.message || "No se pudo iniciar el checkout." });
   }
 });
 

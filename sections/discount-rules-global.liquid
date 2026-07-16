@@ -42,7 +42,15 @@
     "filter": {
       "type": {{ filter_type | json }}{% if filter_type == 'collection' and rule_collection != blank %},
       "collection": {{ rule_collection.handle | json }},
-      "collections": [{{ rule_collection.handle | json }}]{% elsif filter_type == 'product' and rule_product != blank %},
+      "collections": [{{ rule_collection.handle | json }}],
+      "product_ids": [
+        {%- assign first_product_id = true -%}
+        {%- for collection_product in rule_collection.products limit: 250 -%}
+          {%- unless first_product_id -%},{%- endunless -%}
+          {{ collection_product.id }}
+          {%- assign first_product_id = false -%}
+        {%- endfor -%}
+      ]{% elsif filter_type == 'product' and rule_product != blank %},
       "product_id": {{ rule_product.id | json }},
       "product_handle": {{ rule_product.handle | json }}{% elsif filter_type == 'tag' %},
       "tag": {{ block.settings.product_tag | json }}{% endif %}
@@ -56,8 +64,16 @@
 ]
 </script>
 
+<div
+  class="discount-rules-cart-config"
+  data-discount-rules-cart-config
+  data-checkout-endpoint="{{ section.settings.checkout_endpoint | escape }}"
+  hidden
+></div>
+
 <script src="{{ 'pack-discount-rules.js' | asset_url }}" defer></script>
 <script src="{{ 'discount-rules-storefront.js' | asset_url }}" defer></script>
+<script src="{{ 'discount-rules-cart.js' | asset_url }}" defer></script>
 
 {% schema %}
 {
@@ -76,7 +92,14 @@
     },
     {
       "type": "paragraph",
-      "content": "La regla debe estar en «Activa». El checkout online nativo de Shopify aun no recalcula el total automaticamente; en ficha y coleccion veras el precio correcto antes de comprar."
+      "content": "La regla debe estar en «Activa». Si hay descuento, el checkout usa borrador con invoiceUrl (COD Express). Sin descuento, checkout normal de Shopify."
+    },
+    {
+      "type": "text",
+      "id": "checkout_endpoint",
+      "label": "Endpoint checkout con descuento",
+      "default": "/apps/cod-express/checkout",
+      "info": "Requiere app COD Express desplegada. Usa /apps/cod-express/checkout"
     },
     {
       "type": "paragraph",
