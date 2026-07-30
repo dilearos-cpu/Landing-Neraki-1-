@@ -232,6 +232,8 @@ async function createCodOrder(body) {
         { key: "_caletzza_effi_hidden", value: "yes" },
         { key: "_caletzza_effi_flow_source", value: "pack" }
       ];
+      /* El flete Effi no debe generar IVA en el pedido. */
+      lineItem.taxable = false;
     }
 
     return lineItem;

@@ -315,9 +315,9 @@
   };
 
   PackCodCheckout.prototype.getShippingAmount = function (subtotal) {
-    var freight = this.getFreightConfig();
-    if (freight) {
-      return Number(freight.price || 0);
+    /* Con flete Effi el envio se muestra como gratis; el flete va aparte (sin IVA). */
+    if (this.getFreightConfig()) {
+      return 0;
     }
 
     var shipping = Number(this.config.shippingFlat || 0);
@@ -508,8 +508,10 @@
       .join("");
 
     var shipping = this.getShippingAmount(subtotal);
+    var freightPrice = freight ? Number(freight.price || 0) : 0;
+    /* IVA solo sobre productos del pack; el flete Effi no suma al IVA. */
     var taxAmount = Math.round(subtotal * taxRate);
-    var displayTotal = subtotal + shipping + taxAmount;
+    var displayTotal = subtotal + shipping + freightPrice + taxAmount;
 
     this.pendingSummary = {
       subtotal: subtotal,
@@ -519,8 +521,8 @@
       taxRate: taxRate,
       shipping: shipping,
       freightVariantId: freight ? freight.variantId : "",
-      freightPrice: freight ? freight.price : 0,
-      /* Cuando hay producto flete, el costo va como line item (no shippingLine). */
+      freightPrice: freightPrice,
+      /* Cuando hay producto flete, el costo va como line item no gravable (no shippingLine). */
       shippingPriceForApi: freight ? 0 : shipping,
       total: displayTotal,
       appliedRule: pricing ? pricing.appliedRule : null,
@@ -537,7 +539,7 @@
     if (this.shippingNode) {
       var isFreeShipping = shipping <= 0;
       this.shippingNode.textContent = isFreeShipping
-        ? "Te obsequiamos el envío"
+        ? "Envío gratis"
         : formatMoney(shipping, this.config.currency);
       this.shippingNode.classList.toggle("pack-cod__shipping-gift", isFreeShipping);
     }
