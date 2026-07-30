@@ -1,0 +1,17 @@
+/* Flete Effi: ocultar fila del flete y precios por linea en carrito (flujo pack). */
+body.caletzza-pack-effi-flow .caletzza-effi-hidden-cart-row,
+html.caletzza-pack-effi-flow .caletzza-effi-hidden-cart-row {
+  display: none !important;
+}
+
+body.caletzza-pack-effi-flow .cart-item .cart-item__price-wrapper,
+body.caletzza-pack-effi-flow .cart-item .price--end,
+body.caletzza-pack-effi-flow .cart-item__totals .cart-item__price,
+body.caletzza-pack-effi-flow .cart-item__totals .price,
+body.caletzza-pack-effi-flow .cart-notification-product__price,
+body.caletzza-pack-effi-flow #CartDrawer .cart-item__price,
+body.caletzza-pack-effi-flow #CartDrawer .cart-item__discounted-prices,
+body.caletzza-pack-effi-flow #main-cart-items .cart-item__price,
+body.caletzza-pack-effi-flow #main-cart-items .cart-item__discounted-prices {
+  display: none !important;
+}

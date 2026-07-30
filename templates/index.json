@@ -1,0 +1,408 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "collage_937CQj": {
+      "type": "collage",
+      "blocks": {
+        "image_CT7LNe": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/IMG_8909.png"
+          }
+        }
+      },
+      "block_order": [
+        "image_CT7LNe"
+      ],
+      "settings": {
+        "heading": "",
+        "heading_size": "h0",
+        "desktop_layout": "left",
+        "mobile_layout": "collage",
+        "card_styles": "none",
+        "color_scheme": "scheme-1",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "collage_aBAqHa": {
+      "type": "collage",
+      "blocks": {
+        "image_LDERn9": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/WhatsApp_Image_2026-01-25_at_10.54.57_AM.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "image_LDERn9"
+      ],
+      "settings": {
+        "heading": "",
+        "heading_size": "h1",
+        "desktop_layout": "left",
+        "mobile_layout": "column",
+        "card_styles": "product-card-wrapper",
+        "color_scheme": "",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "custom_liquid_cTa4qB": {
+      "type": "custom-liquid",
+      "name": "t:sections.custom-liquid.presets.name",
+      "settings": {
+        "custom_liquid": "<div class=\"promo-countdown-wrap\" data-anchor=\"2025-05-05T23:59:59Z\" data-period-hours=\"24\">\n  <div class=\"promo-countdown-box\" role=\"timer\" aria-live=\"polite\">\n    <div class=\"pc-col\">\n      <div class=\"pc-num\" data-hh>00</div>\n      <div class=\"pc-lbl\">horas</div>\n    </div>\n    <div class=\"pc-col\">\n      <div class=\"pc-num\" data-mm>00</div>\n      <div class=\"pc-lbl\">minutos</div>\n    </div>\n    <div class=\"pc-col\">\n      <div class=\"pc-num\" data-ss>00</div>\n      <div class=\"pc-lbl\">segundos</div>\n    </div>\n  </div>\n\n  <div class=\"promo-countdown-sub\">Solo 5 promos disponibles</div>\n</div>\n\n<style>\n  /* Fondo blanco como pediste */\n  .promo-countdown-wrap{\n    width:100%;\n    display:flex;\n    flex-direction:column;\n    align-items:center;\n    justify-content:center;\n    padding: 14px 0 12px;\n    background:#ffffff;\n  }\n\n  /* Caja rosada más larga + un poquito más ancha */\n  .promo-countdown-box{\n    background:#f2a7a1;\n    border-radius: 0px;\n    width: min(520px, 92vw);   /* <-- más larga */\n    padding: 12px 28px 10px;   /* <-- más ancha */\n    display:flex;\n    gap: 52px;                 /* más separación como en la captura */\n    align-items:flex-end;\n    justify-content:center;\n  }\n\n  .pc-col{\n    display:flex;\n    flex-direction:column;\n    align-items:center;\n    justify-content:center;\n    min-width: 84px;           /* más ancho cada bloque */\n  }\n\n  .pc-num{\n    color:#fff;\n    font-weight: 800;\n    font-size: 44px;\n    line-height: 1;\n    letter-spacing: .02em;\n    font-variant-numeric: tabular-nums;\n  }\n\n  .pc-lbl{\n    margin-top: 4px;\n    color: rgba(255,255,255,.95);\n    font-weight: 600;\n    font-size: 12px;\n    line-height: 1;\n    text-transform: lowercase;\n  }\n\n  .promo-countdown-sub{\n    margin-top: 10px;\n    color:#6f6b62;\n    font-weight: 700;\n    font-size: 18px;\n    line-height: 1.1;\n    text-align:center;\n  }\n\n  /* Responsive */\n  @media (max-width: 480px){\n    .promo-countdown-box{\n      width: min(420px, 92vw);\n      gap: 34px;\n      padding: 12px 18px 10px;\n    }\n    .pc-col{ min-width: 70px; }\n    .pc-num{ font-size: 40px; }\n    .promo-countdown-sub{ font-size: 16px; }\n  }\n</style>\n\n<script>\n(() => {\n  const wrap = document.querySelector('.promo-countdown-wrap');\n  if (!wrap) return;\n\n  const anchorStr = wrap.getAttribute('data-anchor');\n  const periodHours = parseFloat(wrap.getAttribute('data-period-hours') || '24');\n  const periodMs = periodHours * 60 * 60 * 1000;\n\n  const hhEl = wrap.querySelector('[data-hh]');\n  const mmEl = wrap.querySelector('[data-mm]');\n  const ssEl = wrap.querySelector('[data-ss]');\n\n  const pad2 = (n) => String(n).padStart(2, '0');\n  const anchor = new Date(anchorStr);\n  if (isNaN(anchor.getTime())) return;\n\n  function remainingMs(nowMs){\n    const elapsed = nowMs - anchor.getTime();\n    if (elapsed < 0) return -elapsed;\n    const mod = elapsed % periodMs;\n    return periodMs - mod;\n  }\n\n  function tick(){\n    let rem = remainingMs(Date.now());\n    if (rem >= periodMs) rem = periodMs - 1;\n\n    const total = Math.max(0, Math.floor(rem / 1000));\n    const hh = Math.floor(total / 3600);\n    const mm = Math.floor((total % 3600) / 60);\n    const ss = total % 60;\n\n    hhEl.textContent = pad2(hh);\n    mmEl.textContent = pad2(mm);\n    ssEl.textContent = pad2(ss);\n  }\n\n  tick();\n  setInterval(tick, 1000);\n})();\n</script>",
+        "color_scheme": "",
+        "padding_top": 40,
+        "padding_bottom": 52
+      }
+    },
+    "progress_bar_nVJTmJ": {
+      "type": "progress-bar",
+      "settings": {
+        "promo_text": "¡Solo 5 promos disponibles!"
+      }
+    },
+    "rich_text_yEPHRy": {
+      "type": "rich-text",
+      "blocks": {
+        "heading_QVaaxa": {
+          "type": "heading",
+          "settings": {
+            "heading": "<strong>Dale click a los recuadros en blanco</strong> para escoger 10 diseños a tu gusto.",
+            "heading_size": "h1"
+          }
+        }
+      },
+      "block_order": [
+        "heading_QVaaxa"
+      ],
+      "settings": {
+        "desktop_content_position": "center",
+        "content_alignment": "center",
+        "color_scheme": "",
+        "full_width": true,
+        "padding_top": 0,
+        "padding_bottom": 52
+      }
+    },
+    "google_rating_badge_main": {
+      "type": "google-rating-badge",
+      "name": "Recuadro estrellas Google",
+      "settings": {
+        "star_count": 5,
+        "prefix_text": "mas de",
+        "customer_count": "5.000",
+        "phrase_text": "clientes felices",
+        "enable_animation": true,
+        "section_background_transparent": true,
+        "alignment": "center"
+      }
+    },
+    "popup_storefront_xDXEfG": {
+      "type": "popup-storefront",
+      "disabled": true,
+      "settings": {}
+    },
+    "product_popup_YYdMc7": {
+      "type": "product-popup",
+      "disabled": true,
+      "settings": {
+        "product_collection": "calettza-mujer"
+      }
+    },
+    "pack_basicas_keCtGX": {
+      "type": "pack-basicas",
+      "name": "Pack Basicas",
+      "settings": {
+        "heading": "",
+        "background_color": "#ffffff",
+        "padding_top": 20,
+        "padding_bottom": 20,
+        "padding_left": 20,
+        "padding_right": 20,
+        "margin_top": 0,
+        "margin_bottom": 0,
+        "collection": "calettza-mujer",
+        "slot_count": 10,
+        "products_limit": 110,
+        "buy_button_label": "Comprar ahora",
+        "loading_button_label": "Procesando...",
+        "reset_button_label": "Borrar todo"
+      }
+    },
+    "pack_cta_button_main": {
+      "type": "pack-cta-button",
+      "name": "Boton compra flotante",
+      "settings": {
+        "button_label": "Compra aqui | Paga en casa",
+        "button_action": "scroll_pack",
+        "button_link_url": "#pack-basicas",
+        "section_background_transparent": false,
+        "section_background_color": "#ffffff",
+        "floating_background_transparent": true,
+        "floating_background_color": "#ffffff",
+        "button_background_color": "#ffde21",
+        "button_text_color": "#010101",
+        "button_border_color": "#000000",
+        "button_border_width": 1,
+        "button_border_radius": 20,
+        "button_font_size": 16,
+        "show_icon": true,
+        "icon_preset": "cart",
+        "position_mode": "fixed_floating",
+        "float_trigger": "pack_slots",
+        "enable_shake_animation": true,
+        "float_bottom_offset": 0,
+        "float_z_index": 90,
+        "alignment": "center",
+        "button_max_width": 680,
+        "padding_top": 16,
+        "padding_bottom": 16,
+        "padding_left": 16,
+        "padding_right": 16
+      }
+    },
+    "rich_text_cHyKfW": {
+      "type": "rich-text",
+      "blocks": {
+        "heading_KGCJDk": {
+          "type": "heading",
+          "settings": {
+            "heading": "<strong>ENVÍO GRATIS - PAGAS CUANDO RECIBAS</strong>",
+            "heading_size": "h2"
+          }
+        }
+      },
+      "block_order": [
+        "heading_KGCJDk"
+      ],
+      "settings": {
+        "desktop_content_position": "center",
+        "content_alignment": "center",
+        "color_scheme": "",
+        "full_width": true,
+        "padding_top": 12,
+        "padding_bottom": 16
+      }
+    },
+    "collage_BWEkmy": {
+      "type": "collage",
+      "blocks": {
+        "image_HyF8t7": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/WhatsApp_Image_2026-01-25_at_10.54.58_AM_1.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "image_HyF8t7"
+      ],
+      "settings": {
+        "heading": "",
+        "heading_size": "h1",
+        "desktop_layout": "left",
+        "mobile_layout": "column",
+        "card_styles": "product-card-wrapper",
+        "color_scheme": "",
+        "padding_top": 36,
+        "padding_bottom": 0
+      }
+    },
+    "collage_FPd3Cm": {
+      "type": "collage",
+      "blocks": {
+        "image_KQXbTY": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/ChatGPT_Image_25_ene_2026_22_50_08.png"
+          }
+        }
+      },
+      "block_order": [
+        "image_KQXbTY"
+      ],
+      "name": "t:sections.collage.presets.name",
+      "settings": {
+        "heading": "",
+        "heading_size": "h1",
+        "desktop_layout": "left",
+        "mobile_layout": "column",
+        "card_styles": "product-card-wrapper",
+        "color_scheme": "",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "collage_k8ELN9": {
+      "type": "collage",
+      "blocks": {
+        "image_EEYegn": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/ChatGPT_Image_25_ene_2026_22_52_36.png"
+          }
+        }
+      },
+      "block_order": [
+        "image_EEYegn"
+      ],
+      "name": "t:sections.collage.presets.name",
+      "settings": {
+        "heading": "",
+        "heading_size": "h1",
+        "desktop_layout": "left",
+        "mobile_layout": "column",
+        "card_styles": "product-card-wrapper",
+        "color_scheme": "",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "collage_GRDAYb": {
+      "type": "collage",
+      "blocks": {
+        "image_wbDNYr": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/tablas_medidas_Caletzza_mujer_1.png"
+          }
+        }
+      },
+      "block_order": [
+        "image_wbDNYr"
+      ],
+      "settings": {
+        "heading": "",
+        "heading_size": "h1",
+        "desktop_layout": "left",
+        "mobile_layout": "column",
+        "card_styles": "product-card-wrapper",
+        "color_scheme": "",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "collage_GWj9HN": {
+      "type": "collage",
+      "blocks": {
+        "image_g3FaPR": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/ChatGPT_Image_25_ene_2026_23_07_40.png"
+          }
+        }
+      },
+      "block_order": [
+        "image_g3FaPR"
+      ],
+      "name": "t:sections.collage.presets.name",
+      "settings": {
+        "heading": "",
+        "heading_size": "h1",
+        "desktop_layout": "left",
+        "mobile_layout": "column",
+        "card_styles": "product-card-wrapper",
+        "color_scheme": "",
+        "padding_top": 0,
+        "padding_bottom": 36
+      }
+    },
+    "testimonials_section_mzbaVV": {
+      "type": "testimonials-section",
+      "blocks": {
+        "testimonial_F3nJQw": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "Hermosas yo las recomiendo, una tela super espectacular",
+            "author": "Ossa Anyel",
+            "rating": 5
+          }
+        },
+        "testimonial_iykBDQ": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "Super espectacular, las recomiendo 100%",
+            "author": "Katherine Vega",
+            "rating": 5
+          }
+        },
+        "testimonial_ieczRP": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "Son muy recomendadas",
+            "author": "Tatiana Montilla",
+            "rating": 5
+          }
+        },
+        "testimonial_GqpTeD": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "Yo compré, y si son muy lindas, las recomiendo. Y muy pronto haré otro pedido",
+            "author": "Sugeidis Ortiz Muñoz",
+            "rating": 5
+          }
+        },
+        "testimonial_UWUAFm": {
+          "type": "testimonial",
+          "disabled": true,
+          "settings": {
+            "quote": "Yo compré ya dos veces la promo y todas salieron muy bonitas tal como las escogí. Y lo mejor es que tienen pago contraentrega. Aunque el envío hasta Leticia Amazonas sale un poquito altico. De todos modos vale la pena comprar.",
+            "author": "Gema Yadaami Rubio Nuñez",
+            "rating": 5
+          }
+        }
+      },
+      "block_order": [
+        "testimonial_F3nJQw",
+        "testimonial_iykBDQ",
+        "testimonial_ieczRP",
+        "testimonial_GqpTeD",
+        "testimonial_UWUAFm"
+      ],
+      "settings": {}
+    },
+    "custom_liquid_yBRMAf": {
+      "type": "custom-liquid",
+      "disabled": true,
+      "name": "t:sections.custom-liquid.presets.name",
+      "settings": {
+        "custom_liquid": "<!-- TikTok Pixel Code Start -->\n<script>\n!function (w, d, t) {\n  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=[\"page\",\"track\",\"identify\",\"instances\",\"debug\",\"on\",\"off\",\"once\",\"ready\",\"alias\",\"group\",\"enableCookie\",\"disableCookie\",\"holdConsent\",\"revokeConsent\",\"grantConsent\"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(\nvar e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r=\"https://analytics.tiktok.com/i18n/pixel/events.js\",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement(\"script\")\n;n.type=\"text/javascript\",n.async=!0,n.src=r+\"?sdkid=\"+e+\"&lib=\"+t;e=document.getElementsByTagName(\"script\")[0];e.parentNode.insertBefore(n,e)};\n\n\n  ttq.load('D60MUSRC77U6BSHUPFLG');\n  ttq.page();\n}(window, document, 'ttq');\n</script>\n<!-- TikTok Pixel Code End -->\n\n// add this before event code to all pages where PII data postback is expected and appropriate \nttq.identify({\n\t\"email\": \"<hashed_email_address>\", // string. The email of the customer if available. It must be hashed with SHA-256 on the client side.\n\t\"phone_number\": \"<hashed_phone_number>\", // string. The phone number of the customer if available. It must be hashed with SHA-256 on the client side.\n\t\"external_id\": \"<hashed_external_id>\" // string. Any unique identifier, such as loyalty membership IDs, user IDs, and external cookie IDs.It must be hashed with SHA-256 on the client side.\n});\n\nttq.track('ViewContent', {\n\t\"contents\": [\n\t\t{\n\t\t\t\"content_id\": \"<content_identifier>\", // string. ID of the product. Example: \"1077218\".\n\t\t\t\"content_type\": \"<content_type>\", // string. Either product or product_group.\n\t\t\t\"content_name\": \"<content_name>\" // string. The name of the page or product. Example: \"shirt\".\n\t\t}\n\t],\n\t\"value\": \"<content_value>\", // number. Value of the order or items sold. Example: 100.\n\t\"currency\": \"<content_currency>\" // string. The 4217 currency code. Example: \"USD\".\n});\n\nttq.track('AddToWishlist', {\n\t\"contents\": [\n\t\t{\n\t\t\t\"content_id\": \"<content_identifier>\", // string. ID of the product. Example: \"1077218\".\n\t\t\t\"content_type\": \"<content_type>\", // string. Either product or product_group.\n\t\t\t\"content_name\": \"<content_name>\" // string. The name of the page or product. Example: \"shirt\".\n\t\t}\n\t],\n\t\"value\": \"<content_value>\", // number. Value of the order or items sold. Example: 100.\n\t\"currency\": \"<content_currency>\" // string. The 4217 currency code. Example: \"USD\".\n});\n\nttq.track('Search', {\n\t\"contents\": [\n\t\t{\n\t\t\t\"content_id\": \"<content_identifier>\", // string. ID of the product. Example: \"1077218\".\n\t\t\t\"content_type\": \"<content_type>\", // string. Either product or product_group.\n\t\t\t\"content_name\": \"<content_name>\" // string. The name of the page or product. Example: \"shirt\".\n\t\t}\n\t],\n\t\"value\": \"<content_value>\", // number. Value of the order or items sold. Example: 100.\n\t\"currency\": \"<content_currency>\", // string. The 4217 currency code. Example: \"USD\".\n\t\"search_string\": \"<search_keywords>\" // string. The word or phrase used to search. Example: \"SAVE10COUPON\".\n});\n\nttq.track('AddPaymentInfo', {\n\t\"contents\": [\n\t\t{\n\t\t\t\"content_id\": \"<content_identifier>\", // string. ID of the product. Example: \"1077218\".\n\t\t\t\"content_type\": \"<content_type>\", // string. Either product or product_group.\n\t\t\t\"content_name\": \"<content_name>\" // string. The name of the page or product. Example: \"shirt\".\n\t\t}\n\t],\n\t\"value\": \"<content_value>\", // number. Value of the order or items sold. Example: 100.\n\t\"currency\": \"<content_currency>\" // string. The 4217 currency code. Example: \"USD\".\n});\n\nttq.track('AddToCart', {\n\t\"contents\": [\n\t\t{\n\t\t\t\"content_id\": \"<content_identifier>\", // string. ID of the product. Example: \"1077218\".\n\t\t\t\"content_type\": \"<content_type>\", // string. Either product or product_group.\n\t\t\t\"content_name\": \"<content_name>\" // string. The name of the page or product. Example: \"shirt\".\n\t\t}\n\t],\n\t\"value\": \"<content_value>\", // number. Value of the order or items sold. Example: 100.\n\t\"currency\": \"<content_currency>\" // string. The 4217 currency code. Example: \"USD\".\n});\n\nttq.track('InitiateCheckout', {\n\t\"contents\": [\n\t\t{\n\t\t\t\"content_id\": \"<content_identifier>\", // string. ID of the product. Example: \"1077218\".\n\t\t\t\"content_type\": \"<content_type>\", // string. Either product or product_group.\n\t\t\t\"content_name\": \"<content_name>\" // string. The name of the page or product. Example: \"shirt\".\n\t\t}\n\t],\n\t\"value\": \"<content_value>\", // number. Value of the order or items sold. Example: 100.\n\t\"currency\": \"<content_currency>\" // string. The 4217 currency code. Example: \"USD\".\n});\n\nttq.track('PlaceAnOrder', {\n\t\"contents\": [\n\t\t{\n\t\t\t\"content_id\": \"<content_identifier>\", // string. ID of the product. Example: \"1077218\".\n\t\t\t\"content_type\": \"<content_type>\", // string. Either product or product_group.\n\t\t\t\"content_name\": \"<content_name>\" // string. The name of the page or product. Example: \"shirt\".\n\t\t}\n\t],\n\t\"value\": \"<content_value>\", // number. Value of the order or items sold. Example: 100.\n\t\"currency\": \"<content_currency>\" // string. The 4217 currency code. Example: \"USD\".\n});\n\nttq.track('CompleteRegistration', {\n\t\"contents\": [\n\t\t{\n\t\t\t\"content_id\": \"<content_identifier>\", // string. ID of the product. Example: \"1077218\".\n\t\t\t\"content_type\": \"<content_type>\", // string. Either product or product_group.\n\t\t\t\"content_name\": \"<content_name>\" // string. The name of the page or product. Example: \"shirt\".\n\t\t}\n\t],\n\t\"value\": \"<content_value>\", // number. Value of the order or items sold. Example: 100.\n\t\"currency\": \"<content_currency>\" // string. The 4217 currency code. Example: \"USD\".\n});\n\nttq.track('Purchase', {\n\t\"contents\": [\n\t\t{\n\t\t\t\"content_id\": \"<content_identifier>\", // string. ID of the product. Example: \"1077218\".\n\t\t\t\"content_type\": \"<content_type>\", // string. Either product or product_group.\n\t\t\t\"content_name\": \"<content_name>\" // string. The name of the page or product. Example: \"shirt\".\n\t\t}\n\t],\n\t\"value\": \"<content_value>\", // number. Value of the order or items sold. Example: 100.\n\t\"currency\": \"<content_currency>\" // string. The 4217 currency code. Example: \"USD\".\n});",
+        "color_scheme": "",
+        "padding_top": 40,
+        "padding_bottom": 52
+      }
+    }
+  },
+  "order": [
+    "collage_937CQj",
+    "collage_aBAqHa",
+    "custom_liquid_cTa4qB",
+    "progress_bar_nVJTmJ",
+    "rich_text_yEPHRy",
+    "google_rating_badge_main",
+    "popup_storefront_xDXEfG",
+    "product_popup_YYdMc7",
+    "pack_basicas_keCtGX",
+    "pack_cta_button_main",
+    "rich_text_cHyKfW",
+    "collage_BWEkmy",
+    "collage_FPd3Cm",
+    "collage_k8ELN9",
+    "collage_GRDAYb",
+    "collage_GWj9HN",
+    "testimonials_section_mzbaVV",
+    "custom_liquid_yBRMAf"
+  ]
+}
