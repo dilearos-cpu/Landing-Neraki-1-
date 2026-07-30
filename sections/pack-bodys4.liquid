@@ -45,13 +45,28 @@
   assign effi_flete_title = ''
   if effi_flete_product != blank
     assign effi_flete_variant = effi_flete_product.selected_or_first_available_variant
+    if effi_flete_variant == blank
+      assign effi_flete_variant = effi_flete_product.variants.first
+    endif
+    if effi_flete_variant == blank
+      for variant in effi_flete_product.variants
+        assign effi_flete_variant = variant
+        break
+      endfor
+    endif
     if effi_flete_variant != blank
       assign effi_flete_variant_id = effi_flete_variant.id
       assign effi_flete_price = effi_flete_variant.price
       assign effi_flete_title = effi_flete_product.title
     endif
   endif
-  assign effi_hide_item_prices = section.settings.effi_hide_item_prices
+  comment
+    Ocultar precios por defecto en COD (estilo Effi). Solo se muestran si el checkbox se desactiva.
+  endcomment
+  assign effi_hide_item_prices = true
+  if section.settings.effi_hide_item_prices == false
+    assign effi_hide_item_prices = false
+  endif
 %}
 {{ 'pack-bodys4.css' | asset_url | stylesheet_tag }}
 {{ 'pack-cod-checkout.css' | asset_url | stylesheet_tag }}
@@ -88,7 +103,7 @@
   data-effi-flete-variant-id="{{ effi_flete_variant_id }}"
   data-effi-flete-price="{{ effi_flete_price }}"
   data-effi-flete-title="{{ effi_flete_title | escape }}"
-  data-effi-hide-item-prices="{{ effi_hide_item_prices }}"
+  data-effi-hide-item-prices="{% if effi_hide_item_prices %}true{% else %}false{% endif %}"
   data-button-default-text="{{ section.settings.buy_button_label | escape }}"
   data-button-loading-text="{{ section.settings.loading_button_label | escape }}"
   data-metafield-namespace="{{ section.settings.metafield_namespace | escape }}"
@@ -110,6 +125,16 @@
     data-empty="true"
   {% endif %}
 >
+  <script type="application/json" data-effi-flete-config>
+    {
+      "enabled": {% if effi_flete_variant_id != blank %}true{% else %}false{% endif %},
+      "variantId": {{ effi_flete_variant_id | json }},
+      "price": {{ effi_flete_price | json }},
+      "title": {{ effi_flete_title | json }},
+      "hideItemPrices": {% if effi_hide_item_prices %}true{% else %}false{% endif %},
+      "productHandle": {% if effi_flete_product != blank %}{{ effi_flete_product.handle | json }}{% else %}""{% endif %}
+    }
+  </script>
   {% if section.settings.heading != blank %}
     <h2 class="pack-ui__heading">{{ section.settings.heading }}</h2>
   {% endif %}

@@ -293,12 +293,16 @@
   };
 
   PackCodCheckout.prototype.shouldHideItemPrices = function () {
-    return this.config.hideItemPrices !== false;
+    /* Por defecto se ocultan; solo se muestran si el data-attr es "false". */
+    return String(this.config.hideItemPrices) !== "false";
   };
 
   PackCodCheckout.prototype.getFreightConfig = function () {
     var variantId = String(this.config.effiFleteVariantId || "").trim();
-    var enabled = this.config.effiFleteEnabled === true || Boolean(variantId);
+    var enabled =
+      this.config.effiFleteEnabled === true ||
+      String(this.config.effiFleteEnabled) === "true" ||
+      Boolean(variantId);
     var price = Number(this.config.effiFletePrice || 0);
 
     if (!enabled || !variantId) {

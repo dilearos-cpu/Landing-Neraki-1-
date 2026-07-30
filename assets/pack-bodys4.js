@@ -434,6 +434,16 @@
     var codCheckout = null;
     if (codEnabled && window.PackCodCheckout) {
       try {
+        var effiConfig = {};
+        var effiConfigNode = section.querySelector("[data-effi-flete-config]");
+        if (effiConfigNode && effiConfigNode.textContent) {
+          try {
+            effiConfig = JSON.parse(effiConfigNode.textContent);
+          } catch (parseError) {
+            console.warn("Pack Bodys 4: no se pudo leer config Flete Effi.", parseError);
+          }
+        }
+
         codCheckout = window.PackCodCheckout.create(section, {
           orderEndpoint: section.dataset.codEndpoint || "/apps/cod-express",
           shippingFlat: Number(section.dataset.codShippingFlat || 0),
@@ -455,11 +465,20 @@
           cartUrl: cartUrl,
           checkoutUrl: checkoutUrl,
           collectionHandle: section.dataset.collectionHandle || "",
-          effiFleteEnabled: section.dataset.effiFleteEnabled === "true",
-          effiFleteVariantId: section.dataset.effiFleteVariantId || "",
-          effiFletePrice: Number(section.dataset.effiFletePrice || 0),
-          effiFleteTitle: section.dataset.effiFleteTitle || "Flete",
-          hideItemPrices: section.dataset.effiHideItemPrices !== "false"
+          effiFleteEnabled:
+            effiConfig.enabled === true || section.dataset.effiFleteEnabled === "true",
+          effiFleteVariantId: String(
+            effiConfig.variantId || section.dataset.effiFleteVariantId || ""
+          ),
+          effiFletePrice: Number(
+            effiConfig.price != null ? effiConfig.price : section.dataset.effiFletePrice || 0
+          ),
+          effiFleteTitle: effiConfig.title || section.dataset.effiFleteTitle || "Flete",
+          hideItemPrices: String(
+            effiConfig.hideItemPrices != null
+              ? effiConfig.hideItemPrices
+              : section.dataset.effiHideItemPrices || "true"
+          )
         });
       } catch (error) {
         console.error("Pack Bodys 4: no se pudo iniciar checkout COD.", error);

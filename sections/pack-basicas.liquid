@@ -40,8 +40,20 @@
     assign effi_flete_product = settings.effi_flete_product
   endif
   assign effi_flete_variant_id = ''
-  if effi_flete_product != blank and effi_flete_product.selected_or_first_available_variant != blank
-    assign effi_flete_variant_id = effi_flete_product.selected_or_first_available_variant.id
+  if effi_flete_product != blank
+    assign effi_flete_variant = effi_flete_product.selected_or_first_available_variant
+    if effi_flete_variant == blank
+      assign effi_flete_variant = effi_flete_product.variants.first
+    endif
+    if effi_flete_variant == blank
+      for variant in effi_flete_product.variants
+        assign effi_flete_variant = variant
+        break
+      endfor
+    endif
+    if effi_flete_variant != blank
+      assign effi_flete_variant_id = effi_flete_variant.id
+    endif
   endif
 %}
 {{ 'pack-bodys4.css' | asset_url | stylesheet_tag }}
