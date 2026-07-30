@@ -139,23 +139,81 @@ async function shopifyGraphql(query, variables) {
 }
 
 async function createStorefrontCheckout(body) {
-  const variantLineItems = (body.lineItems || []).map((item) => ({
-    variantId: variantGid(item.variantId),
-    quantity: Number(item.quantity || 1)
-  }));
+  const hasEffiFlete = Boolean(
+    body.packEffiFlow ||
+      body.freightVariantId ||
+      (body.lineItems || []).some((item) => item && item.isEffiFlete)
+  );
+
+  const variantLineItems = (body.lineItems || []).map((item) => {
+    const lineItem = {
+      variantId: variantGid(item.variantId),
+      quantity: Number(item.quantity || 1)
+    };
+
+    if (
+      item.isEffiFlete ||
+      (body.freightVariantId && String(item.variantId) === String(body.freightVariantId))
+    ) {
+      lineItem.customAttributes = [
+        { key: "_caletzza_effi_hidden", value: "yes" },
+        { key: "_caletzza_effi_flow_source", value: "pack" }
+      ];
+      lineItem.taxable = false;
+    }
+
+    return lineItem;
+  });
 
   if (!variantLineItems.length) {
     throw new Error("No hay productos en el carrito.");
   }
 
+  const tags = ["Discount-Rules", "Storefront-Checkout"];
+  if (hasEffiFlete) {
+    tags.push("Pack-Effi-Flow", "Pack-Express");
+  }
+  if (body.packLabel) {
+    tags.push(body.packLabel);
+  }
+
   const discountAmount = Number(body.discountAmount || 0);
   const draftInput = {
-    email: body.email || undefined,
-    phone: body.phone || undefined,
-    note: body.note || "Checkout con descuento por cantidad",
-    tags: ["Discount-Rules", "Storefront-Checkout"],
-    lineItems: variantLineItems
+    email: body.email || body.customer?.email || undefined,
+    phone: body.phone || body.customer?.phone || undefined,
+    note:
+      body.note ||
+      (hasEffiFlete
+        ? "Checkout pack con flete Effi (sin IVA en flete)"
+        : "Checkout con descuento por cantidad"),
+    tags,
+    lineItems: variantLineItems,
+    shippingLine: {
+      title: hasEffiFlete ? "Envio gratis" : "Envio",
+      price: moneyFromCents(hasEffiFlete ? 0 : body.shippingPrice || 0)
+    }
   };
+
+  if (body.shippingAddress) {
+    draftInput.shippingAddress = {
+      firstName: body.customer?.firstName || body.shippingAddress.firstName || "Cliente",
+      lastName: body.customer?.lastName || body.shippingAddress.lastName || "Online",
+      address1: body.shippingAddress.address1,
+      city: body.shippingAddress.city,
+      province: body.shippingAddress.province,
+      countryCode: body.shippingAddress.countryCode || "CO",
+      zip: body.shippingAddress.zip || "000000",
+      phone: body.customer?.phone || body.phone || undefined
+    };
+  }
+
+  if (hasEffiFlete) {
+    draftInput.customAttributes = [
+      { key: "_caletzza_pack_effi_flow", value: "yes" },
+      { key: "flete_product_variant_id", value: String(body.freightVariantId || "") },
+      { key: "valor_flete_cents", value: String(body.freightPrice || 0) }
+    ];
+  }
 
   if (discountAmount > 0) {
     draftInput.appliedDiscount = {
@@ -193,7 +251,8 @@ async function createStorefrontCheckout(body) {
   return {
     draftOrderId: draftOrder.id,
     draftOrderName: draftOrder.name,
-    invoiceUrl: draftOrder.invoiceUrl
+    invoiceUrl: draftOrder.invoiceUrl,
+    packEffiFlow: hasEffiFlete
   };
 }
 

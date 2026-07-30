@@ -83,8 +83,13 @@ Equivalente al snippet WooCommerce **caletzza-pack-effi-shipping**.
    - Opcional: override por seccion en Pack Bodys / Pack Basicas.
 3. En checkout express COD:
    - Se ocultan los precios por linea.
-   - El flete se suma al total (fila Flete + Total).
-   - Al confirmar, el pedido incluye el flete como line item (para Effi) con tag `Pack-Effi-Flow`.
+   - El flete se suma al **Total** (Envío muestra "Envío gratis").
+   - El IVA no incluye el flete.
+4. En checkout nativo / pago en linea:
+   - El pack redirige a una **factura draft order** con el flete como line item no gravable.
+   - En el carrito del theme se ocultan precios por linea y la fila del flete.
+   - **Obligatorio:** en el producto flete desactiva **Cobrar impuestos** (Admin → producto → Impuestos).
+   - Shopify Checkout no permite ocultar precios de line items sin Plus; el control visual completo queda en el modal COD y en el carrito del theme.
 
 ## Checkout express COD (Pack Bodys)
 

@@ -826,6 +826,64 @@
 
   PackCodCheckout.prototype.submitOnline = function (customer) {
     var self = this;
+    var freight = this.getFreightConfig();
+    var email = checkoutEmail(customer);
+    var payload = {
+      customer: {
+        firstName: customer.names.firstName,
+        lastName: customer.names.lastName,
+        phone: customer.phone,
+        email: email
+      },
+      email: email,
+      phone: normalizePhone(customer.phone),
+      shippingAddress: {
+        firstName: customer.names.firstName,
+        lastName: customer.names.lastName,
+        address1: customer.address1,
+        city: customer.city,
+        province: customer.province,
+        countryCode: "CO",
+        zip: "000000"
+      },
+      lineItems: this.getOrderLineItems(),
+      note: customer.note || (this.config.packLabel || "Pack Bodys") + " — pago en linea",
+      discountAmount: this.pendingSummary ? this.pendingSummary.discountTotal : 0,
+      discountLabel: "Descuento pack por cantidad",
+      packLabel: this.config.packLabel || "Pack Bodys",
+      packEffiFlow: Boolean(freight),
+      freightVariantId: freight ? freight.variantId : "",
+      freightPrice: freight ? freight.price : 0,
+      shippingPrice: 0
+    };
+
+    var checkoutEndpoint =
+      this.config.checkoutEndpoint ||
+      String(this.config.orderEndpoint || "/apps/cod-express").replace(/\/?$/, "") + "/checkout";
+
+    fetch(checkoutEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+      .then(parseOrderResponse)
+      .then(function (data) {
+        if (!data.invoiceUrl) {
+          throw new Error("No se recibio la URL de pago.");
+        }
+        window.location.href = data.invoiceUrl;
+      })
+      .catch(function (error) {
+        console.warn("Draft checkout failed, using Storefront/cart fallback:", error);
+        self.submitOnlineStorefront(customer);
+      });
+  };
+
+  PackCodCheckout.prototype.submitOnlineStorefront = function (customer) {
+    var self = this;
     var email = checkoutEmail(customer);
     var addressPayload = buildCheckoutAddressPayload(customer);
     var cartItems = this.getCartItemsWithFreight();
@@ -893,7 +951,7 @@
         window.location.href = checkoutUrl;
       })
       .catch(function (error) {
-        console.warn("Storefront checkout prefill failed, using fallback:", error);
+        console.warn("Storefront checkout prefill failed, using cart fallback:", error);
         self.submitOnlineFallback(customer);
       });
   };

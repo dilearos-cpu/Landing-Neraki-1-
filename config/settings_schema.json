@@ -1469,10 +1469,10 @@
   {
     "name": "Flete Effi (packs)",
     "settings": [
-      {
-        "type": "paragraph",
-        "content": "Producto de flete oculto para compras desde packs (equivalente WooCommerce Flete Effi). Se suma al total del checkout express y llega como line item en el pedido para Effi."
-      },
+    {
+      "type": "paragraph",
+      "content": "Producto de flete oculto para compras desde packs (equivalente WooCommerce Flete Effi). Se suma al total del checkout express y llega como line item en el pedido para Effi. Importante: en el producto flete desactiva 'Cobrar impuestos' para que el IVA del checkout nativo no lo incluya."
+    },
       {
         "type": "product",
         "id": "effi_flete_product",

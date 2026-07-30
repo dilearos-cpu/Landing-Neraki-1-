@@ -390,16 +390,79 @@
         buyButton.textContent = section.dataset.buttonLoadingText || "Procesando...";
         showMessage("", false);
 
-        var addToCart = window.PackPage && typeof window.PackPage.replaceCartWithItems === "function"
-          ? window.PackPage.replaceCartWithItems(items, cartUrl)
-          : fetch(cartUrl + ".js", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json"
-              },
-              body: JSON.stringify({ items: items })
+        var hasFreight = items.some(function (item) {
+          return item.properties && item.properties._caletzza_effi_hidden;
+        });
+
+        if (hasFreight) {
+          var lineItems = items.map(function (item) {
+            return {
+              variantId: item.id,
+              quantity: item.quantity || 1,
+              isEffiFlete: Boolean(item.properties && item.properties._caletzza_effi_hidden)
+            };
+          });
+          var freightItem = items.find(function (item) {
+            return item.properties && item.properties._caletzza_effi_hidden;
+          });
+
+          fetch("/apps/cod-express/checkout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json"
+            },
+            body: JSON.stringify({
+              lineItems: lineItems,
+              packEffiFlow: true,
+              freightVariantId: freightItem ? String(freightItem.id) : "",
+              freightPrice: 0,
+              shippingPrice: 0,
+              note: "Pack basicas con flete Effi",
+              discountAmount: 0
+            })
+          })
+            .then(function (response) {
+              return response.json().then(function (payload) {
+                if (!response.ok) {
+                  throw new Error(payload.error || "No se pudo iniciar el checkout.");
+                }
+                return payload;
+              });
+            })
+            .then(function (payload) {
+              if (payload.invoiceUrl) {
+                window.location.href = payload.invoiceUrl;
+                return;
+              }
+              throw new Error("No se recibio URL de pago.");
+            })
+            .catch(function (error) {
+              console.warn("Pack basicas Effi checkout failed, using cart:", error);
+              return addToCartFallback(items);
+            })
+            .finally(function () {
+              buyButton.disabled = false;
+              buyButton.textContent = section.dataset.buttonDefaultText || "Comprar ahora";
             });
+          return;
+        }
+
+        addToCartFallback(items);
+      }
+
+      function addToCartFallback(items) {
+        var addToCart =
+          window.PackPage && typeof window.PackPage.replaceCartWithItems === "function"
+            ? window.PackPage.replaceCartWithItems(items, cartUrl)
+            : fetch(cartUrl + ".js", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Accept: "application/json"
+                },
+                body: JSON.stringify({ items: items })
+              });
 
         addToCart
           .then(function (response) {

@@ -279,14 +279,35 @@
     });
   }
 
-  function submitDiscountCheckout(summary) {
+  function submitDiscountCheckout(summary, cart) {
     var config = getConfig();
-    var lineItems = summary.lineItems.map(function (item) {
+    var freightVariantId = "";
+    var freightPrice = 0;
+    var hasEffi = false;
+
+    var lineItems = (cart && cart.items ? cart.items : summary.lineItems).map(function (item) {
+      var variantId = item.variant_id || item.variantId;
+      var quantity = item.quantity;
+      var isFlete =
+        (global.PackEffiCart && global.PackEffiCart.isEffiCartItem && global.PackEffiCart.isEffiCartItem(item)) ||
+        (item.properties && item.properties._caletzza_effi_hidden);
+
+      if (isFlete) {
+        hasEffi = true;
+        freightVariantId = String(variantId);
+        freightPrice = Number(item.original_line_price || item.final_line_price || item.price || 0);
+      }
+
       return {
-        variantId: item.variantId,
-        quantity: item.quantity
+        variantId: variantId,
+        quantity: quantity,
+        isEffiFlete: Boolean(isFlete)
       };
     });
+
+    if (!hasEffi && cart && global.PackEffiCart && global.PackEffiCart.cartHasEffiFlow) {
+      hasEffi = global.PackEffiCart.cartHasEffiFlow(cart);
+    }
 
     return fetch(config.checkoutEndpoint, {
       method: "POST",
@@ -296,9 +317,13 @@
       },
       body: JSON.stringify({
         lineItems: lineItems,
-        discountAmount: summary.discountTotal,
-        discountLabel: (summary.appliedRule && summary.appliedRule.title) || "Descuento por cantidad",
-        note: "Checkout con descuento por cantidad"
+        discountAmount: summary && summary.discountTotal > 0 ? summary.discountTotal : 0,
+        discountLabel: (summary && summary.appliedRule && summary.appliedRule.title) || "Descuento por cantidad",
+        note: hasEffi ? "Checkout pack con flete Effi" : "Checkout con descuento por cantidad",
+        packEffiFlow: hasEffi,
+        freightVariantId: freightVariantId,
+        freightPrice: freightPrice,
+        shippingPrice: 0
       })
     })
       .then(function (response) {
@@ -347,16 +372,31 @@
       button.setAttribute("aria-disabled", "true");
       button.classList.add("loading");
 
-      refreshCart()
-        .then(function (summary) {
-          if (!summary || summary.discountTotal <= 0) {
+      fetchCart()
+        .then(function (cart) {
+          var hasEffi =
+            global.PackEffiCart && global.PackEffiCart.cartHasEffiFlow
+              ? global.PackEffiCart.cartHasEffiFlow(cart)
+              : (cart.items || []).some(function (item) {
+                  return item.properties && item.properties._caletzza_effi_hidden;
+                });
+
+          return buildSummary(engine, cart).then(function (summary) {
+            lastSummary = summary;
+            if (global.PackEffiCart && global.PackEffiCart.refresh) {
+              global.PackEffiCart.refresh();
+            }
+
+            if ((summary && summary.discountTotal > 0) || hasEffi) {
+              return submitDiscountCheckout(summary || { discountTotal: 0, lineItems: [] }, cart);
+            }
+
             checkoutBusy = false;
             button.removeAttribute("aria-disabled");
             button.classList.remove("loading");
             window.location.href = "/checkout";
-            return;
-          }
-          return submitDiscountCheckout(summary);
+            return null;
+          });
         })
         .catch(function (error) {
           checkoutBusy = false;

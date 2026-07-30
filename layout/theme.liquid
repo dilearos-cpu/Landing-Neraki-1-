@@ -375,6 +375,8 @@
     <script src="{{ 'pack-discount-rules.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'discount-rules-storefront.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'discount-rules-cart.js' | asset_url }}" defer="defer"></script>
+    {{ 'pack-effi-cart.css' | asset_url | stylesheet_tag }}
+    <script src="{{ 'pack-effi-cart.js' | asset_url }}" defer="defer"></script>
     {% sections 'discount-rules-group' %}
   </body>
 </html>
