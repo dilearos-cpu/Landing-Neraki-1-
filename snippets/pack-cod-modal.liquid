@@ -6,15 +6,6 @@
   if online_payment_title == 'Mercado Pago'
     assign online_payment_title = 'Paga con PSE, Tarjeta crédito o débito'
   endif
-
-  assign effi_flete_product = section.settings.effi_flete_product
-  if effi_flete_product == blank
-    assign effi_flete_product = settings.effi_flete_product
-  endif
-  assign effi_flete_variant_id = ''
-  if effi_flete_product != blank and effi_flete_product.selected_or_first_available_variant != blank
-    assign effi_flete_variant_id = effi_flete_product.selected_or_first_available_variant.id
-  endif
 %}
 <div
   class="pack-cod"
