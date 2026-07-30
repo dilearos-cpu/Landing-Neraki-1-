@@ -74,6 +74,18 @@ Equivalente al plugin WooCommerce **Segunda Imagen**. Muestra una segunda foto a
 
 Una imagen por **color** aplica a todas las tallas de ese color (igual que en WooCommerce).
 
+## Flete Effi (packs)
+
+Equivalente al snippet WooCommerce **caletzza-pack-effi-shipping**.
+
+1. Crea un producto en Shopify cuyo precio sea el flete (ej. "Flete" / $X).
+2. En el theme editor: **Configuracion del tema → Flete Effi (packs)** elige ese producto.
+   - Opcional: override por seccion en Pack Bodys / Pack Basicas.
+3. En checkout express COD:
+   - Se ocultan los precios por linea.
+   - El flete se suma al total (fila Flete + Total).
+   - Al confirmar, el pedido incluye el flete como line item (para Effi) con tag `Pack-Effi-Flow`.
+
 ## Checkout express COD (Pack Bodys)
 
 Formulario estilo **EasySell COD Form** integrado en el theme. Al pulsar **Comprar ahora** con el pack completo, se abre un modal de pago contra entrega sin salir de la landing.

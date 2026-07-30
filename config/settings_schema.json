@@ -1465,5 +1465,27 @@
         "default": "scheme-1"
       }
     ]
+  },
+  {
+    "name": "Flete Effi (packs)",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Producto de flete oculto para compras desde packs (equivalente WooCommerce Flete Effi). Se suma al total del checkout express y llega como line item en el pedido para Effi."
+      },
+      {
+        "type": "product",
+        "id": "effi_flete_product",
+        "label": "Producto flete",
+        "info": "Producto simple o con variantes. Se usa la primera variante disponible. Precio = valor del flete."
+      },
+      {
+        "type": "checkbox",
+        "id": "effi_hide_item_prices",
+        "label": "Ocultar precios por ítem en checkout express",
+        "default": true,
+        "info": "En el modal COD solo se muestran subtotal/envio/total, sin precios por linea."
+      }
+    ]
   }
 ]

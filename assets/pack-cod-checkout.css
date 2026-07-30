@@ -226,6 +226,16 @@
   white-space: nowrap;
 }
 
+.pack-cod--hide-item-prices .pack-cod__item-price,
+.pack-cod--hide-item-prices .pack-cod__item-price--final,
+.pack-cod--hide-item-prices .pack-cod__item-price--compare {
+  display: none !important;
+}
+
+.pack-cod--hide-item-prices .pack-cod__item {
+  grid-template-columns: 52px 1fr;
+}
+
 .pack-cod__totals {
   margin: 0;
   padding-top: 12px;

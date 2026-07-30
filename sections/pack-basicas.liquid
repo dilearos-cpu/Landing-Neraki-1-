@@ -34,6 +34,15 @@
   else
     assign pack_anchor_id = 'pack-basicas'
   endif
+
+  assign effi_flete_product = section.settings.effi_flete_product
+  if effi_flete_product == blank
+    assign effi_flete_product = settings.effi_flete_product
+  endif
+  assign effi_flete_variant_id = ''
+  if effi_flete_product != blank and effi_flete_product.selected_or_first_available_variant != blank
+    assign effi_flete_variant_id = effi_flete_product.selected_or_first_available_variant.id
+  endif
 %}
 {{ 'pack-bodys4.css' | asset_url | stylesheet_tag }}
 <section
@@ -47,6 +56,8 @@
   data-products-limit="{{ products_limit }}"
   data-cart-url="{{ routes.cart_add_url }}"
   data-checkout-url="{{ routes.checkout_url }}"
+  data-effi-flete-enabled="{% if effi_flete_variant_id != blank %}true{% else %}false{% endif %}"
+  data-effi-flete-variant-id="{{ effi_flete_variant_id }}"
   data-button-default-text="{{ section.settings.buy_button_label | escape }}"
   data-button-loading-text="{{ section.settings.loading_button_label | escape }}"
   style="
@@ -230,6 +241,19 @@
       "unit": "px",
       "label": "Margin inferior",
       "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Flete Effi"
+    },
+    {
+      "type": "paragraph",
+      "content": "Producto oculto que se agrega al carrito al comprar el pack. Si lo dejas vacio, se usa Tema → Flete Effi."
+    },
+    {
+      "type": "product",
+      "id": "effi_flete_product",
+      "label": "Producto flete (override)"
     },
     {
       "type": "header",

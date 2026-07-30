@@ -292,6 +292,94 @@
     return Number(this.config.taxRatePercent || 19) / 100;
   };
 
+  PackCodCheckout.prototype.shouldHideItemPrices = function () {
+    return this.config.hideItemPrices !== false;
+  };
+
+  PackCodCheckout.prototype.getFreightConfig = function () {
+    var variantId = String(this.config.effiFleteVariantId || "").trim();
+    var enabled = this.config.effiFleteEnabled === true || Boolean(variantId);
+    var price = Number(this.config.effiFletePrice || 0);
+
+    if (!enabled || !variantId) {
+      return null;
+    }
+
+    return {
+      variantId: variantId,
+      quantity: 1,
+      title: this.config.effiFleteTitle || "Flete",
+      price: price,
+      unitPrice: price
+    };
+  };
+
+  PackCodCheckout.prototype.getShippingAmount = function (subtotal) {
+    var freight = this.getFreightConfig();
+    if (freight) {
+      return Number(freight.price || 0);
+    }
+
+    var shipping = Number(this.config.shippingFlat || 0);
+    if (subtotal >= Number(this.config.freeShippingThreshold || 0) && this.config.freeShippingThreshold) {
+      shipping = 0;
+    }
+    return shipping;
+  };
+
+  PackCodCheckout.prototype.getOrderLineItems = function () {
+    var items = (this.pendingItems || []).map(function (item) {
+      return {
+        variantId: item.id,
+        quantity: item.quantity || 1
+      };
+    });
+
+    var freight = this.getFreightConfig();
+    if (freight) {
+      var alreadyIncluded = items.some(function (item) {
+        return String(item.variantId) === String(freight.variantId);
+      });
+      if (!alreadyIncluded) {
+        items.push({
+          variantId: freight.variantId,
+          quantity: freight.quantity,
+          isEffiFlete: true
+        });
+      }
+    }
+
+    return items;
+  };
+
+  PackCodCheckout.prototype.getCartItemsWithFreight = function () {
+    var items = (this.pendingItems || []).map(function (item) {
+      return {
+        id: item.id,
+        quantity: item.quantity || 1
+      };
+    });
+
+    var freight = this.getFreightConfig();
+    if (freight) {
+      var alreadyIncluded = items.some(function (item) {
+        return String(item.id) === String(freight.variantId);
+      });
+      if (!alreadyIncluded) {
+        items.push({
+          id: Number(freight.variantId) || freight.variantId,
+          quantity: freight.quantity,
+          properties: {
+            _caletzza_effi_hidden: "yes",
+            _caletzza_effi_flow_source: "pack"
+          }
+        });
+      }
+    }
+
+    return items;
+  };
+
   PackCodCheckout.prototype.getPaymentMethod = function () {
     if (!this.config.enableOnlinePayment || !this.form) {
       return "cod";
@@ -374,11 +462,12 @@
 
   PackCodCheckout.prototype.renderSummary = function (lineItems, pricing) {
     var self = this;
+    var hideItemPrices = this.shouldHideItemPrices();
+    var freight = this.getFreightConfig();
     var subtotal = pricing && typeof pricing.subtotal === "number" ? pricing.subtotal : 0;
     var discountTotal = pricing && typeof pricing.discountTotal === "number" ? pricing.discountTotal : 0;
     var originalSubtotal =
       pricing && typeof pricing.originalSubtotal === "number" ? pricing.originalSubtotal : subtotal;
-    var shipping = Number(this.config.shippingFlat || 0);
     var taxRate = this.getTaxRate();
 
     if (!pricing) {
@@ -389,12 +478,19 @@
       originalSubtotal = subtotal;
     }
 
+    if (this.root) {
+      this.root.classList.toggle("pack-cod--hide-item-prices", hideItemPrices);
+      this.root.classList.toggle("pack-cod--effi-flete", Boolean(freight));
+    }
+
     this.itemsNode.innerHTML = lineItems
       .map(function (item) {
         var image = item.image
           ? '<img src="' + item.image + '" alt="">'
           : '<div class="pack-cod__item-placeholder"></div>';
-        var priceMarkup = formatMoney(item.price, self.config.currency);
+        var priceMarkup = hideItemPrices
+          ? ""
+          : '<span class="pack-cod__item-price">' + formatMoney(item.price, self.config.currency) + "</span>";
 
         return (
           '<li class="pack-cod__item">' +
@@ -403,19 +499,15 @@
           item.title +
           '</p><p class="pack-cod__item-variant">' +
           (item.variantTitle || "") +
-          (item.tierLabel ? " · " + item.tierLabel : "") +
+          (item.tierLabel && !hideItemPrices ? " · " + item.tierLabel : "") +
           "</p></div>" +
-          '<span class="pack-cod__item-price">' +
           priceMarkup +
-          "</span></li>"
+          "</li>"
         );
       })
       .join("");
 
-    if (subtotal >= Number(this.config.freeShippingThreshold || 0) && this.config.freeShippingThreshold) {
-      shipping = 0;
-    }
-
+    var shipping = this.getShippingAmount(subtotal);
     var taxAmount = Math.round(subtotal * taxRate);
     var displayTotal = subtotal + shipping + taxAmount;
 
@@ -426,6 +518,10 @@
       taxAmount: taxAmount,
       taxRate: taxRate,
       shipping: shipping,
+      freightVariantId: freight ? freight.variantId : "",
+      freightPrice: freight ? freight.price : 0,
+      /* Cuando hay producto flete, el costo va como line item (no shippingLine). */
+      shippingPriceForApi: freight ? 0 : shipping,
       total: displayTotal,
       appliedRule: pricing ? pricing.appliedRule : null,
       appliedTier: pricing ? pricing.appliedTier : null
@@ -588,6 +684,11 @@
       "Metodo de pago": "En linea (Shopify Checkout)"
     };
 
+    if (this.getFreightConfig()) {
+      attributes["Pack Effi Flow"] = "yes";
+      attributes["Flete variant"] = String(this.config.effiFleteVariantId || "");
+    }
+
     if (customer.email) {
       attributes.Email = customer.email;
     }
@@ -625,21 +726,22 @@
 
   PackCodCheckout.prototype.fallbackToCheckout = function () {
     var self = this;
-    if (!this.pendingItems.length) {
+    var cartItems = this.getCartItemsWithFreight();
+    if (!cartItems.length) {
       return;
     }
 
     this.setLoading(true);
     var addToCart =
       global.PackPage && typeof global.PackPage.replaceCartWithItems === "function"
-        ? global.PackPage.replaceCartWithItems(this.pendingItems, this.config.cartUrl)
+        ? global.PackPage.replaceCartWithItems(cartItems, this.config.cartUrl)
         : fetch(cartAddUrl(this.config.cartUrl), {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               Accept: "application/json"
             },
-            body: JSON.stringify({ items: this.pendingItems })
+            body: JSON.stringify({ items: cartItems })
           });
 
     addToCart
@@ -720,10 +822,16 @@
     var self = this;
     var email = checkoutEmail(customer);
     var addressPayload = buildCheckoutAddressPayload(customer);
-    var lines = this.pendingItems.map(function (item) {
+    var cartItems = this.getCartItemsWithFreight();
+    var lines = cartItems.map(function (item) {
       return {
         merchandiseId: variantGid(item.id),
-        quantity: item.quantity || 1
+        quantity: item.quantity || 1,
+        attributes: item.properties
+          ? Object.keys(item.properties).map(function (key) {
+              return { key: key, value: String(item.properties[key]) };
+            })
+          : undefined
       };
     });
 
@@ -786,9 +894,10 @@
 
   PackCodCheckout.prototype.submitOnlineFallback = function (customer) {
     var self = this;
+    var cartItems = this.getCartItemsWithFreight();
     var addToCart =
       global.PackPage && typeof global.PackPage.replaceCartWithItems === "function"
-        ? global.PackPage.replaceCartWithItems(self.pendingItems, self.config.cartUrl)
+        ? global.PackPage.replaceCartWithItems(cartItems, self.config.cartUrl)
         : fetch("/cart/clear.js", {
             method: "POST",
             headers: {
@@ -806,7 +915,7 @@
                   "Content-Type": "application/json",
                   Accept: "application/json"
                 },
-                body: JSON.stringify({ items: self.pendingItems })
+                body: JSON.stringify({ items: cartItems })
               });
             });
 
@@ -846,6 +955,7 @@
 
   PackCodCheckout.prototype.submitCod = function (customer) {
     var self = this;
+    var freight = this.getFreightConfig();
     var payload = {
       customer: {
         firstName: customer.names.firstName,
@@ -860,16 +970,14 @@
         country: "Colombia",
         zip: ""
       },
-      lineItems: this.pendingItems.map(function (item) {
-        return {
-          variantId: item.id,
-          quantity: item.quantity || 1
-        };
-      }),
+      lineItems: this.getOrderLineItems(),
       note: customer.note,
-      shippingPrice: this.pendingSummary ? this.pendingSummary.shipping : 0,
+      shippingPrice: this.pendingSummary ? this.pendingSummary.shippingPriceForApi : 0,
       discountAmount: this.pendingSummary ? this.pendingSummary.discountTotal : 0,
-      packLabel: this.config.packLabel || "Pack Bodys"
+      packLabel: this.config.packLabel || "Pack Bodys",
+      packEffiFlow: Boolean(freight),
+      freightVariantId: freight ? freight.variantId : "",
+      freightPrice: freight ? freight.price : 0
     };
 
     fetch(this.config.orderEndpoint || "/apps/cod-express", {

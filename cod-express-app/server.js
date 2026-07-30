@@ -215,22 +215,47 @@ async function handleProxyCheckout(req, res) {
 async function createCodOrder(body) {
   const customer = body.customer || {};
   const shippingAddress = body.shippingAddress || {};
-  const variantLineItems = (body.lineItems || []).map((item) => ({
-    variantId: variantGid(item.variantId),
-    quantity: Number(item.quantity || 1)
-  }));
+  const hasEffiFlete = Boolean(
+    body.packEffiFlow ||
+      body.freightVariantId ||
+      (body.lineItems || []).some((item) => item && item.isEffiFlete)
+  );
+
+  const variantLineItems = (body.lineItems || []).map((item) => {
+    const lineItem = {
+      variantId: variantGid(item.variantId),
+      quantity: Number(item.quantity || 1)
+    };
+
+    if (item.isEffiFlete || (body.freightVariantId && String(item.variantId) === String(body.freightVariantId))) {
+      lineItem.customAttributes = [
+        { key: "_caletzza_effi_hidden", value: "yes" },
+        { key: "_caletzza_effi_flow_source", value: "pack" }
+      ];
+    }
+
+    return lineItem;
+  });
 
   if (!variantLineItems.length) {
     throw new Error("No hay productos en el pedido.");
   }
 
-  const lineItems = variantLineItems.slice();
+  const tags = ["COD", "Pack-Express", body.packLabel].filter(Boolean);
+  if (hasEffiFlete) {
+    tags.push("Pack-Effi-Flow");
+  }
+
+  const noteParts = [body.packLabel, body.note];
+  if (hasEffiFlete) {
+    noteParts.push("Flete Effi incluido como line item");
+  }
 
   const draftInput = {
     email: customer.email || undefined,
     phone: customer.phone || undefined,
-    note: [body.packLabel, body.note].filter(Boolean).join(" | ") || undefined,
-    tags: ["COD", "Pack-Express", body.packLabel].filter(Boolean),
+    note: noteParts.filter(Boolean).join(" | ") || undefined,
+    tags,
     shippingAddress: {
       firstName: customer.firstName || "Cliente",
       lastName: customer.lastName || "COD",
@@ -241,11 +266,18 @@ async function createCodOrder(body) {
       zip: shippingAddress.zip || "000000",
       phone: customer.phone || undefined
     },
-    lineItems,
+    lineItems: variantLineItems,
     shippingLine: {
-      title: "Envio",
+      title: hasEffiFlete ? "Envio (flete en producto)" : "Envio",
       price: moneyFromCents(body.shippingPrice)
-    }
+    },
+    customAttributes: hasEffiFlete
+      ? [
+          { key: "_caletzza_pack_effi_flow", value: "yes" },
+          { key: "flete_product_variant_id", value: String(body.freightVariantId || "") },
+          { key: "valor_flete_cents", value: String(body.freightPrice || 0) }
+        ]
+      : undefined
   };
 
   const discountAmount = Number(body.discountAmount || 0);
@@ -303,7 +335,8 @@ async function createCodOrder(body) {
 
   return {
     orderId: order.legacyResourceId,
-    orderName: order.name
+    orderName: order.name,
+    packEffiFlow: hasEffiFlete
   };
 }
 

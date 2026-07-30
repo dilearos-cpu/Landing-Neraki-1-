@@ -454,7 +454,12 @@
             "/api/" + (section.dataset.codStorefrontApi || "2025-01") + "/graphql.json",
           cartUrl: cartUrl,
           checkoutUrl: checkoutUrl,
-          collectionHandle: section.dataset.collectionHandle || ""
+          collectionHandle: section.dataset.collectionHandle || "",
+          effiFleteEnabled: section.dataset.effiFleteEnabled === "true",
+          effiFleteVariantId: section.dataset.effiFleteVariantId || "",
+          effiFletePrice: Number(section.dataset.effiFletePrice || 0),
+          effiFleteTitle: section.dataset.effiFleteTitle || "Flete",
+          hideItemPrices: section.dataset.effiHideItemPrices !== "false"
         });
       } catch (error) {
         console.error("Pack Bodys 4: no se pudo iniciar checkout COD.", error);

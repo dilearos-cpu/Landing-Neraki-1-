@@ -353,11 +353,38 @@
         });
       }
 
+      function appendEffiFreight(items) {
+        var freightId = String(section.dataset.effiFleteVariantId || "").trim();
+        if (!freightId || section.dataset.effiFleteEnabled !== "true") {
+          return items;
+        }
+
+        var alreadyIncluded = items.some(function (item) {
+          return String(item.id) === freightId;
+        });
+        if (alreadyIncluded) {
+          return items;
+        }
+
+        return items.concat([
+          {
+            id: Number(freightId) || freightId,
+            quantity: 1,
+            properties: {
+              _caletzza_effi_hidden: "yes",
+              _caletzza_effi_flow_source: "pack"
+            }
+          }
+        ]);
+      }
+
       function addPackToCart() {
         var items = validateSelection();
         if (!items) {
           return;
         }
+
+        items = appendEffiFreight(items);
 
         buyButton.disabled = true;
         buyButton.textContent = section.dataset.buttonLoadingText || "Procesando...";

@@ -350,6 +350,14 @@ Estas mejoras van en archivos separados pero conviven con el sistema de precios:
 | Vaciar carrito al comprar pack | `pack-page-utils.js` → `replaceCartWithItems()` |
 | Ocultar productos agotados en packs | `pack-bodys4.js`, `pack-basicas.js`, secciones Liquid |
 | No pisar contenido del editor | `.shopifyignore` |
+| Flete Effi (producto oculto + ocultar precios en COD) | Theme settings `Flete Effi`, `pack-cod-checkout.js`, `pack-bodys4` / `pack-basicas`, `cod-express-app/server.js` |
+
+### Flete Effi — resumen
+
+1. En **Tema → Flete Effi** (o en la seccion Pack) elige el **producto flete**.
+2. Al abrir checkout express COD: no se muestran precios por linea; el total = items (con descuentos) + flete + IVA.
+3. El flete **no aparece** en la lista de productos del modal, pero si en la fila Envio/Flete y en el total.
+4. Al confirmar COD, el backend crea el pedido con el flete como **line item** (tag `Pack-Effi-Flow`) para que Effi lo reciba por webhook.
 
 ---
 
