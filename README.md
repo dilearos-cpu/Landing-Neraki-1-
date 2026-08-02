@@ -74,6 +74,12 @@ Equivalente al plugin WooCommerce **Segunda Imagen**. Muestra una segunda foto a
 
 Una imagen por **color** aplica a todas las tallas de ese color (igual que en WooCommerce).
 
+## Precio autoridad Shopify → Effi
+
+Los pedidos de packs/COD fijan el precio cobrado en Shopify (`priceOverride`) para que Effi opere con ese valor **sin** actualizar el catálogo de Effi ni permitir que Effi reescriba precios en Shopify.
+
+Guía operativa (scopes + panel Effi): [docs/EFFI-PRECIO-SHOPIFY-AUTHORITY.md](docs/EFFI-PRECIO-SHOPIFY-AUTHORITY.md).
+
 ## Flete Effi (packs)
 
 Equivalente al snippet WooCommerce **caletzza-pack-effi-shipping**.

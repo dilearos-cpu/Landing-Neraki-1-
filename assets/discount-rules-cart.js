@@ -285,24 +285,50 @@
     var freightPrice = 0;
     var hasEffi = false;
 
+    var pricedByVariant = {};
+    if (summary && Array.isArray(summary.lineItems)) {
+      summary.lineItems.forEach(function (line) {
+        if (line && (line.variantId != null || line.variant_id != null)) {
+          pricedByVariant[String(line.variantId || line.variant_id)] = line;
+        }
+      });
+    }
+
     var lineItems = (cart && cart.items ? cart.items : summary.lineItems).map(function (item) {
       var variantId = item.variant_id || item.variantId;
       var quantity = item.quantity;
       var isFlete =
         (global.PackEffiCart && global.PackEffiCart.isEffiCartItem && global.PackEffiCart.isEffiCartItem(item)) ||
         (item.properties && item.properties._caletzza_effi_hidden);
+      var priced = pricedByVariant[String(variantId)] || {};
+      var unitPrice = Number(
+        priced.unitPrice != null
+          ? priced.unitPrice
+          : item.final_price != null
+            ? item.final_price
+            : item.price != null
+              ? item.price
+              : NaN
+      );
 
       if (isFlete) {
         hasEffi = true;
         freightVariantId = String(variantId);
         freightPrice = Number(item.original_line_price || item.final_line_price || item.price || 0);
+        if (!Number.isFinite(unitPrice) && quantity) {
+          unitPrice = freightPrice / Number(quantity || 1);
+        }
       }
 
-      return {
+      var payload = {
         variantId: variantId,
         quantity: quantity,
         isEffiFlete: Boolean(isFlete)
       };
+      if (Number.isFinite(unitPrice) && unitPrice >= 0) {
+        payload.unitPrice = unitPrice;
+      }
+      return payload;
     });
 
     if (!hasEffi && cart && global.PackEffiCart && global.PackEffiCart.cartHasEffiFlow) {
