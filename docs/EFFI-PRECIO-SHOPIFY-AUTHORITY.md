@@ -23,37 +23,43 @@ Effi (solo opera logística / guías / recaudo)
 
 ---
 
-## A. Bloquear que Effi cambie precios en Shopify (obligatorio)
+## A. Bloquear precios, **sin** cortar inventario
 
-Esto se hace en **Shopify Admin**, no en código.
+Inventario y precios **no son el mismo permiso** en Shopify:
 
-1. Abre `https://admin.shopify.com/store/caletzza`
-2. **Configuración → Apps y canales de ventas**
-3. Abre la app de **Effi** (o la app personalizada / conector que usa Effi)
-4. Revisa permisos / scopes. Debe poder:
-   - leer/escribir **pedidos** (`read_orders` / `write_orders` o fulfillments según usen)
-   - opcional: inventario, si quieren stock
-5. **Quitar** (si existen):
-   - `write_products`
-   - cualquier permiso de escritura de variantes / precios / catálogo
+| Scope Shopify | Qué permite | ¿Lo necesita Caletzza con Effi? |
+|---|---|---|
+| `write_inventory` | Cambiar **stock** (`inventorySetQuantities` / `inventoryAdjustQuantities`) | **Sí — mantener** |
+| `read_inventory` | Leer stock | **Sí — mantener** |
+| `write_products` | Editar producto/variante (**incluye precio**, título, SKU, etc.) | **No para precios** |
+| `write_orders` / fulfillments | Pedidos y guías | **Sí — mantener** |
 
-Sin `write_products`, Effi **no puede** sobrescribir el precio de un producto en Shopify aunque el ERP intente sincronizar catálogo.
+**No quites `write_inventory`.** Eso es lo que deja a Effi actualizar el stock en Shopify.
 
-> Si Effi es una app del App Store y el scope es obligatorio, pide a soporte Effi desactivar “actualizar productos/precios hacia Shopify”, o reinstala el conector solo con pedidos.
+### Camino recomendado (preferido): apagar solo precios en Effi
 
-### En Effi ERP (panel)
-
-1. Entra a Effi → **Administración → Tiendas virtuales** (o Integración Shopify).
-2. Desactiva / deja en off:
+1. Entra a Effi → **Administración → Tiendas virtuales** / Integración Shopify.
+2. **Mantén activo:**
+   - sincronizar / actualizar **inventario (stock)**
+   - **importar pedidos** desde Shopify
+   - estados de guía / fulfillment (si los usan)
+3. **Desactiva:**
    - sincronizar / actualizar **productos**
    - sincronizar / actualizar **precios**
-   - exportar catálogo hacia la tienda
-3. Mantén activo solo:
-   - **importar pedidos** desde Shopify
-   - (opcional) estados de guía / fulfillment de vuelta a Shopify
-   - (opcional) stock, si lo necesitan
+   - exportar catálogo / tarifas hacia la tienda
 
-No hace falta “empujar” el precio de Shopify al artículo de Effi: el precio de venta viaja **dentro del pedido**.
+Así Effi sigue empujando stock y **no** pisa el precio de Shopify.  
+El precio de venta viaja en el **pedido**, no en el artículo del ERP.
+
+### Camino opcional (Shopify scopes): quitar solo `write_products`
+
+Solo si en el panel de Effi **no** puedes separar “precios” de “stock”:
+
+1. `https://admin.shopify.com/store/caletzza` → **Apps** → app Effi
+2. **Deja** `write_inventory` / `read_inventory` (y pedidos)
+3. **Quita solo** `write_products` si Effi realmente usa `write_inventory` para el stock
+
+> Si al quitar `write_products` el stock deja de actualizarse, **vuelve a activarlo** y usa solo el panel de Effi (camino recomendado). Algunas apps antiguas mezclan operaciones; en la API actual de Shopify el stock va por `write_inventory`, no por `write_products`.
 
 ---
 
