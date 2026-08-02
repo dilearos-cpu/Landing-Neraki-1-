@@ -90,6 +90,81 @@ function parseProxyBody(req) {
   return {};
 }
 
+function resolveUnitPriceCents(item) {
+  if (item == null) {
+    return null;
+  }
+
+  if (item.unitPrice != null && item.unitPrice !== "") {
+    const unit = Number(item.unitPrice);
+    return Number.isFinite(unit) ? unit : null;
+  }
+
+  /* Algunos clientes mandan price como total de línea. */
+  if (item.price != null && item.price !== "" && item.quantity) {
+    const line = Number(item.price);
+    const qty = Number(item.quantity || 1);
+    if (Number.isFinite(line) && qty > 0) {
+      return line / qty;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Construye line items del draft order usando el precio de Shopify como autoridad.
+ * Si llega unitPrice (centavos), se fija con priceOverride para que Effi lea ese valor
+ * del pedido y no el catálogo del ERP.
+ */
+function buildShopifyPricedLineItems(body) {
+  const currencyCode = body.currencyCode || "COP";
+  let pricedLineCount = 0;
+
+  const variantLineItems = (body.lineItems || []).map((item) => {
+    const isEffiFlete = Boolean(
+      item.isEffiFlete ||
+        (body.freightVariantId && String(item.variantId) === String(body.freightVariantId))
+    );
+
+    const customAttributes = [{ key: "_price_source", value: "shopify" }];
+    const lineItem = {
+      variantId: variantGid(item.variantId),
+      quantity: Number(item.quantity || 1),
+      customAttributes
+    };
+
+    const unitPriceCents = resolveUnitPriceCents(item);
+    if (unitPriceCents != null && unitPriceCents >= 0) {
+      pricedLineCount += 1;
+      lineItem.priceOverride = {
+        amount: moneyFromCents(unitPriceCents),
+        currencyCode
+      };
+      customAttributes.push({
+        key: "_shopify_unit_price_cents",
+        value: String(Math.round(unitPriceCents))
+      });
+    }
+
+    if (isEffiFlete) {
+      customAttributes.push(
+        { key: "_caletzza_effi_hidden", value: "yes" },
+        { key: "_caletzza_effi_flow_source", value: "pack" }
+      );
+      lineItem.taxable = false;
+    }
+
+    return lineItem;
+  });
+
+  return {
+    variantLineItems,
+    allLinesPriced:
+      variantLineItems.length > 0 && pricedLineCount === variantLineItems.length
+  };
+}
+
 async function handleProxyOrder(req, res) {
   try {
     if (!verifyProxySignature(req.query)) {
@@ -145,31 +220,13 @@ async function createStorefrontCheckout(body) {
       (body.lineItems || []).some((item) => item && item.isEffiFlete)
   );
 
-  const variantLineItems = (body.lineItems || []).map((item) => {
-    const lineItem = {
-      variantId: variantGid(item.variantId),
-      quantity: Number(item.quantity || 1)
-    };
-
-    if (
-      item.isEffiFlete ||
-      (body.freightVariantId && String(item.variantId) === String(body.freightVariantId))
-    ) {
-      lineItem.customAttributes = [
-        { key: "_caletzza_effi_hidden", value: "yes" },
-        { key: "_caletzza_effi_flow_source", value: "pack" }
-      ];
-      lineItem.taxable = false;
-    }
-
-    return lineItem;
-  });
+  const { variantLineItems, allLinesPriced } = buildShopifyPricedLineItems(body);
 
   if (!variantLineItems.length) {
     throw new Error("No hay productos en el carrito.");
   }
 
-  const tags = ["Discount-Rules", "Storefront-Checkout"];
+  const tags = ["Discount-Rules", "Storefront-Checkout", "Shopify-Price-Authority"];
   if (hasEffiFlete) {
     tags.push("Pack-Effi-Flow", "Pack-Express");
   }
@@ -191,7 +248,17 @@ async function createStorefrontCheckout(body) {
     shippingLine: {
       title: hasEffiFlete ? "Envio gratis" : "Envio",
       price: moneyFromCents(hasEffiFlete ? 0 : body.shippingPrice || 0)
-    }
+    },
+    customAttributes: [
+      { key: "_price_authority", value: "shopify" },
+      ...(hasEffiFlete
+        ? [
+            { key: "_caletzza_pack_effi_flow", value: "yes" },
+            { key: "flete_product_variant_id", value: String(body.freightVariantId || "") },
+            { key: "valor_flete_cents", value: String(body.freightPrice || 0) }
+          ]
+        : [])
+    ]
   };
 
   if (body.shippingAddress) {
@@ -207,15 +274,9 @@ async function createStorefrontCheckout(body) {
     };
   }
 
-  if (hasEffiFlete) {
-    draftInput.customAttributes = [
-      { key: "_caletzza_pack_effi_flow", value: "yes" },
-      { key: "flete_product_variant_id", value: String(body.freightVariantId || "") },
-      { key: "valor_flete_cents", value: String(body.freightPrice || 0) }
-    ];
-  }
-
-  if (discountAmount > 0) {
+  /* Si cada línea ya trae priceOverride (precio Shopify), no aplicar descuento de orden
+     otra vez: Effi debe ver el precio neto de Shopify en cada line item. */
+  if (discountAmount > 0 && !allLinesPriced) {
     draftInput.appliedDiscount = {
       description: body.discountLabel || "Descuento por cantidad",
       value: moneyFromCents(discountAmount),
@@ -280,34 +341,18 @@ async function createCodOrder(body) {
       (body.lineItems || []).some((item) => item && item.isEffiFlete)
   );
 
-  const variantLineItems = (body.lineItems || []).map((item) => {
-    const lineItem = {
-      variantId: variantGid(item.variantId),
-      quantity: Number(item.quantity || 1)
-    };
-
-    if (item.isEffiFlete || (body.freightVariantId && String(item.variantId) === String(body.freightVariantId))) {
-      lineItem.customAttributes = [
-        { key: "_caletzza_effi_hidden", value: "yes" },
-        { key: "_caletzza_effi_flow_source", value: "pack" }
-      ];
-      /* El flete Effi no debe generar IVA en el pedido. */
-      lineItem.taxable = false;
-    }
-
-    return lineItem;
-  });
+  const { variantLineItems, allLinesPriced } = buildShopifyPricedLineItems(body);
 
   if (!variantLineItems.length) {
     throw new Error("No hay productos en el pedido.");
   }
 
-  const tags = ["COD", "Pack-Express", body.packLabel].filter(Boolean);
+  const tags = ["COD", "Pack-Express", "Shopify-Price-Authority", body.packLabel].filter(Boolean);
   if (hasEffiFlete) {
     tags.push("Pack-Effi-Flow");
   }
 
-  const noteParts = [body.packLabel, body.note];
+  const noteParts = [body.packLabel, body.note, "Precio autoridad: Shopify"];
   if (hasEffiFlete) {
     noteParts.push("Flete Effi incluido como line item");
   }
@@ -332,17 +377,20 @@ async function createCodOrder(body) {
       title: hasEffiFlete ? "Envio (flete en producto)" : "Envio",
       price: moneyFromCents(body.shippingPrice)
     },
-    customAttributes: hasEffiFlete
-      ? [
-          { key: "_caletzza_pack_effi_flow", value: "yes" },
-          { key: "flete_product_variant_id", value: String(body.freightVariantId || "") },
-          { key: "valor_flete_cents", value: String(body.freightPrice || 0) }
-        ]
-      : undefined
+    customAttributes: [
+      { key: "_price_authority", value: "shopify" },
+      ...(hasEffiFlete
+        ? [
+            { key: "_caletzza_pack_effi_flow", value: "yes" },
+            { key: "flete_product_variant_id", value: String(body.freightVariantId || "") },
+            { key: "valor_flete_cents", value: String(body.freightPrice || 0) }
+          ]
+        : [])
+    ]
   };
 
   const discountAmount = Number(body.discountAmount || 0);
-  if (discountAmount > 0) {
+  if (discountAmount > 0 && !allLinesPriced) {
     draftInput.appliedDiscount = {
       description: "Descuento pack por cantidad",
       value: moneyFromCents(discountAmount),

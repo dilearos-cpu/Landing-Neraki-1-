@@ -359,6 +359,10 @@ Estas mejoras van en archivos separados pero conviven con el sistema de precios:
 3. El flete **no aparece** en la lista de productos del modal, pero si en la fila Envio/Flete y en el total.
 4. Al confirmar COD, el backend crea el pedido con el flete como **line item** (tag `Pack-Effi-Flow`) para que Effi lo reciba por webhook.
 
+### Precio autoridad Shopify (vs catálogo Effi)
+
+Ver [EFFI-PRECIO-SHOPIFY-AUTHORITY.md](./EFFI-PRECIO-SHOPIFY-AUTHORITY.md): el pedido lleva `priceOverride` con el precio neto de Shopify; Effi no debe escribir precios de vuelta a la tienda.
+
 ---
 
 ## 13. Troubleshooting

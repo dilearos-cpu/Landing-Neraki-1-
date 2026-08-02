@@ -332,11 +332,34 @@
   };
 
   PackCodCheckout.prototype.getOrderLineItems = function () {
+    var pricedLines =
+      this.pendingSummary && Array.isArray(this.pendingSummary.lineItems)
+        ? this.pendingSummary.lineItems
+        : [];
+    var pricedByVariant = {};
+    pricedLines.forEach(function (line) {
+      if (line && line.variantId != null) {
+        pricedByVariant[String(line.variantId)] = line;
+      }
+    });
+
     var items = (this.pendingItems || []).map(function (item) {
-      return {
+      var priced = pricedByVariant[String(item.id)] || {};
+      var unitPrice = Number(
+        priced.unitPrice != null
+          ? priced.unitPrice
+          : priced.originalUnitPrice != null
+            ? priced.originalUnitPrice
+            : 0
+      );
+      var payload = {
         variantId: item.id,
         quantity: item.quantity || 1
       };
+      if (Number.isFinite(unitPrice) && unitPrice >= 0) {
+        payload.unitPrice = unitPrice;
+      }
+      return payload;
     });
 
     var freight = this.getFreightConfig();
@@ -348,7 +371,18 @@
         items.push({
           variantId: freight.variantId,
           quantity: freight.quantity,
+          unitPrice: Number(freight.price || freight.unitPrice || 0),
           isEffiFlete: true
+        });
+      } else {
+        items = items.map(function (item) {
+          if (String(item.variantId) === String(freight.variantId)) {
+            return Object.assign({}, item, {
+              unitPrice: Number(freight.price || freight.unitPrice || item.unitPrice || 0),
+              isEffiFlete: true
+            });
+          }
+          return item;
         });
       }
     }
@@ -530,7 +564,9 @@
       shippingPriceForApi: freight ? 0 : shipping,
       total: displayTotal,
       appliedRule: pricing ? pricing.appliedRule : null,
-      appliedTier: pricing ? pricing.appliedTier : null
+      appliedTier: pricing ? pricing.appliedTier : null,
+      /* Precio neto Shopify por línea → COD Express → pedido que lee Effi. */
+      lineItems: Array.isArray(lineItems) ? lineItems : []
     };
 
     this.subtotalNode.textContent = formatMoney(subtotal, this.config.currency);
